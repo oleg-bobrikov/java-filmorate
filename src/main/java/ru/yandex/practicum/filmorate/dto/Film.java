@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Data
 @Builder
 public class Film {
-    private int id;
+    private Integer id;
     @NotBlank(message = "Title cannot be empty")
     private String name;
     @Size(max = 200, message = "Maximum description length is 200 characters")

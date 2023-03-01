@@ -12,8 +12,8 @@ import java.time.LocalDate;
 @Data
 @Builder
 public class User {
-    @Builder.Default
-    private int id = 0;
+
+    private Integer id;
     @NotBlank
     @Email(message = "invalid email address")
     private String email;

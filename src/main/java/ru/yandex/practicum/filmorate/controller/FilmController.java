@@ -23,7 +23,7 @@ public class FilmController {
     public Film create(@NotNull @Valid @RequestBody Film film) {
         film.setId(nextId++);
         films.put(film.getId(), film);
-        log.info(String.format("%s has created", film));
+        log.info("{} has created",film);
         return film;
     }
 
