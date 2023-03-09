@@ -2,11 +2,10 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.dto.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
-
+import ru.yandex.practicum.filmorate.service.UserService;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -15,41 +14,58 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    UserStorage userStorage;
+    private final UserService userService;
 
     @Autowired
-    public UserController(UserStorage userStorage) {
-        this.userStorage = userStorage;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping()
+    public List<User> getUsers() {
+        return userService.getUsers();
+    }
+
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable Integer id) {
+
+        return userService.getUserById(id);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getUserFriends(@PathVariable Integer id) {
+        return userService.getUserFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
+        return userService.getCommonFriends(id, otherId);
+    }
+
+
+    @PutMapping()
+    public User update(@NotNull @Valid @RequestBody User user) {
+        userService.update(user);
+        log.info("{} has updated", user);
+        return user;
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+        userService.addFriend(id, friendId);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void removeFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+        userService.removeFriend(id, friendId);
     }
 
     @PostMapping()
     public User add(@NotNull @Valid @RequestBody User user) {
 
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        userStorage.update(user);
-        log.info(String.format("%s has created", user));
-        return user;
+        return userService.add(user);
     }
-
-    @GetMapping()
-    public List<User> getUsers() {
-        return userStorage.getUsers();
-    }
-
-    @PutMapping()
-    public User update(@NotNull @Valid @RequestBody User user) {
-        if (userStorage.getUserById(user.getId()) == null) {
-            throw new ValidationException(String.format("User with id %s not found", user.getId()));
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        userStorage.update(user);
-        log.info(String.format("%s has updated", user));
-        return user;
-    }
-
 
 }

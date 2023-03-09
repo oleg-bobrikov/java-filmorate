@@ -7,6 +7,8 @@ import ru.yandex.practicum.filmorate.validator.IsAfterOrEqual;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
@@ -21,4 +23,6 @@ public class Film {
     private LocalDate releaseDate;
     @Positive(message = "Duration should be positive")
     private int duration;
+
+    private Set<Integer> likes;
 }
