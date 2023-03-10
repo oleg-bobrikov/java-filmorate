@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable Integer id) {
+    public Film getFilmById(@PathVariable @NotBlank Integer id) {
         return filmService.getFilmById(id);
     }
 
@@ -49,13 +50,13 @@ public class FilmController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("{id}/like/{userId}")
-    public void like(@PathVariable Integer id, @PathVariable Integer userId) {
+    public void like(@PathVariable @NotBlank Integer id, @PathVariable @NotBlank Integer userId) {
         filmService.like(id, userId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("{id}/like/{userId}")
-    public void removeLike(@PathVariable Integer id, @PathVariable Integer userId) {
+    public void removeLike(@PathVariable @NotBlank Integer id, @PathVariable @NotBlank Integer userId) {
         filmService.removeLike(id, userId);
     }
 }

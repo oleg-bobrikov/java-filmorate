@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.HashSet;
@@ -28,10 +27,6 @@ public class FilmService {
     }
 
     public Film getFilmById(Integer id) {
-        if (id == null) {
-            throw new ValidationException("Не заполен параметр id.");
-        }
-
         Film film = filmStorage.getFilmById(id);
         if (film == null) {
             throw new NotFoundException("Фильм с идентификатором " + id + " не найден.");
@@ -48,9 +43,6 @@ public class FilmService {
     }
 
     public Film update(Film film) {
-        if (film.getLikes() == null) {
-            film.setLikes(new HashSet<>());
-        }
         final Integer filmId = film.getId();
         Film foundFilm = filmStorage.getFilmById(filmId);
         if (foundFilm == null) {

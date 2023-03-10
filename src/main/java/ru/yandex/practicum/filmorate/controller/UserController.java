@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -24,20 +25,19 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Integer id) {
+    public User getUserById(@PathVariable @NotBlank Integer id) {
         return userService.getUserById(id);
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getUserFriends(@PathVariable Integer id) {
+    public List<User> getUserFriends(@PathVariable @NotBlank Integer id) {
         return userService.getUserFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
+    public List<User> getCommonFriends(@PathVariable @NotBlank Integer id, @PathVariable @NotBlank Integer otherId) {
         return userService.getCommonFriends(id, otherId);
     }
-
 
     @PutMapping()
     public User update(@NotNull @Valid @RequestBody User user) {
@@ -48,13 +48,13 @@ public class UserController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+    public void addFriend(@PathVariable @NotBlank Integer id, @PathVariable @NotBlank Integer friendId) {
         userService.addFriend(id, friendId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void removeFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+    public void removeFriend(@PathVariable @NotBlank Integer id, @PathVariable @NotBlank Integer friendId) {
         userService.removeFriend(id, friendId);
     }
 

@@ -5,10 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,12 +18,6 @@ public class UserService {
     private final UserStorage userStorage;
 
     public void addFriend(Integer id, Integer friendId) {
-        if (id == null) {
-            throw new ValidationException("user id  not set.");
-        }
-        if (friendId == null) {
-            throw new ValidationException("friend id not set");
-        }
         User user = userStorage.getUserById(id);
         if (user == null) {
             throw new NotFoundException("user with id=" + id + " not found.");
@@ -34,13 +26,8 @@ public class UserService {
         if (friend == null) {
             throw new NotFoundException("user with id=" + friendId + " not found.");
         }
-        Set<Integer> friends = user.getFriends();
-        friends.add(friendId);
-        user.setFriends(friends);
-
-        Set<Integer> otherFriends = friend.getFriends();
-        otherFriends.add(id);
-        friend.setFriends(otherFriends);
+        user.getFriends().add(friendId);
+        friend.getFriends().add(id);
     }
 
     public User add(User user) {
@@ -64,21 +51,12 @@ public class UserService {
     }
 
     public List<User> getUserFriends(Integer id) {
-        Set<Integer> friends = userStorage.getUserById(id).getFriends();
-        if (friends == null) {
-            friends = new HashSet<>();
-        }
-        return friends.stream().map(userStorage::getUserById).collect(Collectors.toList());
-
+        return userStorage.getUserById(id).getFriends().stream()
+                .map(userStorage::getUserById)
+                .collect(Collectors.toList());
     }
 
     public void removeFriend(Integer id, Integer friendId) {
-        if (id == null) {
-            throw new ValidationException("user id  not set.");
-        }
-        if (friendId == null) {
-            throw new ValidationException("friend id not set");
-        }
         User user = userStorage.getUserById(id);
         if (user == null) {
             throw new NotFoundException("user with id=" + id + " not found.");
@@ -87,18 +65,11 @@ public class UserService {
         if (friend == null) {
             throw new NotFoundException("user with id=" + friendId + " not found.");
         }
-        Set<Integer> friends = user.getFriends();
-        friends.remove(friendId);
-
-        Set<Integer> otherFriends = friend.getFriends();
-        otherFriends.remove(id);
+        user.getFriends().remove(friendId);
+        friend.getFriends().remove(id);
     }
 
     public User getUserById(Integer id) {
-        if (id == null) {
-            throw new ValidationException("Не заполен параметр id.");
-        }
-
         User user = userStorage.getUserById(id);
         if (user == null) {
             throw new NotFoundException("Пользователь с идентификатором " + id + " не найден.");
