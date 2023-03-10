@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import ru.yandex.practicum.filmorate.validator.IsAfterOrEqual;
 
 import javax.validation.constraints.*;
@@ -23,6 +25,15 @@ public class Film {
     private LocalDate releaseDate;
     @Positive(message = "Duration should be positive")
     private int duration;
-
+    @Getter(AccessLevel.NONE)
     private Set<Integer> likes;
+
+    public Set<Integer> getLikes() {
+        if (likes == null) {
+            likes = new HashSet<>();
+        }
+        return likes;
+    }
+
+
 }

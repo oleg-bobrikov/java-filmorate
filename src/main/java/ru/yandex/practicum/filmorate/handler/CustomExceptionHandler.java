@@ -26,12 +26,12 @@ public class CustomExceptionHandler {
                 .build();
     }
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseError handle(ValidationException exception) {
         log.error(exception.getMessage(), exception);
         return ResponseError.builder()
-                .error("NOT FOUND")
-                .status(404)
+                .error("BAD REQUEST")
+                .status(400)
                 .exception("ru.yandex.practicum.filmorate.exception.ValidationException")
                 .message(exception.getMessage())
                 .path(getPath(exception))

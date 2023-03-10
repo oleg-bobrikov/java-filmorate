@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.dto;
 
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import ru.yandex.practicum.filmorate.validator.Login;
 
 import javax.validation.constraints.Email;
@@ -23,6 +25,13 @@ public class User {
     private String name;
     @PastOrPresent(message = "birthday must be in the past or present")
     private LocalDate birthday;
-    @Builder.Default
-    private Set<Integer> friends = new HashSet<>();
+    @Getter(AccessLevel.NONE)
+    private Set<Integer> friends;
+
+    public Set<Integer> getFriends() {
+        if (friends == null) {
+            friends = new HashSet<>();
+        }
+        return friends;
+    }
 }

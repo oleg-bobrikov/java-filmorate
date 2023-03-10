@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -15,15 +15,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class FilmService {
-    FilmStorage filmStorage;
-    UserService userService;
-
-    @Autowired
-    public FilmService(FilmStorage filmStorage, UserService userService) {
-        this.filmStorage = filmStorage;
-        this.userService = userService;
-    }
+    private final FilmStorage filmStorage;
+    private final UserService userService;
 
     public List<Film> getPopular(int count) {
         return filmStorage.getFilms().stream()
@@ -37,9 +32,6 @@ public class FilmService {
             throw new ValidationException("Не заполен параметр id.");
         }
 
-        if (id <= 0) {
-            throw new ValidationException("Параметр id должен быть положительным целым числом.");
-        }
         Film film = filmStorage.getFilmById(id);
         if (film == null) {
             throw new NotFoundException("Фильм с идентификатором " + id + " не найден.");
@@ -50,12 +42,15 @@ public class FilmService {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void like(Integer id, Integer userId) {
         Film film = getFilmById(id);
-        User user = userService.getUserById(id);
+        userService.getUserById(userId);
 
-        film.getLikes().add(user.getId());
+        film.getLikes().add(userId);
     }
 
     public Film update(Film film) {
+        if (film.getLikes() == null) {
+            film.setLikes(new HashSet<>());
+        }
         final Integer filmId = film.getId();
         Film foundFilm = filmStorage.getFilmById(filmId);
         if (foundFilm == null) {
