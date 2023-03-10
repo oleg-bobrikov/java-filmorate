@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ResponseError;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 @Slf4j
 @RestControllerAdvice
@@ -21,18 +20,6 @@ public class CustomExceptionHandler {
                 .error("NOT FOUND")
                 .status(404)
                 .exception("ru.yandex.practicum.filmorate.exception.NotFoundException")
-                .message(exception.getMessage())
-                .path(getPath(exception))
-                .build();
-    }
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseError handle(ValidationException exception) {
-        log.error(exception.getMessage(), exception);
-        return ResponseError.builder()
-                .error("BAD REQUEST")
-                .status(400)
-                .exception("ru.yandex.practicum.filmorate.exception.ValidationException")
                 .message(exception.getMessage())
                 .path(getPath(exception))
                 .build();
