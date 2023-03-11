@@ -6,20 +6,20 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ResponseError;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 @Slf4j
 @RestControllerAdvice
 public class CustomExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseError handle(ValidationException exception) {
+    public ResponseError handle(NotFoundException exception) {
         log.error(exception.getMessage(), exception);
         return ResponseError.builder()
                 .error("NOT FOUND")
                 .status(404)
-                .exception("ru.yandex.practicum.filmorate.exception.ValidationException")
+                .exception("ru.yandex.practicum.filmorate.exception.NotFoundException")
                 .message(exception.getMessage())
                 .path(getPath(exception))
                 .build();

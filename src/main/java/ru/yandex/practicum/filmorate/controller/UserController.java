@@ -1,52 +1,66 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.dto.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
-    private final Map<Integer, User> users = new HashMap<>();
-    private int nextId = 1;
-
-    @PostMapping()
-    public User create(@NotNull @Valid @RequestBody User user) {
-        user.setId(nextId++);
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        users.put(user.getId(), user);
-        log.info(String.format("%s has created", user));
-        return user;
-    }
+    private final UserService userService;
 
     @GetMapping()
     public List<User> getUsers() {
-        return new ArrayList<>(users.values());
+        return userService.getUsers();
+    }
+
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable @NotBlank Integer id) {
+        return userService.getUserById(id);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getUserFriends(@PathVariable @NotBlank Integer id) {
+        return userService.getUserFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable @NotBlank Integer id, @PathVariable @NotBlank Integer otherId) {
+        return userService.getCommonFriends(id, otherId);
     }
 
     @PutMapping()
     public User update(@NotNull @Valid @RequestBody User user) {
-        if (users.get(user.getId()) == null) {
-            throw new ValidationException(String.format("User with id %s not found", user.getId()));
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        users.put(user.getId(), user);
-        log.info(String.format("%s has updated", user));
+        userService.update(user);
+        log.info("{} has updated", user);
         return user;
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable @NotBlank Integer id, @PathVariable @NotBlank Integer friendId) {
+        userService.addFriend(id, friendId);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void removeFriend(@PathVariable @NotBlank Integer id, @PathVariable @NotBlank Integer friendId) {
+        userService.removeFriend(id, friendId);
+    }
+
+    @PostMapping()
+    public User add(@NotNull @Valid @RequestBody User user) {
+        return userService.add(user);
+    }
 
 }
