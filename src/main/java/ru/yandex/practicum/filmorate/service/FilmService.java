@@ -34,7 +34,6 @@ public class FilmService {
         return film;
     }
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void like(Integer id, Integer userId) {
         Film film = getFilmById(id);
         userService.getUserById(userId);
