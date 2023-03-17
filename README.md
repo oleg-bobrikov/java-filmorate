@@ -38,5 +38,5 @@ VALUES (&email, &login, &name, &birthday)
 ```
 SELECT friend_id
 FROM friendship
-WHERE user_id = &user_id
+WHERE user_id = &user_id and status_id = &status_confirmed
 ```
