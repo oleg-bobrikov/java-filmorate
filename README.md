@@ -5,38 +5,38 @@
 ### 1. Get films
 ```
 SELECT *
-FROM film
+FROM films
 ```
 ### 2. Get film by id
 ```
 SELECT *
-FROM film
+FROM films
 WHERE id = &id
 ```
 ### 3. Add film
 ```
-INSERT INTO film (name, description, release_date, duration, rating_id)
-VALUES (&name, &description, &release_date, &duration, &rating_id)
+INSERT INTO films (name, description, release_date, duration, mpa_rating_id)
+VALUES (&name, &description, &release_date, &duration, &mpa_rating_id)
 ```
 ### 4. Get users
 ```
 SELECT *
-FROM user
+FROM users
 ```
 ### 5. Get user by id
 ```
 SELECT *
-FROM user
+FROM users
 WHERE id = &id
 ```
 ### 6. Add user
 ```
-INSERT INTO user (email, login, name, birthday)
+INSERT INTO users (email, login, name, birthday)
 VALUES (&email, &login, &name, &birthday)
 ```
 ### 7. Get user friends
 ```
 SELECT friend_id
-FROM friendship
-WHERE user_id = &user_id and confirmed
+FROM user_relations
+WHERE user_id = &user_id and friendship_status = 'confirmed'
 ```
