@@ -1,5 +1,5 @@
 # java-filmorate
-## ER Diagram (https://dbdiagram.io/d/6414ac1e296d97641d88d727)
+## ER Diagram (https://dbdiagram.io/d/6428102d5758ac5f1725ebc5)
 ![ER Diagramm](filmorate.png)
 ## SQL Examples
 ### 1. Get films
@@ -37,6 +37,6 @@ VALUES (&email, &login, &name, &birthday)
 ### 7. Get user friends
 ```
 SELECT friend_id
-FROM user_relations
-WHERE user_id = &user_id and friendship_status = 'confirmed'
+FROM user_friends
+WHERE user_id = &user_id
 ```
