@@ -37,6 +37,6 @@ VALUES (&email, &login, &name, &birthday)
 ### 7. Get user friends
 ```
 SELECT friend_id
-FROM user_relations
-WHERE user_id = &user_id and friendship_status = 'confirmed'
+FROM user_friends
+WHERE user_id = &user_id
 ```
