@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -11,19 +13,18 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor()
 public class FilmService {
-    private final FilmStorage filmStorage;
-    private final UserService userService;
+    @Autowired
+    private FilmStorage filmStorage;
+    @Autowired
+    private UserService userService;
 
     public List<Film> getPopular(int count) {
-        return filmStorage.getFilms().stream()
-                .sorted((o1, o2) -> o2.getLikes().size() - o1.getLikes().size())
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getPopular(count);
     }
 
     public Film getFilmById(Integer id) {
@@ -36,9 +37,8 @@ public class FilmService {
 
     public void like(Integer id, Integer userId) {
         Film film = getFilmById(id);
-        userService.getUserById(userId);
-
-        film.getLikes().add(userId);
+        User user = userService.findUserById(userId);
+        filmStorage.addLike(film, user);
     }
 
     public Film update(Film film) {
@@ -54,9 +54,9 @@ public class FilmService {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeLike(Integer id, Integer userId) {
         Film film = getFilmById(id);
-        User user = userService.getUserById(userId);
+        User user = userService.findUserById(userId);
 
-        film.getLikes().remove(user.getId());
+        filmStorage.removeLike(film, user);
     }
 
     public List<Film> getFilms() {

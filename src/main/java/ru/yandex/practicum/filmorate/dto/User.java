@@ -1,9 +1,6 @@
 package ru.yandex.practicum.filmorate.dto;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 import ru.yandex.practicum.filmorate.validator.Login;
 
 import javax.validation.constraints.Email;
@@ -15,6 +12,8 @@ import java.util.Set;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
     private Integer id;
     @NotBlank

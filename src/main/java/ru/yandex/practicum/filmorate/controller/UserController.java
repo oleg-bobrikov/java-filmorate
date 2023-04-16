@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.User;
@@ -17,6 +18,7 @@ import java.util.List;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
+    @Autowired
     private final UserService userService;
 
     @GetMapping()
@@ -26,7 +28,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public User getUserById(@PathVariable @NotBlank Integer id) {
-        return userService.getUserById(id);
+        return userService.findUserById(id);
     }
 
     @GetMapping("/{id}/friends")

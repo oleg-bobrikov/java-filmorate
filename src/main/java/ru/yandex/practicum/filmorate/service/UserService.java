@@ -2,12 +2,14 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,19 +17,20 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    @Autowired
     private final UserStorage userStorage;
 
     public void addFriend(Integer id, Integer friendId) {
-        User user = userStorage.getUserById(id);
-        if (user == null) {
+        Optional<User> userOpt = userStorage.findUserById(id);
+        if (userOpt.isEmpty()) {
             throw new NotFoundException("user with id=" + id + " not found.");
         }
-        User friend = userStorage.getUserById(friendId);
-        if (friend == null) {
+        Optional<User> friendOpt = userStorage.findUserById(friendId);
+        if (friendOpt.isEmpty()) {
             throw new NotFoundException("user with id=" + friendId + " not found.");
         }
-        user.getFriends().add(friendId);
-        friend.getFriends().add(id);
+        userStorage.addFriend(userOpt.get(), friendOpt.get());
+
     }
 
     public User add(User user) {
@@ -41,41 +44,40 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(Integer id, Integer otherId) {
-        Set<Integer> friends = getUserById(id).getFriends();
-        Set<Integer> otherFriends = getUserById(otherId).getFriends();
+        Set<Integer> friends = findUserById(id).getFriends();
+        Set<Integer> otherFriends = findUserById(otherId).getFriends();
 
         return friends.stream()
                 .filter(otherFriends::contains)
-                .map(userStorage::getUserById)
+                .map(userStorage::findUserById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(Collectors.toList());
     }
 
     public List<User> getUserFriends(Integer id) {
-        return userStorage.getUserById(id).getFriends().stream()
-                .map(userStorage::getUserById)
-                .collect(Collectors.toList());
+        return userStorage.getUserFriends(id);
     }
 
     public void removeFriend(Integer id, Integer friendId) {
-        User user = userStorage.getUserById(id);
-        if (user == null) {
+        Optional<User> user = userStorage.findUserById(id);
+        if (user.isEmpty()) {
             throw new NotFoundException("user with id=" + id + " not found.");
         }
-        User friend = userStorage.getUserById(friendId);
-        if (friend == null) {
+        Optional<User> friend = userStorage.findUserById(friendId);
+        if (friend.isEmpty()) {
             throw new NotFoundException("user with id=" + friendId + " not found.");
         }
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(id);
+        userStorage.removeFriend(user.get(), friend.get());
     }
 
-    public User getUserById(Integer id) {
-        User user = userStorage.getUserById(id);
-        if (user == null) {
+    public User findUserById(Integer id) {
+        Optional<User> user = userStorage.findUserById(id);
+        if (user.isEmpty()) {
             throw new NotFoundException("Пользователь с идентификатором " + id + " не найден.");
         }
 
-        return user;
+        return user.get();
     }
 
     public List<User> getUsers() {
@@ -86,7 +88,7 @@ public class UserService {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        getUserById(user.getId());
+        findUserById(user.getId());
         userStorage.update(user);
     }
 }
