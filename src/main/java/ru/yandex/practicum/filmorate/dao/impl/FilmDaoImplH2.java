@@ -206,22 +206,22 @@ public class FilmDaoImplH2 implements FilmDao {
 
         String sql =
                 "SELECT FILMS.ID, " +
-                "   FILMS.\"name\", " +
-                "   FILMS.DESCRIPTION, " +
-                "   FILMS.RELEASE_DATE, " +
-                "   FILMS.DURATION, " +
-                "   FILMS.MPA_FILM_RATING_ID, " +
-                "   MFR.\"NAME\" AS MPA_FILM_RATING_NAME " +
-                "FROM FILMS AS FILMS " +
-                "LEFT JOIN " +
-                "  (SELECT FILM_ID, " +
-                "          COUNT(USER_ID) AS TOTAL " +
-                "   FROM FILM_LIKES " +
-                "   GROUP BY FILM_ID " +
-                "   ORDER BY COUNT(USER_ID)) AS LIKES ON FILMS.ID = LIKES.FILM_ID " +
-                "INNER JOIN MPA_FILM_RATINGS AS MFR ON MFR.ID = FILMS.MPA_FILM_RATING_ID " +
-                "ORDER BY IFNULL (LIKES.TOTAL, 0) DESC " +
-                "FETCH FIRST ? ROWS ONLY;";
+                        "   FILMS.\"name\", " +
+                        "   FILMS.DESCRIPTION, " +
+                        "   FILMS.RELEASE_DATE, " +
+                        "   FILMS.DURATION, " +
+                        "   FILMS.MPA_FILM_RATING_ID, " +
+                        "   MFR.\"NAME\" AS MPA_FILM_RATING_NAME " +
+                        "FROM FILMS AS FILMS " +
+                        "LEFT JOIN " +
+                        "  (SELECT FILM_ID, " +
+                        "          COUNT(USER_ID) AS TOTAL " +
+                        "   FROM FILM_LIKES " +
+                        "   GROUP BY FILM_ID " +
+                        "   ORDER BY COUNT(USER_ID)) AS LIKES ON FILMS.ID = LIKES.FILM_ID " +
+                        "INNER JOIN MPA_FILM_RATINGS AS MFR ON MFR.ID = FILMS.MPA_FILM_RATING_ID " +
+                        "ORDER BY IFNULL (LIKES.TOTAL, 0) DESC " +
+                        "FETCH FIRST ? ROWS ONLY;";
 
         HashMap<Integer, Film> results = new HashMap<>();
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, count);

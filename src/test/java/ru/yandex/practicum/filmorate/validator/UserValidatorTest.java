@@ -21,6 +21,7 @@ class UserValidatorTest {
 
         Assertions.assertTrue(dtoHasErrorMessage(user, "invalid email address"));
     }
+
     @Test
     public void user_errorMessage_failLogin() {
         User user = User.builder()
@@ -32,6 +33,7 @@ class UserValidatorTest {
 
         Assertions.assertTrue(dtoHasErrorMessage(user, "login should be not empty or contain whitespaces"));
     }
+
     @Test
     public void user_errorMessage_failBirthday() {
         User user = User.builder()

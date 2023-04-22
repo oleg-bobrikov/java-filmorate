@@ -12,7 +12,7 @@ import java.util.List;
 
 @Component
 @Primary
-public class FilmDbStorage implements FilmStorage{
+public class FilmDbStorage implements FilmStorage {
     @Autowired
     @Qualifier("filmDaoImplH2")
     private FilmDao filmDao;
@@ -34,7 +34,7 @@ public class FilmDbStorage implements FilmStorage{
 
     @Override
     public List<Film> getFilms() {
-       return filmDao.getFilms();
+        return filmDao.getFilms();
     }
 
 

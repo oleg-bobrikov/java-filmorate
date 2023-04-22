@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.dao.MpaDao;
 import ru.yandex.practicum.filmorate.dto.Mpa;
 
 import java.util.List;
+
 @Component
 public class MpaDbStorage implements MpaStorage {
     @Autowired
