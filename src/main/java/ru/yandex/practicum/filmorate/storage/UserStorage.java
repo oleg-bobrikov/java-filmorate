@@ -8,10 +8,10 @@ import java.util.Optional;
 public interface UserStorage {
     User add(User user);
     User update(User user);
-    void delete(int id);
+    void deleteUserById(int id);
     Optional<User> findUserById(int id);
     void addFriend(User user, User friend);
-    List<User>getUserFriends(int id);
+    List<User> getUserFriendsById(int id);
 
     List<User> getUsers();
 

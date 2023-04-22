@@ -56,7 +56,7 @@ public class UserService {
     }
 
     public List<User> getUserFriends(Integer id) {
-        return userStorage.getUserFriends(id);
+        return userStorage.getUserFriendsById(id);
     }
 
     public void removeFriend(Integer id, Integer friendId) {

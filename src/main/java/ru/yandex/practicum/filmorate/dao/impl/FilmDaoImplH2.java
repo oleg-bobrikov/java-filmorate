@@ -61,6 +61,7 @@ public class FilmDaoImplH2 implements FilmDao {
 
         film.setId(id);
         Set<Genre> newGenres = new TreeSet<>(Comparator.comparing(Genre::getId));
+
         for (Genre genre : film.getGenres()) {
             Integer genreId = genre.getId();
             newGenres.add(genreStorage.getGenreById(genreId));

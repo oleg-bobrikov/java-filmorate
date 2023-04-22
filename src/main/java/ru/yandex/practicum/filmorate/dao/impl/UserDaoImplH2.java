@@ -183,4 +183,16 @@ public class UserDaoImplH2 implements UserDao {
         namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
         log.info("Для пользователя с идентификатором {} удален друг с идентификатором {}", user.getId(), friend.getId());
     }
+
+    @Override
+    public void deleteUserById(int id) {
+        String sql = "delete from users " +
+                "where id = :id;";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", id);
+
+        namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
+        log.info("Пользователь с идентификатором {} удален.", id);
+    }
 }

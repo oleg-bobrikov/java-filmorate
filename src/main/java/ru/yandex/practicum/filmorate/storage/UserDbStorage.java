@@ -29,8 +29,8 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void delete(int id) {
-
+    public void deleteUserById(int id) {
+        userDao.deleteUserById(id);
     }
 
     @Override
@@ -49,7 +49,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getUserFriends(int id) {
+    public List<User> getUserFriendsById(int id) {
         return userDao.getUserFriends(id);
     }
 

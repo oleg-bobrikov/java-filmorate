@@ -24,7 +24,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void delete(int id) {
+    public void deleteUserById(int id) {
         users.remove(id);
     }
 
@@ -39,7 +39,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getUserFriends(int id) {
+    public List<User> getUserFriendsById(int id) {
         return users.get(id).getFriends().stream()
                 .map(users::get)
                 .collect(Collectors.toList());
