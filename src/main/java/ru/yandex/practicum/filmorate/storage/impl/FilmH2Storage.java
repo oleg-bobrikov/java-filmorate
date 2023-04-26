@@ -1,40 +1,42 @@
-package ru.yandex.practicum.filmorate.dao.impl;
+package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.Genre;
 import ru.yandex.practicum.filmorate.dto.Mpa;
 import ru.yandex.practicum.filmorate.dto.User;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import javax.sql.DataSource;
 import java.util.*;
 
-
-@Component("filmDaoImplH2")
+@Component
+@Primary
 @Slf4j
-public class FilmDaoImplH2 implements FilmDao {
-    @Autowired
+public class FilmH2Storage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-    @Autowired
-    private GenreStorage genreStorage;
-    @Autowired
-    MpaStorage mpaStorage;
+
+    private final GenreStorage genreStorage;
+
+    private final MpaStorage mpaStorage;
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
 
-    public FilmDaoImplH2(JdbcTemplate jdbcTemplate) {
+    public FilmH2Storage(JdbcTemplate jdbcTemplate, GenreStorage genreStorage, MpaStorage mpaStorage) {
         this.jdbcTemplate = jdbcTemplate;
+        this.genreStorage = genreStorage;
+        this.mpaStorage = mpaStorage;
         DataSource dataSource = jdbcTemplate.getDataSource();
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));
         generatedKeyHolder = new GeneratedKeyHolder();
@@ -42,6 +44,12 @@ public class FilmDaoImplH2 implements FilmDao {
 
     @Override
     public Film add(Film film) {
+        // update mpa
+        Mpa mpa = film.getMpa();
+        if (mpa != null) {
+            film.setMpa(mpaStorage.getMpaById(mpa.getId()));
+        }
+
         String sql = "insert into films (\"name\", description, release_date, duration, mpa_film_rating_id) " +
                 "VALUES(:name, :description, :release_date, :duration, :mpa_film_rating_id);";
 
@@ -50,7 +58,6 @@ public class FilmDaoImplH2 implements FilmDao {
         params.put("description", film.getDescription());
         params.put("release_date", film.getReleaseDate());
         params.put("duration", film.getDuration());
-        Mpa mpa = film.getMpa();
         params.put("mpa_film_rating_id", mpa == null ? null : mpa.getId());
 
         int rowsAffected = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
@@ -60,6 +67,8 @@ public class FilmDaoImplH2 implements FilmDao {
         log.info("rowsAffected = {}, id={}", rowsAffected, id);
 
         film.setId(id);
+
+        // update genres
         Set<Genre> newGenres = new TreeSet<>(Comparator.comparing(Genre::getId));
 
         for (Genre genre : film.getGenres()) {
@@ -68,18 +77,90 @@ public class FilmDaoImplH2 implements FilmDao {
         }
         genreStorage.updateFilmGenres(film, newGenres);
         film.setGenres(newGenres);
+
         return film;
     }
 
     @Override
+    public Film update(Film film) {
+        // update mpa
+        Mpa mpa = film.getMpa();
+        if (mpa != null) {
+            film.setMpa(mpaStorage.getMpaById(mpa.getId()));
+        }
+
+        String sql =
+                "update films set " +
+                        " \"name\" = :name, " +
+                        " description = :description, " +
+                        " release_date = :release_date, " +
+                        " duration = :duration, " +
+                        " mpa_film_rating_id = :mpa_film_rating_id " +
+                        "where id = :id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("name", film.getName());
+        params.put("description", film.getDescription());
+        params.put("release_date", film.getReleaseDate());
+        params.put("duration", film.getDuration());
+        params.put("id", film.getId());
+        params.put("mpa_film_rating_id", mpa == null ? null : mpa.getId());
+        namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
+        log.info("Фильм с идентификатором {} изменен.", film.getId());
+
+        int rowsAffected = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
+        Integer id = Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
+        log.info("rowsAffected = {}, id={}", rowsAffected, id);
+
+        // update genres
+        Set<Genre> newGenres = new TreeSet<>(Comparator.comparing(Genre::getId));
+        for (Genre genre : film.getGenres()) {
+            newGenres.add(genreStorage.getGenreById(genre.getId()));
+        }
+        genreStorage.updateFilmGenres(film, newGenres);
+        film.setGenres(newGenres);
+
+        return film;
+    }
+
+    @Override
+    public void deleteFilmById(int id) {
+        String sql = "delete from film_genres where film_id = :film_id; " +
+                "delete from film_likes where film_id = :film_id; " +
+                "delete from films where id = :film_id; ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("film_id", id);
+
+        int rowsAffected = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
+        if (rowsAffected > 0) {
+            log.info("Фильм с идентификатором {} удален", id);
+        } else {
+            log.info("Фильм с идентификатором {} не найден", id);
+        }
+
+    }
+
+    @Override
     public List<Film> getFilms() {
-        String sql = "select * from get_films";
+        String sql = "SELECT " +
+                " FILMS.ID AS ID, " +
+                " FILMS.\"name\" AS \"name\", " +
+                " FILMS.DESCRIPTION AS DESCRIPTION, " +
+                " FILMS.RELEASE_DATE AS RELEASE_DATE, " +
+                " FILMS.DURATION AS DURATION, " +
+                " IFNULL (FILMS.MPA_FILM_RATING_ID, 0) AS MPA_FILM_RATING_ID, " +
+                " MFR.\"NAME\" AS MPA_FILM_RATING_NAME " +
+                "FROM" +
+                " FILMS AS FILMS " +
+                "LEFT JOIN MPA_FILM_RATINGS AS MFR ON MFR.ID = FILMS.MPA_FILM_RATING_ID;";
 
         HashMap<Integer, Film> results = new HashMap<>();
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
         while (rs.next()) {
-            Mpa mpa = Mpa.builder()
-                    .id(rs.getInt("MPA_FILM_RATING_ID"))
+            int mpaId = rs.getInt("MPA_FILM_RATING_ID");
+            Mpa mpa = mpaId == 0 ? null : Mpa.builder()
+                    .id(mpaId)
                     .name(rs.getString("MPA_FILM_RATING_NAME"))
                     .build();
             Film film = Film.builder()
@@ -100,7 +181,15 @@ public class FilmDaoImplH2 implements FilmDao {
                     .getLikes()
                     .add(rs.getInt("user_id"));
         }
-        sql = "select distinct * from get_film_genres";
+        sql = "SELECT " +
+                " film_genres.film_id AS film_id, " +
+                " film_genres.genre_id AS genre_id, " +
+                " genres.\"name\" AS \"name\" " +
+                "FROM " +
+                " film_genres AS film_genres " +
+                "INNER JOIN " +
+                " genres AS genres " +
+                "ON film_genres.GENRE_ID = genres.id";
         rs = jdbcTemplate.queryForRowSet(sql);
         while (rs.next()) {
             int filmId = rs.getInt("FILM_ID");
@@ -114,7 +203,7 @@ public class FilmDaoImplH2 implements FilmDao {
     }
 
     @Override
-    public Film getFilmById(int id) {
+    public Optional<Film> getFilmById(int id) {
         String sql = "select * from films where id = ?";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, id);
         if (rs.next()) {
@@ -130,47 +219,26 @@ public class FilmDaoImplH2 implements FilmDao {
                     .build();
 
             log.info("Найден фильм c иднетификатором: {}", id);
+
+            // get genres
             sql = "select GENRE_ID from film_genres where FILM_ID = ?";
             rs = jdbcTemplate.queryForRowSet(sql, id);
             while (rs.next()) {
                 film.getGenres().add(genreStorage.getGenreById(rs.getInt("GENRE_ID")));
             }
-            return film;
+
+            // get likes
+            sql = "select USER_ID from FILM_LIKES where FILM_ID = ?";
+            rs = jdbcTemplate.queryForRowSet(sql, id);
+            while (rs.next()) {
+                film.getLikes().add(rs.getInt("USER_ID"));
+            }
+
+            return Optional.of(film);
         } else {
             log.info("Фильм с идентификатором {} не найден.", id);
-            return null;
+            return Optional.empty();
         }
-    }
-
-    @Override
-    public Film update(Film film) {
-        String sql = "update films set \"name\" = :name, description = :description, release_date = :release_date," +
-                "duration = :duration, mpa_film_rating_id = :mpa_film_rating_id where id = :id";
-
-        Mpa mpa = film.getMpa();
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("name", film.getName());
-        params.put("description", film.getDescription());
-        params.put("release_date", film.getReleaseDate());
-        params.put("duration", film.getDuration());
-        params.put("id", film.getId());
-        params.put("mpa_film_rating_id", mpa == null ? null : mpa.getId());
-        namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
-        log.info("Фильм с идентификатором {} изменен.", film.getId());
-
-        int rowsAffected = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
-        Integer id = Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
-        log.info("rowsAffected = {}, id={}", rowsAffected, id);
-
-        Set<Genre> newGenres = new TreeSet<>(Comparator.comparing(Genre::getId));
-        for (Genre genre : film.getGenres()) {
-            newGenres.add(genreStorage.getGenreById(genre.getId()));
-        }
-        genreStorage.updateFilmGenres(film, newGenres);
-        film.setGenres(newGenres);
-
-        return film;
     }
 
     @Override
@@ -204,32 +272,35 @@ public class FilmDaoImplH2 implements FilmDao {
     @Override
     public List<Film> getPopular(int count) {
 
-        String sql =
-                "SELECT FILMS.ID, " +
-                        "   FILMS.\"name\", " +
-                        "   FILMS.DESCRIPTION, " +
-                        "   FILMS.RELEASE_DATE, " +
-                        "   FILMS.DURATION, " +
-                        "   FILMS.MPA_FILM_RATING_ID, " +
-                        "   MFR.\"NAME\" AS MPA_FILM_RATING_NAME " +
-                        "FROM FILMS AS FILMS " +
-                        "LEFT JOIN " +
-                        "  (SELECT FILM_ID, " +
-                        "          COUNT(USER_ID) AS TOTAL " +
-                        "   FROM FILM_LIKES " +
-                        "   GROUP BY FILM_ID " +
-                        "   ORDER BY COUNT(USER_ID)) AS LIKES ON FILMS.ID = LIKES.FILM_ID " +
-                        "INNER JOIN MPA_FILM_RATINGS AS MFR ON MFR.ID = FILMS.MPA_FILM_RATING_ID " +
-                        "ORDER BY IFNULL (LIKES.TOTAL, 0) DESC " +
-                        "FETCH FIRST ? ROWS ONLY;";
+        String sql = "SELECT " +
+                " FILMS.ID, " +
+                " FILMS.\"name\", " +
+                " FILMS.DESCRIPTION, " +
+                " FILMS.RELEASE_DATE, " +
+                " FILMS.DURATION, " +
+                " IFNULL(MFR.ID, 0) AS MPA_FILM_RATING_ID, " +
+                " MFR.\"NAME\" AS MPA_FILM_RATING_NAME " +
+                "FROM FILMS AS FILMS " +
+                "LEFT JOIN " +
+                "  (SELECT FILM_ID, " +
+                "          COUNT(USER_ID) AS TOTAL " +
+                "   FROM FILM_LIKES " +
+                "   GROUP BY FILM_ID " +
+                "   ORDER BY COUNT(USER_ID)) AS LIKES ON FILMS.ID = LIKES.FILM_ID " +
+                "LEFT JOIN MPA_FILM_RATINGS AS MFR ON MFR.ID = FILMS.MPA_FILM_RATING_ID " +
+                "ORDER BY IFNULL(LIKES.TOTAL, 0) DESC " +
+                "FETCH FIRST ? ROWS ONLY;";
 
         HashMap<Integer, Film> results = new HashMap<>();
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, count);
         while (rs.next()) {
-            Mpa mpa = Mpa.builder()
-                    .id(rs.getInt("MPA_FILM_RATING_ID"))
+            //get mpa
+            int mpa_id = rs.getInt("MPA_FILM_RATING_ID");
+            Mpa mpa = mpa_id == 0 ? null : Mpa.builder()
+                    .id(mpa_id)
                     .name(rs.getString("MPA_FILM_RATING_NAME"))
                     .build();
+
             Film film = Film.builder()
                     .id(rs.getInt("ID"))
                     .name(rs.getString("name"))
@@ -241,34 +312,36 @@ public class FilmDaoImplH2 implements FilmDao {
             results.put(film.getId(), film);
         }
 
-        sql = "select film_id, user_id from film_likes";
+        //get likes
+        SqlParameterSource parameters = new MapSqlParameterSource("user_id", results.keySet());
+
+        sql = "select film_id, user_id from film_likes where user_id in (:user_id)";
+
+       // namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(parameters), generatedKeyHolder);
         rs = jdbcTemplate.queryForRowSet(sql);
         while (rs.next()) {
-            results.get(rs.getInt("film_id"))
-                    .getLikes()
-                    .add(rs.getInt("user_id"));
-        }
-        sql = "select distinct * from get_film_genres";
+           results.get(rs.getInt("film_id"))
+            .getLikes().add(rs.getInt("user_id"));
+            }
+
+        //get genres
+        sql = "SELECT " +
+                " film_genres.film_id AS film_id, " +
+                " film_genres.genre_id AS genre_id, " +
+                " genres.\"name\" AS \"name\" " +
+                "FROM " +
+                " film_genres AS film_genres " +
+                "INNER JOIN " +
+                " genres AS genres " +
+                "ON film_genres.GENRE_ID = genres.id and film_genres.film_id in (:film_id)";
         rs = jdbcTemplate.queryForRowSet(sql);
         while (rs.next()) {
             int filmId = rs.getInt("FILM_ID");
             int genreId = rs.getInt("GENRE_ID");
             Film film = results.get(filmId);
-            Set<Genre> genres = film.getGenres();
-            Genre genre = genreStorage.getGenreById(genreId);
-            genres.add(genre);
+            film.getGenres().add(genreStorage.getGenreById(genreId));
         }
         return new ArrayList<>(results.values());
     }
 
-    public Set<Genre> getFilmGenresById(int filmId) {
-        String sql = "select genre_id from film_genres where film_id = ?";
-
-        Set<Genre> genres = new HashSet<>();
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, filmId);
-        while (rs.next()) {
-            genres.add(genreStorage.getGenreById(rs.getInt("GENRE_ID")));
-        }
-        return genres;
-    }
 }

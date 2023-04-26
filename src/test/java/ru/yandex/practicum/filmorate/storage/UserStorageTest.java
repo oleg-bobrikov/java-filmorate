@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.dto.User;
-import ru.yandex.practicum.filmorate.storage.UserDbStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,8 +16,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class FilmoRateApplicationTests {
-    private final UserDbStorage userStorage;
+class UserStorageTest {
+    private final UserStorage userStorage;
 
     @Test
     public void findUserById_returnUser_userExists() {
@@ -213,6 +212,4 @@ class FilmoRateApplicationTests {
                 .asList()
                 .isEmpty();
     }
-
-
 }

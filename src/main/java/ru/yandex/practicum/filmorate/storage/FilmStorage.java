@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FilmStorage {
 
@@ -11,11 +12,11 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    void delete(int id);
+    void deleteFilmById(int id);
 
     List<Film> getFilms();
 
-    Film getFilmById(int id);
+    Optional<Film> getFilmById(int id);
 
     void addLike(Film film, User user);
 

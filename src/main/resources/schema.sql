@@ -49,26 +49,3 @@ CREATE TABLE IF NOT EXISTS film_genres (
     genre_id int4 NOT NULL references genres(id),
     primary key (film_id, genre_id)
 );
-
-CREATE VIEW IF NOT EXISTS GET_FILMS AS
-SELECT
-    "FILMS"."ID",
-    "FILMS"."name",
-    "FILMS"."DESCRIPTION",
-    "FILMS"."RELEASE_DATE",
-    "FILMS"."DURATION",
-    "FILMS"."MPA_FILM_RATING_ID",
-    "MFR"."NAME" AS "MPA_FILM_RATING_NAME"
-FROM
-    "FILMS" AS "FILMS"
-    INNER JOIN "MPA_FILM_RATINGS" "MFR" ON "MFR"."ID" = "FILMS"."MPA_FILM_RATING_ID";
-
-CREATE VIEW IF NOT EXISTS GET_FILM_GENRES AS SELECT
-    film_genres.film_id AS film_id,
-    film_genres.genre_id AS genre_id,
-    genres."name" AS "name"
-FROM
-    film_genres AS film_genres
-INNER JOIN
-    genres AS genres
-        ON  film_genres.GENRE_ID = genres.id

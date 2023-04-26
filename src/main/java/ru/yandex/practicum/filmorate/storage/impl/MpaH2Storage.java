@@ -1,24 +1,22 @@
-package ru.yandex.practicum.filmorate.dao.impl;
+package ru.yandex.practicum.filmorate.storage.impl;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dao.MpaDao;
 import ru.yandex.practicum.filmorate.dto.Mpa;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-@Component("mpaDaoImplH2")
+@Component
+@AllArgsConstructor
 @Slf4j
-public class MpaDaoImplH2 implements MpaDao {
-    @Autowired
+public class MpaH2Storage implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    public MpaDaoImplH2(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public List<Mpa> getAll() {
@@ -34,6 +32,7 @@ public class MpaDaoImplH2 implements MpaDao {
         }
         return new ArrayList<>(results.values());
     }
+
 
     @Override
     public Mpa getMpaById(Integer id) {

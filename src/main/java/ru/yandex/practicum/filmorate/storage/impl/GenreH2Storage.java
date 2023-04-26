@@ -1,36 +1,34 @@
-package ru.yandex.practicum.filmorate.dao.impl;
+package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dao.GenreDao;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.Genre;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import javax.sql.DataSource;
 import java.util.*;
 
-@Component("genreDaoImplH2")
+@Component
 @Slf4j
-public class GenreDaoImplH2 implements GenreDao {
-    @Autowired
+public class GenreH2Storage implements GenreStorage {
+
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
 
-    public GenreDaoImplH2(JdbcTemplate jdbcTemplate) {
+    public GenreH2Storage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
         DataSource dataSource = jdbcTemplate.getDataSource();
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));
         generatedKeyHolder = new GeneratedKeyHolder();
     }
 
-    @Override
     public List<Genre> getAll() {
         String sql = "select * from genres";
         HashMap<Integer, Genre> results = new HashMap<>();

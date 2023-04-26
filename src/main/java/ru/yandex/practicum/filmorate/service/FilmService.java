@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -28,11 +29,11 @@ public class FilmService {
     }
 
     public Film getFilmById(Integer id) {
-        Film film = filmStorage.getFilmById(id);
-        if (film == null) {
+        Optional<Film> filmOptional = filmStorage.getFilmById(id);
+        if (filmOptional.isEmpty()) {
             throw new NotFoundException("Фильм с идентификатором " + id + " не найден.");
         }
-        return film;
+        return filmOptional.get();
     }
 
     public void like(Integer id, Integer userId) {
@@ -43,12 +44,12 @@ public class FilmService {
 
     public Film update(Film film) {
         final Integer filmId = film.getId();
-        Film foundFilm = filmStorage.getFilmById(filmId);
-        if (foundFilm == null) {
+        Optional<Film> filmOptional = filmStorage.getFilmById(filmId);
+        if (filmOptional.isEmpty()) {
             throw new NotFoundException("Фильм с идентификатором " + filmId + " не найден.");
         }
 
-        return filmStorage.update(film);
+        return filmStorage.update(filmOptional.get());
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
