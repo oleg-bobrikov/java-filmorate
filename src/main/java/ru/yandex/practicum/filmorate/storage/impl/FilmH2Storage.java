@@ -251,6 +251,8 @@ public class FilmH2Storage implements FilmStorage {
         int updatedRows = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
         log.info("Updated rows: {}", updatedRows);
         log.info("Фильм с идентификатором {} получил лайк от пользователя с идентификатором {}", film.getId(), user.getId());
+        Optional<Film> filmOptional =  getFilmById(film.getId());
+        filmOptional.ifPresent(value -> film.setLikes(value.getLikes()));
 
     }
 
@@ -266,6 +268,8 @@ public class FilmH2Storage implements FilmStorage {
 
         log.info("Updated rows: {}", updatedRows);
         log.info("Фильм с идентификатором {} получил лайк от пользователя с идентификатором {}", film.getId(), user.getId());
+        Optional<Film> filmOptional = getFilmById(film.getId());
+        filmOptional.ifPresent(value -> film.setLikes(value.getLikes()));
     }
 
     @Override

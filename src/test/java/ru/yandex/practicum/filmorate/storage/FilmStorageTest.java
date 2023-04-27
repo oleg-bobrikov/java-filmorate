@@ -206,7 +206,7 @@ class FilmStorageTest {
     }
 
     @Test
-    void getPopular() {
+    void getPopular_return2PopularFilms() {
         //arrange
         Mpa mpa1 = Mpa.builder().id(1).build();
         Genre thriller = Genre.builder().id(4).build();
