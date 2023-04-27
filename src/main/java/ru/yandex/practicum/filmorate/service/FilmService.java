@@ -49,7 +49,7 @@ public class FilmService {
             throw new NotFoundException("Фильм с идентификатором " + filmId + " не найден.");
         }
 
-        return filmStorage.update(filmOptional.get());
+        return filmStorage.update(film);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
