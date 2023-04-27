@@ -26,7 +26,7 @@ public class MpaH2Storage implements MpaStorage {
         while (rs.next()) {
             Mpa mpa = Mpa.builder()
                     .id(rs.getInt("id"))
-                    .name(rs.getString("name"))
+                    .name(rs.getString("MPA_FILM_RATING_name"))
                     .build();
             results.put(mpa.getId(), mpa);
         }
@@ -41,7 +41,7 @@ public class MpaH2Storage implements MpaStorage {
         if (rs.next()) {
             Mpa mpa = Mpa.builder()
                     .id(id)
-                    .name(rs.getString("name"))
+                    .name(rs.getString("MPA_FILM_RATING_name"))
                     .build();
 
             log.info("Найден рейтинг фильма c идентификатором: {}", id);

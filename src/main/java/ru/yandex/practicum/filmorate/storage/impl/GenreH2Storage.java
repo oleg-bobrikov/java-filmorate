@@ -36,7 +36,7 @@ public class GenreH2Storage implements GenreStorage {
         while (rs.next()) {
             Genre genre = Genre.builder()
                     .id(rs.getInt("id"))
-                    .name(rs.getString("name"))
+                    .name(rs.getString("genre_name"))
                     .build();
             results.put(genre.getId(), genre);
         }
@@ -50,7 +50,7 @@ public class GenreH2Storage implements GenreStorage {
         if (rs.next()) {
             Genre genre = Genre.builder()
                     .id(id)
-                    .name(rs.getString("name"))
+                    .name(rs.getString("genre_name"))
                     .build();
 
             log.info("Найден жанр фильма c идентификатором: {}", id);

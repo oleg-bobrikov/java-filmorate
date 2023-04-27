@@ -33,12 +33,12 @@ public class UserH2Storage implements UserStorage {
     @Override
     public User add(User user) {
 
-        String sql = "insert into users (email, login, \"name\", birthday) VALUES(:email, :login, :name, :birthday);";
+        String sql = "insert into users (email, login, user_name, birthday) VALUES(:email, :login, :user_name, :birthday);";
 
         Map<String, Object> params = new HashMap<>();
         params.put("email", user.getEmail());
         params.put("login", user.getLogin());
-        params.put("name", user.getName());
+        params.put("user_name", user.getName());
         params.put("birthday", user.getBirthday());
 
         int rowsAffected = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
@@ -54,13 +54,13 @@ public class UserH2Storage implements UserStorage {
 
     @Override
     public User update(User user) {
-        String sql = "update users  set email = :email, login = :login, \"name\" = :name, birthday = :birthday where id = :id";
+        String sql = "update users  set email = :email, login = :login, user_name = :user_name, birthday = :birthday where id = :id";
 
         Map<String, Object> params = new HashMap<>();
         params.put("id", user.getId());
         params.put("login", user.getLogin());
         params.put("email", user.getEmail());
-        params.put("name", user.getName());
+        params.put("user_name", user.getName());
         params.put("birthday", user.getBirthday());
 
         namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
@@ -98,7 +98,7 @@ public class UserH2Storage implements UserStorage {
                     .id(id)
                     .email(userRows.getString("email"))
                     .login(userRows.getString("login"))
-                    .name(userRows.getString("name"))
+                    .name(userRows.getString("user_name"))
                     .birthday(Objects.requireNonNull(userRows.getDate("birthday")).toLocalDate())
                     .build();
 
@@ -143,7 +143,7 @@ public class UserH2Storage implements UserStorage {
                     .id(rs.getInt("id"))
                     .email(rs.getString("email"))
                     .login(rs.getString("login"))
-                    .name(rs.getString("name"))
+                    .name(rs.getString("user_name"))
                     .birthday(Objects.requireNonNull(rs.getDate("birthday")).toLocalDate())
                     .build();
             friends.put(user.getId(), user);
@@ -176,7 +176,7 @@ public class UserH2Storage implements UserStorage {
                     .id(rs.getInt("id"))
                     .email(rs.getString("email"))
                     .login(rs.getString("login"))
-                    .name(rs.getString("name"))
+                    .name(rs.getString("user_name"))
                     .birthday(Objects.requireNonNull(rs.getDate("birthday")).toLocalDate())
                     .build();
             results.put(user.getId(), user);
