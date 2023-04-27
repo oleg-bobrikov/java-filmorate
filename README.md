@@ -11,12 +11,12 @@ FROM films
 ```
 SELECT *
 FROM films
-WHERE id = &id
+WHERE id = :id
 ```
 ### 3. Add film
 ```
-INSERT INTO films (name, description, release_date, duration, mpa_rating_id)
-VALUES (&name, &description, &release_date, &duration, &mpa_rating_id)
+INSERT INTO films (film_name, description, release_date, duration, mpa_film_rating_id)
+VALUES (:film_name, :description, :release_date, :duration, :mpa_film_rating_id)
 ```
 ### 4. Get users
 ```
@@ -31,12 +31,12 @@ WHERE id = &id
 ```
 ### 6. Add user
 ```
-INSERT INTO users (email, login, name, birthday)
-VALUES (&email, &login, &name, &birthday)
+INSERT INTO users (email, login, user_name, birthday)
+VALUES (:email, :login, :user_name, :birthday)
 ```
 ### 7. Get user friends
 ```
 SELECT friend_id
 FROM user_friends
-WHERE user_id = &user_id
+WHERE user_id = :user_id
 ```
