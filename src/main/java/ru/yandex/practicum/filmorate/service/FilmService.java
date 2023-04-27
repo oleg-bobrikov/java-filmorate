@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -19,9 +18,9 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor()
 public class FilmService {
-    @Autowired
+
     private FilmStorage filmStorage;
-    @Autowired
+
     private UserService userService;
 
     public List<Film> getPopular(int count) {

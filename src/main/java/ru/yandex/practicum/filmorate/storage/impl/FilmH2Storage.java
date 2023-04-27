@@ -325,9 +325,9 @@ public class FilmH2Storage implements FilmStorage {
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
         while (rs.next()) {
             //get mpa
-            int mpa_id = rs.getInt("MPA_FILM_RATING_ID");
-            Mpa mpa = mpa_id == 0 ? null : Mpa.builder()
-                    .id(mpa_id)
+            int mpaId = rs.getInt("MPA_FILM_RATING_ID");
+            Mpa mpa = mpaId == 0 ? null : Mpa.builder()
+                    .id(mpaId)
                     .name(rs.getString("MPA_FILM_RATING_NAME"))
                     .build();
 
