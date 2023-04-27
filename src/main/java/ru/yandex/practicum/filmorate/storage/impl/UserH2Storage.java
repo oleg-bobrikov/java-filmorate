@@ -18,7 +18,6 @@ import java.util.*;
 @Primary
 @Slf4j
 public class UserH2Storage implements UserStorage {
-
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
