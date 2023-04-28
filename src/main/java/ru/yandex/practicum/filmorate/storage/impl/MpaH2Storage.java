@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class MpaH2Storage implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;

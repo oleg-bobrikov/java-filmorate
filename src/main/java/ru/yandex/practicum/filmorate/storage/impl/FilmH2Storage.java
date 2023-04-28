@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -12,6 +11,7 @@ import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.Genre;
 import ru.yandex.practicum.filmorate.dto.Mpa;
 import ru.yandex.practicum.filmorate.dto.User;
+import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
@@ -20,7 +20,6 @@ import javax.sql.DataSource;
 import java.util.*;
 
 @Component
-@Primary
 @Slf4j
 public class FilmH2Storage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
@@ -28,14 +27,16 @@ public class FilmH2Storage implements FilmStorage {
     private final GenreStorage genreStorage;
 
     private final MpaStorage mpaStorage;
+    private final FilmRowMapper filmRowMapper;
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
 
-    public FilmH2Storage(JdbcTemplate jdbcTemplate, GenreStorage genreStorage, MpaStorage mpaStorage) {
+    public FilmH2Storage(JdbcTemplate jdbcTemplate, GenreStorage genreStorage, MpaStorage mpaStorage, FilmRowMapper filmRowMapper) {
         this.jdbcTemplate = jdbcTemplate;
         this.genreStorage = genreStorage;
         this.mpaStorage = mpaStorage;
+        this.filmRowMapper = filmRowMapper;
         DataSource dataSource = jdbcTemplate.getDataSource();
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));
         generatedKeyHolder = new GeneratedKeyHolder();
@@ -149,37 +150,24 @@ public class FilmH2Storage implements FilmStorage {
                 " FILMS.RELEASE_DATE AS RELEASE_DATE, " +
                 " FILMS.DURATION AS DURATION, " +
                 " IFNULL (FILMS.MPA_FILM_RATING_ID, 0) AS MPA_FILM_RATING_ID, " +
-                " MFR.mpa_film_rating_name AS MPA_FILM_RATING_NAME " +
-                "FROM" +
+                " MFR.mpa_film_rating_name AS MPA_FILM_RATING_NAME" +
+                " FROM" +
                 " FILMS AS FILMS " +
-                "LEFT JOIN MPA_FILM_RATINGS AS MFR ON MFR.ID = FILMS.MPA_FILM_RATING_ID;";
+                " LEFT JOIN MPA_FILM_RATINGS AS MFR ON MFR.ID = FILMS.MPA_FILM_RATING_ID;";
 
         HashMap<Integer, Film> results = new HashMap<>();
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
-        while (rs.next()) {
-            int mpaId = rs.getInt("MPA_FILM_RATING_ID");
-            Mpa mpa = mpaId == 0 ? null : Mpa.builder()
-                    .id(mpaId)
-                    .name(rs.getString("MPA_FILM_RATING_NAME"))
-                    .build();
-            Film film = Film.builder()
-                    .id(rs.getInt("ID"))
-                    .name(rs.getString("film_name"))
-                    .description(rs.getString("DESCRIPTION"))
-                    .releaseDate(Objects.requireNonNull(rs.getDate("RELEASE_DATE")).toLocalDate())
-                    .duration(rs.getInt("DURATION"))
-                    .mpa(mpa)
-                    .build();
-            results.put(film.getId(), film);
-        }
+        jdbcTemplate.query(sql, filmRowMapper).forEach(film -> results.put(film.getId(), film));
 
+        //likes
         sql = "select film_id, user_id from film_likes";
-        rs = jdbcTemplate.queryForRowSet(sql);
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
         while (rs.next()) {
             results.get(rs.getInt("film_id"))
                     .getLikes()
                     .add(rs.getInt("user_id"));
         }
+
+        //genres
         sql = "SELECT " +
                 " film_genres.film_id AS film_id, " +
                 " film_genres.genre_id AS genre_id, " +
@@ -204,39 +192,26 @@ public class FilmH2Storage implements FilmStorage {
     @Override
     public Optional<Film> getFilmById(int id) {
         String sql = "select * from films where id = ?";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, id);
-        if (rs.next()) {
-            Mpa mpa = mpaStorage.getMpaById(rs.getInt("MPA_FILM_RATING_ID"));
-
-            Film film = Film.builder()
-                    .id(rs.getInt("ID"))
-                    .name(rs.getString("FILM_NAME"))
-                    .description(rs.getString("DESCRIPTION"))
-                    .releaseDate(Objects.requireNonNull(rs.getDate("RELEASE_DATE")).toLocalDate())
-                    .duration(rs.getInt("DURATION"))
-                    .mpa(mpa)
-                    .build();
-
-            log.info("Найден фильм c иднетификатором: {}", id);
-
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, id);
+        if (films.isEmpty()) {
+            log.info("Фильм с идентификатором {} не найден.", id);
+            return Optional.empty();
+        } else {
+            Film film = films.get(0);
             // get genres
             sql = "select GENRE_ID from film_genres where FILM_ID = ?";
-            rs = jdbcTemplate.queryForRowSet(sql, id);
-            while (rs.next()) {
-                film.getGenres().add(genreStorage.getGenreById(rs.getInt("GENRE_ID")));
+            SqlRowSet genresRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
+            while (genresRowSet.next()) {
+                film.getGenres().add(genreStorage.getGenreById(genresRowSet.getInt("GENRE_ID")));
             }
 
             // get likes
             sql = "select USER_ID from FILM_LIKES where FILM_ID = ?";
-            rs = jdbcTemplate.queryForRowSet(sql, id);
-            while (rs.next()) {
-                film.getLikes().add(rs.getInt("USER_ID"));
+            SqlRowSet likesRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
+            while (likesRowSet.next()) {
+                film.getLikes().add(likesRowSet.getInt("USER_ID"));
             }
-
-            return Optional.of(film);
-        } else {
-            log.info("Фильм с идентификатором {} не найден.", id);
-            return Optional.empty();
+            return Optional.of(films.get(0));
         }
     }
 
@@ -251,7 +226,7 @@ public class FilmH2Storage implements FilmStorage {
         int updatedRows = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
         log.info("Updated rows: {}", updatedRows);
         log.info("Фильм с идентификатором {} получил лайк от пользователя с идентификатором {}", film.getId(), user.getId());
-        Optional<Film> filmOptional =  getFilmById(film.getId());
+        Optional<Film> filmOptional = getFilmById(film.getId());
         filmOptional.ifPresent(value -> film.setLikes(value.getLikes()));
 
     }
@@ -291,7 +266,7 @@ public class FilmH2Storage implements FilmStorage {
                 "    popular_films_tmp (" +
                 "        SELECT" +
                 "            FILMS.ID," +
-                "            FILMS.FILM_NAME," +
+                "            FILMS.film_name AS film_name," +
                 "            FILMS.DESCRIPTION," +
                 "            FILMS.RELEASE_DATE," +
                 "            FILMS.DURATION," +
@@ -343,18 +318,10 @@ public class FilmH2Storage implements FilmStorage {
         }
 
         //get likes
-        sql = "SELECT" +
-                "    film_id," +
-                "    user_id" +
-                " FROM" +
-                "    film_likes" +
-                " WHERE" +
-                "    film_id IN (" +
-                "        SELECT" +
-                "            id" +
-                "        FROM" +
-                "            popular_films_tmp" +
-                "    )";
+        sql = "SELECT film_id, user_id FROM film_likes " +
+                "WHERE " +
+                "film_id IN " +
+                "(SELECT id FROM popular_films_tmp)";
         rs = jdbcTemplate.queryForRowSet(sql);
         while (rs.next()) {
             results.get(rs.getInt("film_id"))

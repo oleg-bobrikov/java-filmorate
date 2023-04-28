@@ -1,28 +1,28 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.User;
+import ru.yandex.practicum.filmorate.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.sql.DataSource;
 import java.util.*;
 
 @Component
-@Primary
 @Slf4j
 public class UserH2Storage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
 
-    public UserH2Storage(JdbcTemplate jdbcTemplate) {
+    public UserH2Storage(JdbcTemplate jdbcTemplate, UserRowMapper userRowMapper) {
         this.jdbcTemplate = jdbcTemplate;
         DataSource dataSource = jdbcTemplate.getDataSource();
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));
@@ -91,25 +91,17 @@ public class UserH2Storage implements UserStorage {
 
     private User getUserById(int id) {
         String sql = "select * from users where id = ?";
-        SqlRowSet userRows = jdbcTemplate.queryForRowSet(sql, id);
-        if (userRows.next()) {
-            User user = User.builder()
-                    .id(id)
-                    .email(userRows.getString("email"))
-                    .login(userRows.getString("login"))
-                    .name(userRows.getString("user_name"))
-                    .birthday(Objects.requireNonNull(userRows.getDate("birthday")).toLocalDate())
-                    .build();
-
+        List<User> users = jdbcTemplate.query(sql, new UserRowMapper(), id);
+        if (users.isEmpty()) {
+            log.info("Пользователь с идентификатором {} не найден.", id);
+            return null;
+        } else {
             log.info("Найден пользователь c идентификатором : {}", id);
+            User user = users.get(0);
             sql = "select friend_id from user_friends where user_id = ?";
             List<Integer> friends = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("friend_id"), id);
             user.setFriends(new HashSet<>(friends));
-
             return user;
-        } else {
-            log.info("Пользователь с идентификатором {} не найден.", id);
-            return null;
         }
     }
 
@@ -129,33 +121,37 @@ public class UserH2Storage implements UserStorage {
     @Override
     public List<User> getUserFriendsById(int id) {
         String sql = "select * from users where id in " +
-                "(" +
-                "select friend_id from user_friends where user_id = :userId" +
-                ")";
+                "(select friend_id from user_friends where user_id = ?)";
 
-        Map<String, Integer> params = new HashMap<>();
-        params.put("userId", id);
-        SqlRowSet rs = namedParameterJdbcTemplate.queryForRowSet(sql, new MapSqlParameterSource(params));
         HashMap<Integer, User> friends = new HashMap<>();
-        while (rs.next()) {
-            User user = User.builder()
-                    .id(rs.getInt("id"))
-                    .email(rs.getString("email"))
-                    .login(rs.getString("login"))
-                    .name(rs.getString("user_name"))
-                    .birthday(Objects.requireNonNull(rs.getDate("birthday")).toLocalDate())
-                    .build();
-            friends.put(user.getId(), user);
-        }
+        jdbcTemplate.query(sql, new UserRowMapper(), id)
+                .forEach(user -> friends.put(user.getId(), user));
 
-        sql = "select user_id, friend_id from user_friends where user_id in " +
-                "(" +
-                "select id from users where id in " +
-                "(" +
-                "select friend_id from user_friends where user_id = :userId" +
-                ")" +
-                ")";
-        rs = namedParameterJdbcTemplate.queryForRowSet(sql, new MapSqlParameterSource(params));
+        sql = "SELECT" +
+                "    user_id," +
+                "    friend_id" +
+                " FROM" +
+                "    user_friends" +
+                " WHERE" +
+                "    user_id IN (" +
+                "        SELECT" +
+                "            id" +
+                "        FROM" +
+                "            users" +
+                "        WHERE" +
+                "            id IN (" +
+                "                SELECT" +
+                "                    friend_id" +
+                "                FROM" +
+                "                    user_friends" +
+                "                WHERE" +
+                "                    user_id = :userId" +
+                "            )" +
+                "    )";
+
+        SqlParameterSource parameters = new MapSqlParameterSource("userId", id);
+        SqlRowSet rs = namedParameterJdbcTemplate.queryForRowSet(sql, parameters);
+
         while (rs.next()) {
             friends.get(rs.getInt("user_id"))
                     .getFriends()
@@ -169,20 +165,10 @@ public class UserH2Storage implements UserStorage {
     public List<User> getUsers() {
         String sql = "select * from users";
         HashMap<Integer, User> results = new HashMap<>();
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
-        while (rs.next()) {
-            User user = User.builder()
-                    .id(rs.getInt("id"))
-                    .email(rs.getString("email"))
-                    .login(rs.getString("login"))
-                    .name(rs.getString("user_name"))
-                    .birthday(Objects.requireNonNull(rs.getDate("birthday")).toLocalDate())
-                    .build();
-            results.put(user.getId(), user);
-        }
+        jdbcTemplate.query(sql, new UserRowMapper()).forEach(user -> results.put(user.getId(), user));
 
         sql = "select user_id, friend_id from user_friends";
-        rs = jdbcTemplate.queryForRowSet(sql);
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
         while (rs.next()) {
             results.get(rs.getInt("user_id"))
                     .getFriends()
