@@ -295,36 +295,18 @@ public class FilmH2Storage implements FilmStorage {
         params.put("count", count);
         namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
 
-        HashMap<Integer, Film> results = new HashMap<>();
         sql = "SELECT * FROM popular_films_tmp";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
-        while (rs.next()) {
-            //get mpa
-            int mpaId = rs.getInt("MPA_FILM_RATING_ID");
-            Mpa mpa = mpaId == 0 ? null : Mpa.builder()
-                    .id(mpaId)
-                    .name(rs.getString("MPA_FILM_RATING_NAME"))
-                    .build();
-
-            Film film = Film.builder()
-                    .id(rs.getInt("ID"))
-                    .name(rs.getString("FILM_NAME"))
-                    .description(rs.getString("DESCRIPTION"))
-                    .releaseDate(Objects.requireNonNull(rs.getDate("RELEASE_DATE")).toLocalDate())
-                    .duration(rs.getInt("DURATION"))
-                    .mpa(mpa)
-                    .build();
-            results.put(film.getId(), film);
-        }
+        HashMap<Integer, Film> films = new HashMap<>();
+        jdbcTemplate.query(sql, filmRowMapper).forEach(film -> films.put(film.getId(), film));
 
         //get likes
         sql = "SELECT film_id, user_id FROM film_likes " +
                 "WHERE " +
                 "film_id IN " +
                 "(SELECT id FROM popular_films_tmp)";
-        rs = jdbcTemplate.queryForRowSet(sql);
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
         while (rs.next()) {
-            results.get(rs.getInt("film_id"))
+            films.get(rs.getInt("film_id"))
                     .getLikes().add(rs.getInt("user_id"));
         }
 
@@ -345,14 +327,14 @@ public class FilmH2Storage implements FilmStorage {
         while (rs.next()) {
             int filmId = rs.getInt("FILM_ID");
             int genreId = rs.getInt("GENRE_ID");
-            Film film = results.get(filmId);
+            Film film = films.get(filmId);
             film.getGenres().add(genreStorage.getGenreById(genreId));
         }
 
         sql = "DROP TABLE IF EXISTS popular_films_tmp;";
         jdbcTemplate.update(sql);
 
-        return new ArrayList<>(results.values());
+        return new ArrayList<>(films.values());
     }
 
 }
