@@ -26,7 +26,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public User getUserById(@PathVariable @NotBlank Integer id) {
-        return userService.getUserById(id);
+        return userService.findUserById(id);
     }
 
     @GetMapping("/{id}/friends")

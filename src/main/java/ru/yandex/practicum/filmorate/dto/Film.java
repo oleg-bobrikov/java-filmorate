@@ -27,6 +27,17 @@ public class Film {
     private int duration;
     @Getter(AccessLevel.NONE)
     private Set<Integer> likes;
+    @Getter(AccessLevel.NONE)
+    private Set<Genre> genres;
+
+    private Mpa mpa;
+
+    public Set<Genre> getGenres() {
+        if (genres == null) {
+            genres = new HashSet<>();
+        }
+        return genres;
+    }
 
     public Set<Integer> getLikes() {
         if (likes == null) {

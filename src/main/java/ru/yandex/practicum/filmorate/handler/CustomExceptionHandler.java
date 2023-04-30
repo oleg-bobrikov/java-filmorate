@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.handler;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,6 +34,19 @@ public class CustomExceptionHandler {
                 .error("BAD REQUEST")
                 .status(400)
                 .exception("org.springframework.web.bind.MethodArgumentNotValidException")
+                .message(exception.getMessage())
+                .path(getPath(exception))
+                .build();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseError handle(DataAccessException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseError.builder()
+                .error("INTERNAL_SERVER_ERROR")
+                .status(500)
+                .exception("org.springframework.dao.DataAccessException")
                 .message(exception.getMessage())
                 .path(getPath(exception))
                 .build();
