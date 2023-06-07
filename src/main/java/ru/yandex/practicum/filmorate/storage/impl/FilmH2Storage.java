@@ -190,7 +190,7 @@ public class FilmH2Storage implements FilmStorage {
     @Override
     public Optional<Film> getFilmById(int id) {
         String sql = "select * from films where id = ?";
-        List<Film> films = jdbcTemplate.query(sql, new FilmRowMapper(mpaStorage) , id);
+        List<Film> films = jdbcTemplate.query(sql, new FilmRowMapper(mpaStorage), id);
         if (films.isEmpty()) {
             log.info("Фильм с идентификатором {} не найден.", id);
             return Optional.empty();
@@ -244,10 +244,6 @@ public class FilmH2Storage implements FilmStorage {
         List<Film> result = jdbcTemplate.query(sqlRequest, new FilmRowMapper(mpaStorage), userId, friendId);
         return result;
     }
-
-
-
-
 
 
     @Override
