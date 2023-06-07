@@ -1,10 +1,7 @@
 package ru.yandex.practicum.filmorate.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 import ru.yandex.practicum.filmorate.validator.IsAfterOrEqual;
 
 import javax.validation.constraints.*;
@@ -13,7 +10,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class Film {
     private Integer id;
     @NotBlank(message = "Title cannot be empty")
@@ -32,6 +31,10 @@ public class Film {
 
     private Mpa mpa;
 
+    Set<Director> directors;
+
+
+
     public Set<Genre> getGenres() {
         if (genres == null) {
             genres = new HashSet<>();
@@ -46,5 +49,16 @@ public class Film {
         return likes;
     }
 
+    public void addGenre(Genre genre) {
+        genres.add(genre);
+    }
+
+    public void addLike(Integer userId) {
+        likes.add(userId);
+    }
+
+    public void addDirector(Director director) {
+        directors.add(director);
+    }
 
 }

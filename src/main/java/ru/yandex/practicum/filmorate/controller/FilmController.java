@@ -30,6 +30,12 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
+    @GetMapping(value = "/common")
+    public List<Film> findCommonFilms(@RequestParam Integer userId, @RequestParam Integer friendId) {
+        log.info("Получен запрос к эндпоинту: {} /common{}/{}", "GET", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
     @GetMapping("/popular")
     public List<Film> getPopular(@RequestParam(defaultValue = "10", required = false) Integer count) {
         return filmService.getPopular(count);

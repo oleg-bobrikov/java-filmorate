@@ -7,10 +7,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dto.Film;
-import ru.yandex.practicum.filmorate.dto.Genre;
-import ru.yandex.practicum.filmorate.dto.Mpa;
-import ru.yandex.practicum.filmorate.dto.User;
+import ru.yandex.practicum.filmorate.dto.*;
 import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
@@ -18,6 +15,7 @@ import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import javax.sql.DataSource;
 import java.util.*;
+
 
 @Component
 @Slf4j
@@ -156,7 +154,7 @@ public class FilmH2Storage implements FilmStorage {
                 " LEFT JOIN MPA_FILM_RATINGS AS MFR ON MFR.ID = FILMS.MPA_FILM_RATING_ID;";
 
         HashMap<Integer, Film> results = new HashMap<>();
-        jdbcTemplate.query(sql, filmRowMapper).forEach(film -> results.put(film.getId(), film));
+        jdbcTemplate.query(sql, new FilmRowMapper(mpaStorage)).forEach(film -> results.put(film.getId(), film));
 
         //likes
         sql = "select film_id, user_id from film_likes";
@@ -192,7 +190,7 @@ public class FilmH2Storage implements FilmStorage {
     @Override
     public Optional<Film> getFilmById(int id) {
         String sql = "select * from films where id = ?";
-        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, id);
+        List<Film> films = jdbcTemplate.query(sql, new FilmRowMapper(mpaStorage) , id);
         if (films.isEmpty()) {
             log.info("Фильм с идентификатором {} не найден.", id);
             return Optional.empty();
@@ -214,6 +212,43 @@ public class FilmH2Storage implements FilmStorage {
             return Optional.of(films.get(0));
         }
     }
+
+
+    @Override
+    public Optional<Film> findById(Integer filmId) {
+        String sqlRequest = "SELECT f.*, m.name as mpa_name"
+                + " FROM films AS f"
+                + " LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id"
+                + " WHERE film_id = ?";
+        List<Film> result = jdbcTemplate.query(sqlRequest, new FilmRowMapper(mpaStorage), filmId);
+        return result
+                .stream()
+                .findFirst();
+    }
+
+
+    @Override
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        String sqlRequest = "WITH common AS ( SELECT f.film_id,count(l.user_id) " +
+                "FROM films f " +
+                "INNER JOIN film_likes l ON f.film_id = l.film_id " +
+                "WHERE l.user_id = ? AND ? " +
+                "GROUP BY f.film_id)" +
+                "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_film_rating_id, m.mpa_film_rating_name AS mpa_name " +
+                "FROM films AS f " +
+                "LEFT JOIN mpa_film_ratings AS m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN film_likes AS l ON f.film_id = l.film_id " +
+                "JOIN common AS c ON f.film_id = c.FILM_ID " +
+                "GROUP BY f.film_id " +
+                "ORDER BY mpa_name DESC ";
+        List<Film> result = jdbcTemplate.query(sqlRequest, new FilmRowMapper(mpaStorage), userId, friendId);
+        return result;
+    }
+
+
+
+
+
 
     @Override
     public void addLike(Film film, User user) {
@@ -297,7 +332,7 @@ public class FilmH2Storage implements FilmStorage {
 
         sql = "SELECT * FROM popular_films_tmp";
         HashMap<Integer, Film> films = new HashMap<>();
-        jdbcTemplate.query(sql, filmRowMapper).forEach(film -> films.put(film.getId(), film));
+        jdbcTemplate.query(sql, new FilmRowMapper(mpaStorage)).forEach(film -> films.put(film.getId(), film));
 
         //get likes
         sql = "SELECT film_id, user_id FROM film_likes " +

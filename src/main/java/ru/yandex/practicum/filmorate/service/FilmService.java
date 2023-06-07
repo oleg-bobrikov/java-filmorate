@@ -9,8 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +27,8 @@ public class FilmService {
     @Qualifier("filmH2Storage")
     private FilmStorage filmStorage;
 
+    private UserStorage userStorage;
+
     private final UserService userService;
 
     public List<Film> getPopular(int count) {
@@ -36,6 +41,23 @@ public class FilmService {
             throw new NotFoundException("Фильм с идентификатором " + id + " не найден.");
         }
         return filmOptional.get();
+    }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        User user = findUserOrElseThrow(userId);
+        User friend = findUserOrElseThrow(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
+    private Film findFilmOrElseThrow(Integer filmId) {
+        return filmStorage.findById(filmId).orElseThrow(
+                () -> new FilmNotFoundException(filmId)
+        );
+    }
+    private User findUserOrElseThrow(Integer userId) {
+        return userStorage.findUserById(userId).orElseThrow(
+                () -> new UserNotFoundException(userId)
+        );
     }
 
     public void like(Integer id, Integer userId) {
