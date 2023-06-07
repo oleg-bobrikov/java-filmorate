@@ -54,6 +54,7 @@ public class FilmService {
                 () -> new FilmNotFoundException(filmId)
         );
     }
+
     private User findUserOrElseThrow(Integer userId) {
         return userStorage.findUserById(userId).orElseThrow(
                 () -> new UserNotFoundException(userId)
