@@ -30,11 +30,6 @@ public class FilmH2Storage implements FilmStorage {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
 
-    private static final String BASE_FIND_QUERY = "select films.*,mpa_film_ratings.name as mpa_name, group_concat(film_genres.genre_id)as genres_ids,"
-            + "group_concat(genres.name) as genres_names, group_concat(film_likes.user_id) as likes from films "
-            + " left join mpa_film_ratings  on films.mpa_film_rating_id=mpa_film_ratings.mpa_id left join film_genres  on films.id=film_genres.film_id"
-            + " left join genres  on film_genres.genre_id=genres.genre_id left join film_likes  on films.id=film_likes.film_id ";
-
     public FilmH2Storage(JdbcTemplate jdbcTemplate, GenreStorage genreStorage, MpaStorage mpaStorage, FilmRowMapper filmRowMapper) {
         this.jdbcTemplate = jdbcTemplate;
         this.genreStorage = genreStorage;
@@ -222,13 +217,13 @@ public class FilmH2Storage implements FilmStorage {
 
     @Override
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        String query = BASE_FIND_QUERY +
-                " LEFT JOIN film_likes  on films.id = film_likes.film_id" +
-                " WHERE films.id IN (SELECT DISTINCT sf.film_id FROM (SELECT film_likes.film_id FROM film_likes WHERE user_id = ?) AS ff" +
-                " INNER JOIN (SELECT film_likes.film_id FROM film_likes WHERE user_id = ?) AS sf ON ff.film_id = sf.film_id)" +
-                " GROUP BY films.id" +
-                " ORDER BY COUNT(film_likes.film_id) DESC";
-        return jdbcTemplate.query(query, filmRowMapper, userId, friendId);
+        String sqlQuery = "SELECT * FROM films " +
+                "RIGHT JOIN film_likes  ON films.id=film_likes.film_id WHERE user_id=? " +
+                "AND film_likes.film_id IN(" +
+                "SELECT film_id FROM film_likes WHERE user_id=?) " +
+                "GROUP BY films.id " +
+                "ORDER BY COUNT(film_likes.film_id) DESC";
+        return jdbcTemplate.query(sqlQuery, filmRowMapper, userId, friendId);
     }
 
 
