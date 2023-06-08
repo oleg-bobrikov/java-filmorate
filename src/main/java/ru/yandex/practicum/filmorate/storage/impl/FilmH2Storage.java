@@ -224,8 +224,8 @@ public class FilmH2Storage implements FilmStorage {
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
         String query = BASE_FIND_QUERY +
                 " LEFT JOIN film_likes  on films.id = film_likes.film_id" +
-                " WHERE films.id IN (SELECT DISTINCT sf.film_id FROM (SELECT film_likes.film_id FROM film_likes WHERE user_id = ?) AS ff" +
-                " INNER JOIN (SELECT film_likes.film_id FROM film_likes WHERE user_id = ?) AS sf ON ff.film_id = sf.film_id)" +
+                " WHERE films.id IN (SELECT DISTINCT sf.id FROM (SELECT film_likes.film_id FROM film_likes WHERE user_id = ?) AS ff" +
+                " INNER JOIN (SELECT film_likes.film_id FROM film_likes WHERE user_id = ?) AS sf ON ff.id = sf.id)" +
                 " GROUP BY films.id" +
                 " ORDER BY COUNT(film_likes.film_id) DESC";
         return jdbcTemplate.query(query, filmRowMapper, userId, friendId);
