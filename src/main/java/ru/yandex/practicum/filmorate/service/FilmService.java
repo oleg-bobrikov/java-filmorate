@@ -43,22 +43,9 @@ public class FilmService {
         return filmOptional.get();
     }
 
-    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        User user = findUserOrElseThrow(userId);
-        User friend = findUserOrElseThrow(friendId);
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
         return filmStorage.getCommonFilms(userId, friendId);
-    }
-
-    private Film findFilmOrElseThrow(Integer filmId) {
-        return filmStorage.findById(filmId).orElseThrow(
-                () -> new FilmNotFoundException(filmId)
-        );
-    }
-
-    private User findUserOrElseThrow(Integer userId) {
-        return userStorage.findUserById(userId).orElseThrow(
-                () -> new UserNotFoundException(userId)
-        );
     }
 
     public void like(Integer id, Integer userId) {

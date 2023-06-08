@@ -30,6 +30,11 @@ public class FilmH2Storage implements FilmStorage {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
 
+    private static final String BASE_FIND_QUERY = "select f.*,mpa_film_ratings.name as mpa_name, group_concat(film_genres.genre_id)as genres_ids,"
+            + "group_concat(genres.name) as genres_names, group_concat(film_likes.user_id) as likes from film as f"
+            + " left join mpa_film_ratings  on films.mpa_film_rating_id=mpa_film_ratings.mpa_id left join film_genres  on films.film_id=film_genres.film_id"
+            + " left join genres  on film_genres.genre_id=genres.genre_id left join film_likes  on films.film_id=film_likes.film_id ";
+
     public FilmH2Storage(JdbcTemplate jdbcTemplate, GenreStorage genreStorage, MpaStorage mpaStorage, FilmRowMapper filmRowMapper) {
         this.jdbcTemplate = jdbcTemplate;
         this.genreStorage = genreStorage;
@@ -154,7 +159,7 @@ public class FilmH2Storage implements FilmStorage {
                 " LEFT JOIN MPA_FILM_RATINGS AS MFR ON MFR.ID = FILMS.MPA_FILM_RATING_ID;";
 
         HashMap<Integer, Film> results = new HashMap<>();
-        jdbcTemplate.query(sql, new FilmRowMapper(mpaStorage)).forEach(film -> results.put(film.getId(), film));
+        jdbcTemplate.query(sql, filmRowMapper).forEach(film -> results.put(film.getId(), film));
 
         //likes
         sql = "select film_id, user_id from film_likes";
@@ -214,35 +219,16 @@ public class FilmH2Storage implements FilmStorage {
     }
 
 
-    @Override
-    public Optional<Film> findById(Integer filmId) {
-        String sqlRequest = "SELECT f.*, m.name as mpa_name"
-                + " FROM films AS f"
-                + " LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id"
-                + " WHERE film_id = ?";
-        List<Film> result = jdbcTemplate.query(sqlRequest, new FilmRowMapper(mpaStorage), filmId);
-        return result
-                .stream()
-                .findFirst();
-    }
-
 
     @Override
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        String sqlRequest = "WITH common AS ( SELECT f.film_id,count(l.user_id) " +
-                "FROM films f " +
-                "INNER JOIN film_likes l ON f.film_id = l.film_id " +
-                "WHERE l.user_id = ? AND ? " +
-                "GROUP BY f.film_id)" +
-                "SELECT f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_film_rating_id, m.mpa_film_rating_name AS mpa_name " +
-                "FROM films AS f " +
-                "LEFT JOIN mpa_film_ratings AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT JOIN film_likes AS l ON f.film_id = l.film_id " +
-                "JOIN common AS c ON f.film_id = c.FILM_ID " +
-                "GROUP BY f.film_id " +
-                "ORDER BY mpa_name DESC ";
-        List<Film> result = jdbcTemplate.query(sqlRequest, new FilmRowMapper(mpaStorage), userId, friendId);
-        return result;
+        String query = BASE_FIND_QUERY +
+                " LEFT JOIN film_likes  on films.film_id = film_likes.film_id" +
+                " WHERE f.film_id IN (SELECT DISTINCT sf.film_id FROM (SELECT film_likes.film_id FROM film_likes WHERE user_id = ?) AS ff" +
+                " INNER JOIN (SELECT film_likes.film_id FROM film_likes WHERE user_id = ?) AS sf ON ff.film_id = sf.film_id)" +
+                " GROUP BY films.film_id" +
+                " ORDER BY COUNT(film_likes.film_id) DESC";
+        return jdbcTemplate.query(query, filmRowMapper, userId, friendId);
     }
 
 
@@ -328,7 +314,7 @@ public class FilmH2Storage implements FilmStorage {
 
         sql = "SELECT * FROM popular_films_tmp";
         HashMap<Integer, Film> films = new HashMap<>();
-        jdbcTemplate.query(sql, new FilmRowMapper(mpaStorage)).forEach(film -> films.put(film.getId(), film));
+        jdbcTemplate.query(sql, filmRowMapper).forEach(film -> films.put(film.getId(), film));
 
         //get likes
         sql = "SELECT film_id, user_id FROM film_likes " +

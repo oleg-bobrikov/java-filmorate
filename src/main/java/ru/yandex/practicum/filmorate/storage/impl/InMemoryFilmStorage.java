@@ -66,9 +66,4 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .collect(Collectors.toList());
     }
 
-
-    @Override
-    public Optional<Film> findById(Integer id) {
-        return Optional.ofNullable(films.get(id));
-    }
 }

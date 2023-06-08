@@ -12,7 +12,8 @@
     <artifactId>filmorate</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>filmorate</name>
-    <description>Spring web</description>
+    <description>Бэкенд для сервиса, который будет работать с фильмами и оценками пользователей, а также возвращать
+        топ-5 фильмов, рекомендованных к просмотру</description>
     <properties>
         <java.version>11</java.version>
     </properties>

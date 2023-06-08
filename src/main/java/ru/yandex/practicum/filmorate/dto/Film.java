@@ -10,9 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@Builder(toBuilder = true)
-@NoArgsConstructor
-@AllArgsConstructor
+@Builder
 public class Film {
     private Integer id;
     @NotBlank(message = "Title cannot be empty")
@@ -31,7 +29,7 @@ public class Film {
 
     private Mpa mpa;
 
-    Set<Director> directors;
+
 
 
 
@@ -49,16 +47,5 @@ public class Film {
         return likes;
     }
 
-    public void addGenre(Genre genre) {
-        genres.add(genre);
-    }
-
-    public void addLike(Integer userId) {
-        likes.add(userId);
-    }
-
-    public void addDirector(Director director) {
-        directors.add(director);
-    }
 
 }
