@@ -224,7 +224,7 @@ public class FilmH2Storage implements FilmStorage {
                              "    FROM" +
                                "       (SELECT film_likes.FILM_ID AS FILM_ID"  +
                               "        FROM FILM_LIKES AS film_likes" +
-                               "        WHERE FILM_LIKES.USER_ID IN(:user_id, :friend_id)"  +
+                               "        WHERE FILM_LIKES.USER_ID IN(user_id = ?, friend_id = ?)"  +
                                "        GROUP BY FILM_ID"  +
                                "        HAVING COUNT(FILM_LIKES.USER_ID) = 2))"  +
                               " GROUP BY FILM_ID" +
