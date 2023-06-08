@@ -30,8 +30,8 @@ public class FilmH2Storage implements FilmStorage {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
 
-    private static final String BASE_FIND_QUERY = "select f.*,mpa_film_ratings.name as mpa_name, group_concat(film_genres.genre_id)as genres_ids,"
-            + "group_concat(genres.name) as genres_names, group_concat(film_likes.user_id) as likes from film as f"
+    private static final String BASE_FIND_QUERY = "select *,mpa_film_ratings.name as mpa_name, group_concat(film_genres.genre_id)as genres_ids,"
+            + "group_concat(genres.name) as genres_names, group_concat(film_likes.user_id) as likes from film "
             + " left join mpa_film_ratings  on films.mpa_film_rating_id=mpa_film_ratings.mpa_id left join film_genres  on films.film_id=film_genres.film_id"
             + " left join genres  on film_genres.genre_id=genres.genre_id left join film_likes  on films.film_id=film_likes.film_id ";
 
