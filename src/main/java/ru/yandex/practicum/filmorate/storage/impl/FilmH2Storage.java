@@ -217,12 +217,21 @@ public class FilmH2Storage implements FilmStorage {
 
     @Override
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        String sqlQuery = "SELECT * FROM films " +
-                "RIGHT JOIN film_likes  ON films.id=film_likes.film_id WHERE user_id=? " +
-                "AND film_likes.film_id IN(" +
-                "SELECT film_id FROM film_likes WHERE user_id=?) " +
-                "GROUP BY films.id " +
-                "ORDER BY COUNT(film_likes.film_id) DESC";
+        String sqlQuery = "SELECT film_likes.FILM_ID AS FILM_ID"  +
+                              " FROM FILM_LIKES AS film_likes"  +
+                               " WHERE film_likes.FILM_ID IN"  +
+                              "   (SELECT FILM_ID"  +
+                             "    FROM" +
+                               "       (SELECT film_likes.FILM_ID AS FILM_ID"  +
+                              "        FROM FILM_LIKES AS film_likes" +
+                               "        WHERE FILM_LIKES.USER_ID IN(:user_id, :friend_id)"  +
+                               "        GROUP BY FILM_ID"  +
+                               "        HAVING COUNT(FILM_LIKES.USER_ID) = 2))"  +
+                              " GROUP BY FILM_ID" +
+                        " ORDER BY count(USER_ID) DESC ";
+
+
+
         return jdbcTemplate.query(sqlQuery, filmRowMapper, userId, friendId);
     }
 
