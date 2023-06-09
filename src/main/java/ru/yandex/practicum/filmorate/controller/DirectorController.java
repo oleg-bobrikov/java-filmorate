@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.dto.Director;
 import ru.yandex.practicum.filmorate.service.DirectorService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -29,8 +28,9 @@ public class DirectorController {
     public Director getDirectorById(@PathVariable @NotNull Integer id) {
         return directorService.getDirectorById(id);
     }
+
     @PostMapping()
-    public Director createDirector(@RequestBody @Valid   Director director) {
+    public Director createDirector(@RequestBody @Valid Director director) {
         directorService.createDirector(director);
         log.info("{} has created", director);
         return director;

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.Director;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,7 +22,7 @@ import java.util.*;
 @Slf4j
 public class DirectorH2Storage implements DirectorStorage {
     private final JdbcTemplate jdbcTemplate;
-    private  final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
 
     public DirectorH2Storage(JdbcTemplate jdbcTemplate) {
@@ -35,23 +36,6 @@ public class DirectorH2Storage implements DirectorStorage {
     public List<Director> getAll() {
         String sqlQueryGetAll = "SELECT ID, DIRECTOR_NAME FROM DIRECTORS ORDER BY ID";
         return jdbcTemplate.query(sqlQueryGetAll, this::mapRowToDirector);
-
-        /*String sql = "SELECT " +
-                " ID , " +
-                " DIRECTOR_NAME AS NAME" +
-                "FROM" +
-                "DIRECTORS";
-        HashMap<Integer, Director> results = new HashMap<>();
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
-        while (rs.next()) {
-            Director director = Director.builder()
-                    .id(rs.getInt("id"))
-                    .name(rs.getString("director_name"))
-                    .build();
-            results.put(director.getId(), director);
-        }
-        return new ArrayList<>(results.values());*/
-
     }
 
 
@@ -76,14 +60,13 @@ public class DirectorH2Storage implements DirectorStorage {
         director.setId(id);
 
         return Optional.of(director);
-
     }
 
     @Override
     public Optional<Optional<Director>> updateDirector(Director director) {
         String sqlQueryUpdateDirector = "update DIRECTORS " +
-                                        "set DIRECTOR_NAME = ?" +
-                                        "where ID = ?";
+                "set DIRECTOR_NAME = ?" +
+                "where ID = ?";
         try {
 
             jdbcTemplate.update(sqlQueryUpdateDirector,
@@ -100,7 +83,7 @@ public class DirectorH2Storage implements DirectorStorage {
     @Override
     public void removeDirector(int id) {
         String sqlQueryDeleteDirector = "DELETE FROM DIRECTORS " +
-                    "where ID = ?";
+                "where ID = ?";
         jdbcTemplate.update(sqlQueryDeleteDirector, id);
 
         String sqlQueryDeleteDirectorInDirectorFilm = "DELETE FROM directors_films " +
@@ -108,6 +91,7 @@ public class DirectorH2Storage implements DirectorStorage {
         jdbcTemplate.update(sqlQueryDeleteDirectorInDirectorFilm, id);
 
     }
+
     private Director mapRowToDirector(ResultSet resultSet, int rowNum) throws SQLException {
 
         return Director.builder()
@@ -115,6 +99,7 @@ public class DirectorH2Storage implements DirectorStorage {
                 .name(Objects.requireNonNull(resultSet.getString("DIRECTOR_NAME")))
                 .build();
     }
+
     @Override
     public void updateFilmDirector(Film film, Set<Director> directors) {
 

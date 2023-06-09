@@ -404,12 +404,8 @@ public class FilmH2Storage implements FilmStorage {
             Film film = films.get(filmId);
             film.getGenres().add(genreStorage.getGenreById(genreId));
         }
+
         // director
-
-
-
-
-
         sql = "SELECT" +
                 "    directors_films.film_id ," +
                 "    + directors_films.director_id " +
