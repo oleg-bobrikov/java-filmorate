@@ -284,9 +284,4 @@ class FilmStorageTest {
                 .hasSize(2)
                 .contains(createdFilm3, createdFilm2);
     }
-    @Test
-    void testFindFilmsByDirector(){
-
-    }
-
 }

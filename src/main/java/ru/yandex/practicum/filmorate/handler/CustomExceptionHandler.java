@@ -67,10 +67,10 @@ public class CustomExceptionHandler {
         }
         return path;
     }
+
     @ExceptionHandler({DirectorAlreadyExistedException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public ResponseError handleAlreadyExists(DirectorAlreadyExistedException exception) {
-
         log.error(exception.getMessage(), exception);
         return ResponseError.builder()
                 .error("CONFLICT")
