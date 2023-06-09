@@ -32,12 +32,12 @@ public class DirectorService {
                 new NotFoundException("Режессер с идентификатором " + id + " не найден."));
     }
 
-    public Director createDirector(Director director){
+    public Director createDirector(Director director) {
         return directorStorage.createDirector(director).orElseThrow(() ->
                 new DirectorAlreadyExistedException("Режессер уже существует."));
     }
 
-    public Director updateDirector(Director director){
+    public Director updateDirector(Director director) {
         return directorStorage.updateDirector(director).get().orElseThrow(() ->
                 new NotFoundException("Такого режессера нет"));
     }
