@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.Director;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.websocket.server.PathParam;
 import java.util.List;
 
 @Slf4j
@@ -60,4 +62,11 @@ public class FilmController {
     public void removeLike(@PathVariable @NotBlank Integer id, @PathVariable @NotBlank Integer userId) {
         filmService.removeLike(id, userId);
     }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> findFilmsByDirector(@PathVariable Integer directorId, @RequestParam String sortBy) {
+        return filmService.findFilmByDirector(directorId, sortBy);
+    }
+
+
 }

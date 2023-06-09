@@ -6,12 +6,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import ru.yandex.practicum.filmorate.dto.Director;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -71,5 +77,12 @@ public class FilmService {
             film.setLikes(new HashSet<>());
         }
         filmStorage.add(film);
+    }
+    public List<Film> findFilmByDirector(Integer directorId, String sortBy){
+        List<Film> list = filmStorage.findFilmByDirector(directorId, sortBy);
+        if (list.isEmpty()){
+            throw new NotFoundException("Список режессеров пуст.");
+        }
+        return list;
     }
 }
