@@ -217,22 +217,24 @@ public class FilmH2Storage implements FilmStorage {
 
     @Override
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        String sqlQuery = "SELECT film_likes.FILM_ID AS FILM_ID"  +
-                              " FROM FILM_LIKES AS film_likes"  +
-                               " WHERE film_likes.FILM_ID IN"  +
-                              "   (SELECT FILM_ID"  +
-                             "    FROM" +
-                               "       (SELECT film_likes.FILM_ID AS FILM_ID"  +
-                              "        FROM FILM_LIKES AS film_likes" +
-                               "        WHERE FILM_LIKES.USER_ID IN(user_id = ?, friend_id = ?)"  +
-                               "        GROUP BY FILM_ID"  +
-                               "        HAVING COUNT(FILM_LIKES.USER_ID) = 2))"  +
-                              " GROUP BY FILM_ID" +
-                        " ORDER BY count(USER_ID) DESC ";
+        String sqlQuery = "SELECT FILMS.* "  +
+                " FROM FILM_LIKES AS film_likes"  +
+                " LEFT JOIN FILMS ON film_likes.film_id = films.id " +
+                " WHERE film_likes.FILM_ID IN"  +
+                " (SELECT film_likes.FILM_ID AS FILM_ID"  +
+                " FROM FILM_LIKES AS film_likes" +
+                " WHERE FILM_LIKES.USER_ID IN(:user_id, :friend_id)"  +
+                "  GROUP BY FILM_ID"  +
+                "     HAVING COUNT(FILM_LIKES.USER_ID) = 2)"  +
+                " GROUP BY FILM_ID" +
+                " ORDER BY count(USER_ID) DESC ";
 
+        Map<String, Object> params = new HashMap<>();
+        params.put("user_id",1);
+        params.put("friend_id",2);
 
-
-        return jdbcTemplate.query(sqlQuery, filmRowMapper, userId, friendId);
+         List<Film> films = namedParameterJdbcTemplate.query(sqlQuery,params,filmRowMapper);
+         return films;
     }
 
 
