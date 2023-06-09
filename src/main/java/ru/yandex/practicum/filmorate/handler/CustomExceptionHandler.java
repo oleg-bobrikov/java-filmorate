@@ -11,8 +11,6 @@ import ru.yandex.practicum.filmorate.exception.DirectorAlreadyExistedException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ResponseError;
 
-import java.util.Map;
-
 @Slf4j
 @RestControllerAdvice
 public class CustomExceptionHandler {
