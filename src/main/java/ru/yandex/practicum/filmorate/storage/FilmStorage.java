@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import ru.yandex.practicum.filmorate.dto.Director;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 
@@ -24,5 +23,6 @@ public interface FilmStorage {
     void removeLike(Film film, User user);
 
     List<Film> getPopular(int count);
+
     List<Film> findFilmByDirector(Integer directorId, String sortBy);
 }
