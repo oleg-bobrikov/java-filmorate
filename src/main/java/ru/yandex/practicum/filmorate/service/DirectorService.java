@@ -26,6 +26,7 @@ public class DirectorService {
         if (directors.isEmpty()) log.warn("Список режессеров пуст!");
         return directors;
     }
+
     public Director getDirectorById(Integer id) {
         return directorStorage.getDirectorById(id).orElseThrow(() ->
                 new NotFoundException("Режессер с идентификатором " + id + " не найден."));
