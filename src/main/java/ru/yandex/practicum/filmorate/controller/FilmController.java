@@ -60,4 +60,11 @@ public class FilmController {
     public void removeLike(@PathVariable @NotBlank Integer id, @PathVariable @NotBlank Integer userId) {
         filmService.removeLike(id, userId);
     }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> findFilmsByDirector(@PathVariable Integer directorId, @RequestParam String sortBy) {
+        return filmService.findFilmByDirector(directorId, sortBy);
+    }
+
+
 }

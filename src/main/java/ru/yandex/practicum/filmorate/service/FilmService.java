@@ -72,4 +72,12 @@ public class FilmService {
         }
         filmStorage.add(film);
     }
+
+    public List<Film> findFilmByDirector(Integer directorId, String sortBy) {
+        List<Film> list = filmStorage.findFilmByDirector(directorId, sortBy);
+        if (list.isEmpty()) {
+            throw new NotFoundException("Список режессеров пуст.");
+        }
+        return list;
+    }
 }

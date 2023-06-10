@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmorate.exception.DirectorAlreadyExistedException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ResponseError;
 
@@ -63,6 +64,19 @@ public class CustomExceptionHandler {
             }
         }
         return path;
+    }
+
+    @ExceptionHandler({DirectorAlreadyExistedException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseError handleAlreadyExists(DirectorAlreadyExistedException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseError.builder()
+                .error("CONFLICT")
+                .status(409)
+                .exception("ru.yandex.practicum.filmorate.exception.DirectorAlreadyExistedException")
+                .message(exception.getMessage())
+                .path(getPath(exception))
+                .build();
     }
 }
 

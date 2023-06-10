@@ -7,12 +7,10 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dto.Film;
-import ru.yandex.practicum.filmorate.dto.Genre;
-import ru.yandex.practicum.filmorate.dto.Mpa;
-import ru.yandex.practicum.filmorate.dto.User;
+import ru.yandex.practicum.filmorate.dto.*;
 import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
@@ -25,6 +23,7 @@ public class FilmH2Storage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
 
     private final GenreStorage genreStorage;
+    private final DirectorStorage directorStorage;
 
     private final MpaStorage mpaStorage;
     private final FilmRowMapper filmRowMapper;
@@ -32,9 +31,11 @@ public class FilmH2Storage implements FilmStorage {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
 
-    public FilmH2Storage(JdbcTemplate jdbcTemplate, GenreStorage genreStorage, MpaStorage mpaStorage, FilmRowMapper filmRowMapper) {
+    public FilmH2Storage(JdbcTemplate jdbcTemplate, GenreStorage genreStorage,
+                         MpaStorage mpaStorage, FilmRowMapper filmRowMapper, DirectorStorage directorStorage) {
         this.jdbcTemplate = jdbcTemplate;
         this.genreStorage = genreStorage;
+        this.directorStorage = directorStorage;
         this.mpaStorage = mpaStorage;
         this.filmRowMapper = filmRowMapper;
         DataSource dataSource = jdbcTemplate.getDataSource();
@@ -77,6 +78,16 @@ public class FilmH2Storage implements FilmStorage {
         }
         genreStorage.updateFilmGenres(film, newGenres);
         film.setGenres(newGenres);
+        //update director
+
+        Set<Director> newDirector = new TreeSet<>(Comparator.comparing(Director::getId));
+
+        for (Director director : film.getDirectors()) {
+            Integer directorId = director.getId();
+            newDirector.add(directorStorage.getDirectorById(directorId).get());
+        }
+        directorStorage.updateFilmDirector(film, newDirector);
+        film.setDirectors(newDirector);
 
         return film;
     }
@@ -120,6 +131,14 @@ public class FilmH2Storage implements FilmStorage {
         genreStorage.updateFilmGenres(film, newGenres);
         film.setGenres(newGenres);
 
+        // update director
+        Set<Director> newDirector = new TreeSet<>(Comparator.comparing(Director::getId));
+        for (Director director : film.getDirectors()) {
+            newDirector.add(directorStorage.getDirectorById(director.getId()).get());
+        }
+        directorStorage.updateFilmDirector(film, newDirector);
+        film.setDirectors(newDirector);
+
         return film;
     }
 
@@ -127,7 +146,8 @@ public class FilmH2Storage implements FilmStorage {
     public void deleteFilmById(int id) {
         String sql = "delete from film_genres where film_id = :film_id; " +
                 "delete from film_likes where film_id = :film_id; " +
-                "delete from films where id = :film_id; ";
+                "delete from films where id = :film_id; " +
+                "delete from directors_films where film_id =:film_id";
 
         Map<String, Object> params = new HashMap<>();
         params.put("film_id", id);
@@ -168,6 +188,7 @@ public class FilmH2Storage implements FilmStorage {
         }
 
         //genres
+
         sql = "SELECT " +
                 " film_genres.film_id AS film_id, " +
                 " film_genres.genre_id AS genre_id, " +
@@ -186,6 +207,28 @@ public class FilmH2Storage implements FilmStorage {
             Genre genre = genreStorage.getGenreById(genreId);
             genres.add(genre);
         }
+        // director
+        sql = "SELECT " +
+                " directors_films.film_id , " +
+                " directors_films.director_id, " +
+                " dir.director_name " +
+                "FROM " +
+                " directors_films  " +
+                "INNER JOIN " +
+                " directors AS dir " +
+                "ON directors_films.director_id = dir.id";
+        rs = jdbcTemplate.queryForRowSet(sql);
+        while (rs.next()) {
+            int filmId = rs.getInt("FILM_ID");
+            int directorId = rs.getInt("director_id");
+            String directorName = rs.getString("director_name");
+            Film film = results.get(filmId);
+            Set<Director> directors = film.getDirectors();
+
+            Director director = new Director(directorId, directorName);
+            directors.add(director);
+        }
+
         return new ArrayList<>(results.values());
     }
 
@@ -204,7 +247,12 @@ public class FilmH2Storage implements FilmStorage {
             while (genresRowSet.next()) {
                 film.getGenres().add(genreStorage.getGenreById(genresRowSet.getInt("GENRE_ID")));
             }
-
+            // get director
+            sql = "select director_id from directors_films where FILM_ID = ?";
+            SqlRowSet directorRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
+            while (directorRowSet.next()) {
+                film.getDirectors().add(directorStorage.getDirectorById(directorRowSet.getInt("DIRECTOR_ID")).get());
+            }
             // get likes
             sql = "select USER_ID from FILM_LIKES where FILM_ID = ?";
             SqlRowSet likesRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
@@ -331,10 +379,66 @@ public class FilmH2Storage implements FilmStorage {
             film.getGenres().add(genreStorage.getGenreById(genreId));
         }
 
+        // director
+        sql = "SELECT" +
+                "    directors_films.film_id ," +
+                "    + directors_films.director_id " +
+                " FROM" +
+                "    directors_films " +
+                "    INNER JOIN directors  ON directors_films.director_id = directors.id" +
+                "    AND directors_films.film_id IN (" +
+                "        SELECT" +
+                "            id" +
+                "        FROM" +
+                "            popular_films_tmp" +
+                "    )";
+        rs = jdbcTemplate.queryForRowSet(sql);
+        while (rs.next()) {
+            int filmId = rs.getInt("FILM_ID");
+            int directorId = rs.getInt("DIRECTOR_ID");
+            Film film = films.get(filmId);
+            film.getDirectors().add(directorStorage.getDirectorById(directorId).get());
+        }
+
         sql = "DROP TABLE IF EXISTS popular_films_tmp;";
         jdbcTemplate.update(sql);
 
+
         return new ArrayList<>(films.values());
+    }
+
+    @Override
+    public List<Film> findFilmByDirector(Integer directorId, String sortBy) {
+        List<Film> films = new ArrayList<>();
+        String sqlQueryByLikes = "SELECT df.film_id, COUNT(fl.user_id) AS p " +
+                "FROM directors_films AS df " +
+                "LEFT OUTER JOIN film_likes AS fl ON df.film_id = fl.film_id " +
+                "WHERE director_id = ? " +
+                "GROUP BY df.film_id " +
+                "ORDER BY  p DESC ";
+
+
+        String sqlQueryByYear = "SELECT df.film_id " +
+                "FROM directors_films AS df " +
+                "LEFT OUTER JOIN films ON df.film_id = films.id " +
+                "WHERE director_id = ? " +
+                "ORDER BY YEAR(films.release_date)";
+
+
+        if (sortBy.equals("year")) {
+            List<Integer> filmsId = jdbcTemplate.query(sqlQueryByYear, (rs, rowNum) -> rs.getInt("film_id"), directorId);
+
+            for (Integer id : filmsId) {
+                films.add(getFilmById(id).get());
+            }
+            return films;
+        } else {
+            List<Integer> filmsId = jdbcTemplate.query(sqlQueryByLikes, (rs, rowNum) -> rs.getInt("film_id"), directorId);
+            for (Integer id : filmsId) {
+                films.add(getFilmById(id).get());
+            }
+            return films;
+        }
     }
 
 }
