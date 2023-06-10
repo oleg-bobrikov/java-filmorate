@@ -26,10 +26,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         return film;
     }
 
-    @Override
-    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        return null;
-    }
+
 
     @Override
     public void deleteFilmById(int id) {
@@ -64,6 +61,17 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .sorted((o1, o2) -> o2.getLikes().size() - o1.getLikes().size())
                 .limit(count)
                 .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return null;
+    }
+
+    @Override
+    public List<Film> findFilmByDirector(Integer directorId, String sortBy) {
+        return null;
     }
 
 }

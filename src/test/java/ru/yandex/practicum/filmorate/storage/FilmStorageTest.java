@@ -30,7 +30,7 @@ class FilmStorageTest {
     @Qualifier("userH2Storage")
     private UserStorage userStorage;
 
-    @Test
+   @Test
     public void update_returnUpdatedFilm() {
         //arrange
         Mpa mpa1 = Mpa.builder().id(1).build();
@@ -92,7 +92,7 @@ class FilmStorageTest {
         assertThat(actual).isEmpty();
     }
 
-    @Test
+   @Test
     void getFilms_returnFilms() {
         //arrange
         Mpa mpa1 = Mpa.builder().id(1).build();
@@ -130,7 +130,7 @@ class FilmStorageTest {
                 .contains(createdFilm1, createdFilm2);
     }
 
-    @Test
+   @Test
     void addLike() {
         //arrange
         Mpa mpa1 = Mpa.builder().id(1).build();
@@ -210,7 +210,7 @@ class FilmStorageTest {
                 );
     }
 
-    @Test
+   @Test
     void getPopular_return2PopularFilms() {
         //arrange
         Mpa mpa1 = Mpa.builder().id(1).build();
@@ -275,7 +275,6 @@ class FilmStorageTest {
         filmStorage.addLike(createdFilm2, createdUser1);
         filmStorage.addLike(createdFilm2, createdUser2);
         filmStorage.addLike(createdFilm1, createdUser1);
-
         //act
         List<Film> actual = filmStorage.getPopular(2);
 
@@ -283,5 +282,132 @@ class FilmStorageTest {
         assertThat(actual).asList()
                 .hasSize(2)
                 .contains(createdFilm3, createdFilm2);
+    }
+
+    @Test
+    void getCommon_commonPopularFilms() {
+        //arrange
+        Mpa mpa1 = Mpa.builder().id(1).build();
+
+        Film newFilm = Film.builder()
+                .name("Аватар")
+                .description("3D")
+                .duration(180)
+                .releaseDate(LocalDate.of(2009, 12, 1))
+                .mpa(mpa1)
+                .build();
+
+        Film createdFilm1 = filmStorage.add(newFilm);
+
+        newFilm = Film.builder()
+                .name("Wednesday")
+                .description("popular")
+                .duration(180)
+                .releaseDate(LocalDate.of(2022, 12, 1))
+                .mpa(mpa1)
+                .build();
+
+        Film createdFilm2 = filmStorage.add(newFilm);
+
+        newFilm = Film.builder()
+                .name("Thursday")
+                .description("pop")
+                .duration(180)
+                .releaseDate(LocalDate.of(2008, 12, 1))
+                .mpa(mpa1)
+                .build();
+
+        Film createdFilm3 = filmStorage.add(newFilm);
+
+
+        newFilm = Film.builder()
+                .name("Wednesday")
+                .description("popular1")
+                .duration(170)
+                .releaseDate(LocalDate.of(2007, 12, 1))
+                .mpa(mpa1)
+                .build();
+
+        Film createdFilm4 = filmStorage.add(newFilm);
+
+        newFilm = Film.builder()
+                .name("Friday")
+                .description("popular2")
+                .duration(160)
+                .releaseDate(LocalDate.of(2006, 12, 1))
+                .mpa(mpa1)
+                .build();
+
+        Film createdFilm5 = filmStorage.add(newFilm);
+
+        User user = User.builder()
+                .email("guest1@ya.ru")
+                .login("guest1@ya.ru")
+                .name("guest1")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
+
+        User createdUser1 = userStorage.add(user);
+
+         user = User.builder()
+                .email("guest2@ya.ru")
+                .login("guest2@ya.ru")
+                .name("guest2")
+                .birthday(LocalDate.of(2000, 2, 1))
+                .build();
+
+        User createdUser2 = userStorage.add(user);
+
+        user = User.builder()
+                .email("guest3@ya.ru")
+                .login("guest3@ya.ru")
+                .name("guest3")
+                .birthday(LocalDate.of(2000, 3, 1))
+                .build();
+
+        User createdUser3 = userStorage.add(user);
+
+        user = User.builder()
+                .email("guest4@ya.ru")
+                .login("guest4@ya.ru")
+                .name("guest4")
+                .birthday(LocalDate.of(2000, 4, 1))
+                .build();
+
+        User createdUser4 = userStorage.add(user);
+
+        user = User.builder()
+                .email("guest5@ya.ru")
+                .login("guest5@ya.ru")
+                .name("guest5")
+                .birthday(LocalDate.of(2000, 5, 1))
+                .build();
+
+        User createdUser5 = userStorage.add(user);
+
+        userStorage.addFriend(createdUser1,createdUser2);
+
+        filmStorage.addLike(createdFilm1, createdUser1);
+        filmStorage.addLike(createdFilm1, createdUser2);
+        filmStorage.addLike(createdFilm1, createdUser3);
+        filmStorage.addLike(createdFilm2, createdUser1);
+        filmStorage.addLike(createdFilm2, createdUser2);
+        filmStorage.addLike(createdFilm2, createdUser3);
+        filmStorage.addLike(createdFilm2, createdUser4);
+        filmStorage.addLike(createdFilm3, createdUser1);
+        filmStorage.addLike(createdFilm3, createdUser2);
+        filmStorage.addLike(createdFilm3, createdUser3);
+        filmStorage.addLike(createdFilm3, createdUser4);
+        filmStorage.addLike(createdFilm3, createdUser5);
+        filmStorage.addLike(createdFilm4, createdUser1);
+        filmStorage.addLike(createdFilm5, createdUser2);
+
+        //act
+        List<Film> films = filmStorage.getCommonFilms(1,2);
+
+        //assert
+        assertThat(films).asList()
+                .hasSize(3)
+                .contains(createdFilm3, createdFilm2,createdFilm1);
     }
 }

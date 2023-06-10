@@ -58,7 +58,7 @@ class DirectorStorageTest {
         assertThat(list).asList().contains(director1, director2, director3, director4);
     }
 
-    @Test
+   @Test
     void testGetDirectorById() {
         Director director = directorStorage.getDirectorById(1).get();
         assertThat(director)
@@ -69,7 +69,7 @@ class DirectorStorageTest {
         assertNotEquals(director4, directorStorage.getDirectorById(1).get());
     }
 
-    @Test
+   @Test
     void testUpdateDirector() {
         Director director = new Director(2, "Vlad");
         directorStorage.updateDirector(director);
