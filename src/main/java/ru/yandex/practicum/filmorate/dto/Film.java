@@ -55,7 +55,9 @@ public Set<Director> getDirectors(){
 
 }
 
-/*package ru.yandex.practicum.filmorate.dto;
+/*
+package ru.yandex.practicum.filmorate.dto;
+
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AccessLevel;
@@ -111,4 +113,4 @@ public class Film {
         }
         return likes;
     }
-
+*/
