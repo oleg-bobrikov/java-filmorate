@@ -37,8 +37,8 @@ public class Film {
         return genres;
     }
 
-public Set<Director> getDirectors(){
-        if(directors == null){
+public Set<Director> getDirectors() {
+        if (directors == null) {
             directors = new HashSet<>();
         }
         return directors;
@@ -65,7 +65,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import ru.yandex.practicum.filmorate.validator.IsAfterOrEqual;
-
 import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -89,8 +88,6 @@ public class Film {
     @Getter(AccessLevel.NONE)
     private Set<Genre> genres;
     private Set<Director> directors;
-
-
 
 
     public Set<Genre> getGenres() {
