@@ -86,6 +86,7 @@ public class Film {
     private Set<Integer> likes;
     @Getter(AccessLevel.NONE)
     private Set<Genre> genres;
+    private Set<Director> directors;
 
     private Mpa mpa;
 
@@ -100,6 +101,13 @@ public class Film {
         return genres;
     }
 
+    public Set<Director> getDirectors() {
+        if (directors == null) {
+            directors = new HashSet<>();
+        }
+        return directors;
+    }
+
     public Set<Integer> getLikes() {
         if (likes == null) {
             likes = new HashSet<>();
@@ -107,5 +115,3 @@ public class Film {
         return likes;
     }
 
-
-}*/
