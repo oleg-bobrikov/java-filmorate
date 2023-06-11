@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.Genre;
 import ru.yandex.practicum.filmorate.dto.Mpa;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class FilmStorageTest {
     @Autowired
     @Qualifier("filmH2Storage")
@@ -285,7 +287,7 @@ class FilmStorageTest {
     }
 
     @Test
-    void getCommon_commonPopularFilms() {
+    void getCommonFilms_returnCommonFilmsSortedByPopularity() {
         //arrange
         Mpa mpa1 = Mpa.builder().id(1).build();
 
@@ -390,15 +392,21 @@ class FilmStorageTest {
         filmStorage.addLike(createdFilm1, createdUser1);
         filmStorage.addLike(createdFilm1, createdUser2);
         filmStorage.addLike(createdFilm1, createdUser3);
+        createdFilm1 = filmStorage.getFilmById(createdFilm1.getId()).get();
+
         filmStorage.addLike(createdFilm2, createdUser1);
         filmStorage.addLike(createdFilm2, createdUser2);
         filmStorage.addLike(createdFilm2, createdUser3);
         filmStorage.addLike(createdFilm2, createdUser4);
+        createdFilm2 = filmStorage.getFilmById(createdFilm2.getId()).get();
+
         filmStorage.addLike(createdFilm3, createdUser1);
         filmStorage.addLike(createdFilm3, createdUser2);
         filmStorage.addLike(createdFilm3, createdUser3);
         filmStorage.addLike(createdFilm3, createdUser4);
         filmStorage.addLike(createdFilm3, createdUser5);
+        createdFilm3 = filmStorage.getFilmById(createdFilm3.getId()).get();
+
         filmStorage.addLike(createdFilm4, createdUser1);
         filmStorage.addLike(createdFilm5, createdUser2);
 
@@ -409,5 +417,6 @@ class FilmStorageTest {
         assertThat(films).asList()
                 .hasSize(3)
                 .contains(createdFilm3, createdFilm2,createdFilm1);
+
     }
 }

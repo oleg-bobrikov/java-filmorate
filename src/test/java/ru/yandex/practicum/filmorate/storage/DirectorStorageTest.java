@@ -59,9 +59,8 @@ class DirectorStorageTest {
     }
 
 
-   @Test
-    @Test
 
+    @Test
     void testGetDirectorById() {
         Director director = directorStorage.getDirectorById(1).get();
         assertThat(director)
@@ -73,10 +72,9 @@ class DirectorStorageTest {
     }
 
 
-   @Test
+
   
     @Test
-
     void testUpdateDirector() {
         Director director = new Director(2, "Vlad");
         directorStorage.updateDirector(director);
