@@ -266,56 +266,53 @@ public class FilmH2Storage implements FilmStorage {
     }
 
 
-
     @Override
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        String sqlQuery = "SELECT FILMS.* "  +
-                " FROM FILM_LIKES AS film_likes"  +
-                " LEFT JOIN FILMS ON film_likes.film_id = films.id " +
-                " WHERE film_likes.FILM_ID IN"  +
-                " (SELECT film_likes.FILM_ID AS FILM_ID"  +
+        String sqlQuery = "SELECT FILMS.* " +
                 " FROM FILM_LIKES AS film_likes" +
-                " WHERE FILM_LIKES.USER_ID IN(:user_id, :friend_id)"  +
-                "  GROUP BY FILM_ID"  +
-                "     HAVING COUNT(FILM_LIKES.USER_ID) = 2)"  +
+                " LEFT JOIN FILMS ON film_likes.film_id = films.id " +
+                " WHERE film_likes.FILM_ID IN" +
+                " (SELECT film_likes.FILM_ID AS FILM_ID" +
+                " FROM FILM_LIKES AS film_likes" +
+                " WHERE FILM_LIKES.USER_ID IN(:user_id, :friend_id)" +
+                "  GROUP BY FILM_ID" +
+                "     HAVING COUNT(FILM_LIKES.USER_ID) = 2)" +
                 " GROUP BY FILM_ID" +
                 " ORDER BY count(USER_ID) DESC ";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("user_id",1);
-        params.put("friend_id",2);
+        params.put("user_id", 1);
+        params.put("friend_id", 2);
 
-         List<Film> films = namedParameterJdbcTemplate.query(sqlQuery,params,filmRowMapper);
+        List<Film> films = namedParameterJdbcTemplate.query(sqlQuery, params, filmRowMapper);
 
-         for(int i = 0; i<films.size();  i++){
-             Film film = films.get(i);
-             // get genres
-           String  sql = "select GENRE_ID from film_genres where FILM_ID = ?";
-             SqlRowSet genresRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
-             while (genresRowSet.next()) {
-                 film.getGenres().add(genreStorage.getGenreById(genresRowSet.getInt("GENRE_ID")));
-             }
-             // get director
-             sql = "select director_id from directors_films where FILM_ID = ?";
-             SqlRowSet directorRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
-             while (directorRowSet.next()) {
-                 film.getDirectors().add(directorStorage.getDirectorById(directorRowSet.getInt("DIRECTOR_ID")).get());
-             }
-             // get likes
-             sql = "select USER_ID from FILM_LIKES where FILM_ID = ?";
-             SqlRowSet likesRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
-             while (likesRowSet.next()) {
-                 film.getLikes().add(likesRowSet.getInt("USER_ID"));
-             }
+        for (int i = 0; i < films.size(); i++) {
+            Film film = films.get(i);
+            // get genres
+            String sql = "select GENRE_ID from film_genres where FILM_ID = ?";
+            SqlRowSet genresRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
+            while (genresRowSet.next()) {
+                film.getGenres().add(genreStorage.getGenreById(genresRowSet.getInt("GENRE_ID")));
+            }
+            // get director
+            sql = "select director_id from directors_films where FILM_ID = ?";
+            SqlRowSet directorRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
+            while (directorRowSet.next()) {
+                film.getDirectors().add(directorStorage.getDirectorById(directorRowSet.getInt("DIRECTOR_ID")).get());
+            }
+            // get likes
+            sql = "select USER_ID from FILM_LIKES where FILM_ID = ?";
+            SqlRowSet likesRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
+            while (likesRowSet.next()) {
+                film.getLikes().add(likesRowSet.getInt("USER_ID"));
+            }
 
-         }
+        }
 
         //setAll(films);
 
-         return films;
+        return films;
     }
-
-
 
 
     @Override
