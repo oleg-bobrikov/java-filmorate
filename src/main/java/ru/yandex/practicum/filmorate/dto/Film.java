@@ -22,7 +22,7 @@ public class Film {
     private LocalDate releaseDate;
     @Positive(message = "Duration should be positive")
     private int duration;
-    @Getter(AccessLevel.NONE)
+    //   @Getter(AccessLevel.NONE)
     private Set<Integer> likes;
     @Getter(AccessLevel.NONE)
     private Set<Genre> genres;
@@ -50,6 +50,18 @@ public Set<Director> getDirectors() {
             likes = new HashSet<>();
         }
         return likes;
+    }
+
+    public void addLike(Integer userId) {
+        likes.add(userId);
+    }
+
+    public void addGenre(Genre genre) {
+        genres.add(genre);
+    }
+
+    public void addDirector(Director director) {
+        directors.add(director);
     }
 
 

@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.dto.Director;
 import ru.yandex.practicum.filmorate.storage.impl.DirectorH2Storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -59,7 +60,6 @@ class DirectorStorageTest {
     }
 
 
-
     @Test
     void testGetDirectorById() {
         Director director = directorStorage.getDirectorById(1).get();
@@ -72,8 +72,6 @@ class DirectorStorageTest {
     }
 
 
-
-  
     @Test
     void testUpdateDirector() {
         Director director = new Director(2, "Vlad");

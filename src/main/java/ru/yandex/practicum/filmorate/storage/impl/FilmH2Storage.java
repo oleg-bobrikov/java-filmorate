@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import javax.sql.DataSource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -285,7 +286,80 @@ public class FilmH2Storage implements FilmStorage {
         params.put("friend_id",2);
 
          List<Film> films = namedParameterJdbcTemplate.query(sqlQuery,params,filmRowMapper);
+        setAll(films);
+
          return films;
+    }
+
+
+    private void setAll(List<Film> films) {
+        List<Integer> filmsId = films
+                .stream()
+                .map(Film::getId)
+                .collect(Collectors.toList());
+        if (filmsId.isEmpty()) {
+            return;
+        }
+        films.forEach(film -> film.getGenres().clear());
+        films.forEach(film -> film.getDirectors().clear());
+        Map<Integer, Film> filmMap = new HashMap<>();
+
+        for (Film film : films) {
+            filmMap.put(film.getId(), film);
+        }
+
+        String inSql = String.join(",", Collections.nCopies(filmsId.size(), "?"));
+
+        setGenres(filmsId, filmMap, inSql);
+        setLikes(filmsId, filmMap, inSql);
+        setDirectors(filmsId, filmMap, inSql);
+    }
+
+    private void setGenres(List<Integer> filmsId, Map<Integer, Film> filmMap, String inSql) {
+        String sqlRequest = "SELECT fg.film_id, g.* " +
+                "FROM film_genres AS fg " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.id " +
+                "WHERE fg.film_id in (%s) " +
+                "ORDER BY fg.genre_id";
+        jdbcTemplate.query(String.format(sqlRequest, inSql), rs -> {
+                    Integer filmId = rs.getInt("film_id");
+                    Integer genreId = rs.getInt("genre_id");
+                    String genreName = rs.getString("name");
+                    Genre genre = new Genre(1,"kk");
+                    genre.setId(genreId);
+                    genre.setName(genreName);
+                    filmMap.get(filmId).addGenre(genre);
+                },
+                filmsId.toArray());
+    }
+
+    private void setLikes(List<Integer> filmsId, Map<Integer, Film> filmMap, String inSql) {
+        String sqlRequest = "SELECT * FROM film_likes WHERE film_id in (%s)";
+        jdbcTemplate.query(String.format(sqlRequest, inSql), rs -> {
+            filmMap.get(rs.getInt("film_id"))
+                    .addLike(rs.getInt("user_id"));
+        }, filmsId.toArray());
+    }
+
+
+
+
+    private void setDirectors(List<Integer> filmsId, Map<Integer, Film> filmMap, String inSql) {
+        String sqlRequest = "SELECT fd.film_id, d.* " +
+                "FROM directors_films AS df " +
+                "LEFT JOIN directors AS d ON df.director_id = d.id " +
+                "WHERE df.film_id in (%s) " +
+                "ORDER BY df.director_id";
+        jdbcTemplate.query(String.format(sqlRequest, inSql), rs -> {
+                    Integer filmId = rs.getInt("film_id");
+                    Integer directorId = rs.getInt("id");
+                    String directorName = rs.getString("name");
+                    Director director = new Director(1,"jj");
+                    director.setId(directorId);
+                    director.setName(directorName);
+                    filmMap.get(filmId).addDirector(director);
+                },
+                filmsId.toArray());
     }
 
 
