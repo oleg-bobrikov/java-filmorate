@@ -52,17 +52,7 @@ public Set<Director> getDirectors() {
         return likes;
     }
 
-    public void addLike(Integer userId) {
-        likes.add(userId);
-    }
 
-    public void addGenre(Genre genre) {
-        genres.add(genre);
-    }
-
-    public void addDirector(Director director) {
-        directors.add(director);
-    }
 
 
 }
