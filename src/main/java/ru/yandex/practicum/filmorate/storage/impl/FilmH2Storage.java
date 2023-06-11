@@ -16,7 +16,6 @@ import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import javax.sql.DataSource;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Component
