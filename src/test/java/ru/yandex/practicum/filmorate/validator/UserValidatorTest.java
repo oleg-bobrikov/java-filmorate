@@ -10,7 +10,7 @@ import static ru.yandex.practicum.filmorate.validator.ValidatorTest.dtoHasErrorM
 
 class UserValidatorTest {
 
-    @Test
+   @Test
     public void user_errorMessage_invalidEmailAddress() {
         User user = User.builder()
                 .login("Tolstoy")
@@ -22,7 +22,7 @@ class UserValidatorTest {
         Assertions.assertTrue(dtoHasErrorMessage(user, "invalid email address"));
     }
 
-    @Test
+   @Test
     public void user_errorMessage_failLogin() {
         User user = User.builder()
                 .login("Lev Tolstoy")
@@ -34,7 +34,7 @@ class UserValidatorTest {
         Assertions.assertTrue(dtoHasErrorMessage(user, "login should be not empty or contain whitespaces"));
     }
 
-    @Test
+   @Test
     public void user_errorMessage_failBirthday() {
         User user = User.builder()
                 .login("LevTolstoy")

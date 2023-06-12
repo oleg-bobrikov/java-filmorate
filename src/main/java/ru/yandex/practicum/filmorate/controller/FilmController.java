@@ -30,6 +30,12 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
+    @GetMapping(value = "/common")
+    public List<Film> findCommonFilms(@RequestParam Integer userId, @RequestParam Integer friendId) {
+        log.info("Получен запрос к эндпоинту: {} /common{}/{}", "GET", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
     @GetMapping("/popular")
     public List<Film> getPopular(@RequestParam(defaultValue = "10", required = false) Integer count) {
         return filmService.getPopular(count);
@@ -55,7 +61,7 @@ public class FilmController {
         filmService.like(id, userId);
     }
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("{id}/like/{userId}")
     public void removeLike(@PathVariable @NotNull Integer id, @PathVariable @NotBlank Integer userId) {
         filmService.removeLike(id, userId);

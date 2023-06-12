@@ -30,7 +30,7 @@ class GenreStorageTest {
     @Qualifier("filmH2Storage")
     private FilmStorage filmStorage;
 
-    @Test
+   @Test
     void getAll_returnAllGenres() {
         //arrange
         Genre genre1 = genreStorage.getGenreById(1);
@@ -47,7 +47,7 @@ class GenreStorageTest {
         assertThat(actual).asList().contains(genre1, genre2, genre3, genre4, genre5, genre6);
     }
 
-    @Test
+   @Test
     void updateFilmGenres_assignNewGenres() {
         //arrange
         Mpa mpa1 = Mpa.builder().id(1).build();

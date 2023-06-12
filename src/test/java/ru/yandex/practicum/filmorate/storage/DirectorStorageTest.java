@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.dto.Director;
 import ru.yandex.practicum.filmorate.storage.impl.DirectorH2Storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -58,6 +59,7 @@ class DirectorStorageTest {
         assertThat(list).asList().contains(director1, director2, director3, director4);
     }
 
+
     @Test
     void testGetDirectorById() {
         Director director = directorStorage.getDirectorById(1).get();
@@ -68,6 +70,7 @@ class DirectorStorageTest {
         assertEquals(director1, directorStorage.getDirectorById(1).get());
         assertNotEquals(director4, directorStorage.getDirectorById(1).get());
     }
+
 
     @Test
     void testUpdateDirector() {
