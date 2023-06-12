@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.*;
 import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
+import ru.yandex.practicum.filmorate.mapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
@@ -28,17 +29,18 @@ public class FilmH2Storage implements FilmStorage {
 
     private final MpaStorage mpaStorage;
     private final FilmRowMapper filmRowMapper;
-
+    private final GenreRowMapper genreRowMapper;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
 
     public FilmH2Storage(JdbcTemplate jdbcTemplate, GenreStorage genreStorage,
-                         MpaStorage mpaStorage, FilmRowMapper filmRowMapper, DirectorStorage directorStorage) {
+                         MpaStorage mpaStorage, FilmRowMapper filmRowMapper, DirectorStorage directorStorage, GenreRowMapper genreRowMapper) {
         this.jdbcTemplate = jdbcTemplate;
         this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
         this.mpaStorage = mpaStorage;
         this.filmRowMapper = filmRowMapper;
+        this.genreRowMapper = genreRowMapper;
         DataSource dataSource = jdbcTemplate.getDataSource();
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));
         generatedKeyHolder = new GeneratedKeyHolder();
@@ -267,9 +269,9 @@ public class FilmH2Storage implements FilmStorage {
 
     @Override
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        String sqlQuery = "SELECT FILMS.* " +
+        String sqlQuery = "with sorted_films as " +
+                "( SELECT FILM_ID " +
                 " FROM FILM_LIKES AS film_likes" +
-                " LEFT JOIN FILMS ON film_likes.film_id = films.id " +
                 " WHERE film_likes.FILM_ID IN" +
                 " (SELECT film_likes.FILM_ID AS FILM_ID" +
                 " FROM FILM_LIKES AS film_likes" +
@@ -277,7 +279,11 @@ public class FilmH2Storage implements FilmStorage {
                 "  GROUP BY FILM_ID" +
                 "     HAVING COUNT(FILM_LIKES.USER_ID) = 2)" +
                 " GROUP BY FILM_ID" +
-                " ORDER BY count(USER_ID) DESC ";
+                " ORDER BY count(USER_ID) DESC" +
+                ")" +
+                " SELECT * FROM Films " +
+                " INNER JOIN sorted_films" +
+                " ON FILMS.ID = sorted_films.FILM_ID";
 
         Map<String, Object> params = new HashMap<>();
         params.put("user_id", 1);
@@ -285,14 +291,20 @@ public class FilmH2Storage implements FilmStorage {
 
         List<Film> films = namedParameterJdbcTemplate.query(sqlQuery, params, filmRowMapper);
 
-        for (int i = 0; i < films.size(); i++) {
-            Film film = films.get(i);
+        for (Film film : films) {
             // get genres
-            String sql = "select GENRE_ID from film_genres where FILM_ID = ?";
-            SqlRowSet genresRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
-            while (genresRowSet.next()) {
-                film.getGenres().add(genreStorage.getGenreById(genresRowSet.getInt("GENRE_ID")));
+            String sql = "SELECT " +
+                    " GENRES.ID, " +
+                    " GENRES.GENRE_NAME" +
+                    " FROM FILM_GENRES" +
+                    " INNER JOIN GENRES ON GENRES.ID = FILM_GENRES.FILM_ID  AND GENRES.ID = :FILM_ID";
+            params.clear();
+            params.put("FILM_ID", film.getId());
+            List<Genre> genres = namedParameterJdbcTemplate.query(sql, params, genreRowMapper);
+            for(Genre genre: genres){
+                film.getGenres().add(genre);
             }
+
             // get director
             sql = "select director_id from directors_films where FILM_ID = ?";
             SqlRowSet directorRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
@@ -307,9 +319,6 @@ public class FilmH2Storage implements FilmStorage {
             }
 
         }
-
-        //setAll(films);
-
         return films;
     }
 

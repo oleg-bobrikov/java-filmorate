@@ -15,7 +15,6 @@ import java.util.Objects;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-
 public class FilmRowMapper implements RowMapper<Film> {
     private final MpaStorage mpaStorage;
 
