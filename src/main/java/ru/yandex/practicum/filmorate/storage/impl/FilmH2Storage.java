@@ -54,11 +54,7 @@ public class FilmH2Storage implements FilmStorage {
         String sql = "insert into films (film_name, description, release_date, duration, mpa_film_rating_id) " +
                 "VALUES(:film_name, :description, :release_date, :duration, :mpa_film_rating_id);";
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("film_name", film.getName());
-        params.put("description", film.getDescription());
-        params.put("release_date", film.getReleaseDate());
-        params.put("duration", film.getDuration());
+        Map<String, Object> params = filmParams(film);
         params.put("mpa_film_rating_id", mpa == null ? null : mpa.getId());
 
         int rowsAffected = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
@@ -92,6 +88,15 @@ public class FilmH2Storage implements FilmStorage {
         return film;
     }
 
+    private Map<String, Object> filmParams(Film film) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("film_name", film.getName());
+        params.put("description", film.getDescription());
+        params.put("release_date", film.getReleaseDate());
+        params.put("duration", film.getDuration());
+        return params;
+    }
+
     @Override
     public Film update(Film film) {
         // update mpa
@@ -109,11 +114,7 @@ public class FilmH2Storage implements FilmStorage {
                         " mpa_film_rating_id = :mpa_film_rating_id " +
                         "where id = :id";
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("film_name", film.getName());
-        params.put("description", film.getDescription());
-        params.put("release_date", film.getReleaseDate());
-        params.put("duration", film.getDuration());
+        Map<String, Object> params = filmParams(film);
         params.put("id", film.getId());
         params.put("mpa_film_rating_id", mpa == null ? null : mpa.getId());
         namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
@@ -172,7 +173,7 @@ public class FilmH2Storage implements FilmStorage {
                 " IFNULL (FILMS.MPA_FILM_RATING_ID, 0) AS MPA_FILM_RATING_ID, " +
                 " MFR.mpa_film_rating_name AS MPA_FILM_RATING_NAME" +
                 " FROM" +
-                " FILMS AS FILMS " +
+                " FILMS " +
                 " LEFT JOIN MPA_FILM_RATINGS AS MFR ON MFR.ID = FILMS.MPA_FILM_RATING_ID;";
 
         HashMap<Integer, Film> results = new HashMap<>();
@@ -194,9 +195,9 @@ public class FilmH2Storage implements FilmStorage {
                 " film_genres.genre_id AS genre_id, " +
                 " genres.genre_name AS genre_name " +
                 "FROM " +
-                " film_genres AS film_genres " +
+                " film_genres " +
                 "INNER JOIN " +
-                " genres AS genres " +
+                " genres " +
                 "ON film_genres.GENRE_ID = genres.id";
         rs = jdbcTemplate.queryForRowSet(sql);
         while (rs.next()) {
@@ -344,10 +345,9 @@ public class FilmH2Storage implements FilmStorage {
         params.put("film_id", film.getId());
         params.put("user_id", user.getId());
 
-        int updatedRows = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
+        namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
 
-        log.info("Updated rows: {}", updatedRows);
-        log.info("Фильм с идентификатором {} получил лайк от пользователя с идентификатором {}", film.getId(), user.getId());
+        log.info("У фильма с идентификатором {} удален лайк от пользователя с идентификатором {}", film.getId(), user.getId());
         Optional<Film> filmOptional = getFilmById(film.getId());
         filmOptional.ifPresent(value -> film.setLikes(value.getLikes()));
     }
@@ -378,7 +378,7 @@ public class FilmH2Storage implements FilmStorage {
                 "            IFNULL(MFR.ID, 0) AS MPA_FILM_RATING_ID," +
                 "            MFR.MPA_FILM_RATING_NAME AS MPA_FILM_RATING_NAME" +
                 "        FROM" +
-                "            FILMS AS FILMS" +
+                "            FILMS" +
                 "            LEFT JOIN (" +
                 "                SELECT" +
                 "                    FILM_ID," +
@@ -420,8 +420,8 @@ public class FilmH2Storage implements FilmStorage {
                 "    film_genres.film_id AS film_id," +
                 "    + film_genres.genre_id AS genre_id" +
                 " FROM" +
-                "    film_genres AS film_genres" +
-                "    INNER JOIN genres AS genres ON film_genres.GENRE_ID = genres.id" +
+                "    film_genres" +
+                "    INNER JOIN genres ON film_genres.GENRE_ID = genres.id" +
                 "    AND film_genres.film_id IN (" +
                 "        SELECT" +
                 "            id" +
@@ -482,20 +482,20 @@ public class FilmH2Storage implements FilmStorage {
                 "ORDER BY YEAR(films.release_date)";
 
 
+        List<Integer> filmsId;
         if (sortBy.equals("year")) {
-            List<Integer> filmsId = jdbcTemplate.query(sqlQueryByYear, (rs, rowNum) -> rs.getInt("film_id"), directorId);
+            filmsId = jdbcTemplate.query(sqlQueryByYear, (rs, rowNum) -> rs.getInt("film_id"), directorId);
 
             for (Integer id : filmsId) {
                 films.add(getFilmById(id).get());
             }
-            return films;
         } else {
-            List<Integer> filmsId = jdbcTemplate.query(sqlQueryByLikes, (rs, rowNum) -> rs.getInt("film_id"), directorId);
+            filmsId = jdbcTemplate.query(sqlQueryByLikes, (rs, rowNum) -> rs.getInt("film_id"), directorId);
             for (Integer id : filmsId) {
                 films.add(getFilmById(id).get());
             }
-            return films;
         }
+        return films;
     }
 
 }

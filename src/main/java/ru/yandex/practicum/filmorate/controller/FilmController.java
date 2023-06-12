@@ -26,7 +26,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable @NotBlank Integer id) {
+    public Film getFilmById(@PathVariable @NotNull Integer id) {
         return filmService.getFilmById(id);
     }
 
@@ -63,7 +63,7 @@ public class FilmController {
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("{id}/like/{userId}")
-    public void removeLike(@PathVariable @NotBlank Integer id, @PathVariable @NotBlank Integer userId) {
+    public void removeLike(@PathVariable @NotNull Integer id, @PathVariable @NotBlank Integer userId) {
         filmService.removeLike(id, userId);
     }
 

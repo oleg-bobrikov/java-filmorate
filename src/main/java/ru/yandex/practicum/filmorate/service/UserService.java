@@ -68,7 +68,7 @@ public class UserService {
         }
         Optional<User> friend = userStorage.findUserById(friendId);
         if (friend.isEmpty()) {
-            throw new NotFoundException("user with id=" + friendId + " not found.");
+            throw new NotFoundException("friend with id=" + friendId + " not found.");
         }
         userStorage.removeFriend(user.get(), friend.get());
     }
