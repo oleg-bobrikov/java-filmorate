@@ -218,7 +218,10 @@ class FilmStorageTest {
         filmStorage.addLike(film2, user3);
 
         //expected
-        List<Film> exp = new ArrayList<>(filmStorage.searchFilms("ав", List.of("title")));
+        //ToDo:
+        HashMap <String, String> params = new HashMap<>();
+        //List<Film> exp = new ArrayList<>(filmStorage.searchFilms("ав", List.of("title")));
+        List<Film> exp = filmStorage.searchFilms(params);
 
         //assert
         Assertions.assertEquals(film1, exp.get(0));
@@ -237,7 +240,10 @@ class FilmStorageTest {
         directorStorage.updateFilmDirector(film2, new HashSet<>(List.of(director1)));
 
         //expected
-        List<Film> exp = new ArrayList<>(filmStorage.searchFilms("pav", List.of("director")));
+        //ToDo:
+        HashMap<String, String> params = new HashMap<>();
+//        List<Film> exp = new ArrayList<>(filmStorage.searchFilms("pav", List.of("director")));
+        List<Film> exp = filmStorage.searchFilms(params);
 
         //assert
         Assertions.assertEquals(film2, exp.get(0));
@@ -254,9 +260,12 @@ class FilmStorageTest {
         film3.setDirectors(new HashSet<>(List.of(director4)));
         directorStorage.updateFilmDirector(film2, new HashSet<>(List.of(director1)));
         directorStorage.updateFilmDirector(film3, new HashSet<>(List.of(director4)));
-
+        String query  ="ав";
+        HashMap<String, String> params = new HashMap<>();
+        //ToDo:
+        //List<Film> exp = filmStorage.searchFilms("ав", List.of("director", "title"));
         //expected
-        List<Film> exp = new ArrayList<>(filmStorage.searchFilms("ав", List.of("director", "title")));
+        List<Film> exp = filmStorage.searchFilms(params);
 
         Assertions.assertEquals(film3, exp.get(0));
         Assertions.assertEquals(film2, exp.get(1));

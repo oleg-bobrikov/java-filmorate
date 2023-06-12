@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -81,13 +82,17 @@ public class FilmService {
         return list;
     }
 
-
-    public List<Film> searchFilm(String query, List<String> by) {
-        if (by == null && query == null) {
-            return getFilms();
-        } else {
-            return filmStorage.searchFilms(query, by);
+    public List<Film> searchFilms(String query, List<String> by) {
+        HashMap<String, String> params = new HashMap<>();
+        for(String filter: by){
+            params.put(filter,query);
         }
+        return filmStorage.searchFilms(params);
+    }
+
+    public List<Film> searchFilms() {
+        //ToDO: change mehtod
+        return getFilms();
     }
 
 }

@@ -110,125 +110,148 @@ public class FilmH2Storage implements FilmStorage {
         return new ArrayList<>(results.values());
     }
 
-    @Override
-    public List<Film> searchFilms(String query, List<String> by) {
-        if (query != null && by != null) {
-            if (by.size() == 1) {
-                if (by.get(0).equals("title")) {
-                    String sqlTitle =
-                            " WITH films_by_title AS " +
-                                    "( " +
-                                    " SELECT " +
-                                    " FILMS.ID AS film_ID, " +
-                                    " FILMS.FILM_NAME AS FILM_NAME , " +
-                                    " FILMS.DESCRIPTION AS DESCRIPTION, " +
-                                    " FILMS.RELEASE_DATE AS RELEASE_DATE , " +
-                                    " FILMS.DURATION AS DURATION , " +
-                                    " FILMS.MPA_FILM_RATING_ID AS MPA_FILM_RATING_ID " +
-                                    " FROM FILMS " +
-                                    " WHERE LOWER(FILMS.FILM_NAME ) LIKE LOWER('%" + query + "%') " +
-                                    " ) " +
-                                    " SELECT " +
-                                    " films_by_title.film_ID AS ID ," +
-                                    " films_by_title.FILM_NAME , " +
-                                    " films_by_title.DESCRIPTION , " +
-                                    " films_by_title.RELEASE_DATE , " +
-                                    " films_by_title.DURATION , " +
-                                    " films_by_title.MPA_FILM_RATING_ID , " +
-                                    " COUNT(IFNULL (FILM_LIKES.USER_ID, 0)) AS likes " +
-                                    " FROM films_by_title " +
-                                    " LEFT JOIN FILM_likes ON FILM_likes.FILM_ID  = films_by_title.film_ID " +
-                                    " GROUP BY ID " +
-                                    " ORDER BY likes DESC ";
-                    return setObjectsInFilm(sqlTitle);
-                } else {
-                    String sqlDirectors =
-                            " WITH films_by_title AS  " +
-                                    " ( " +
-                                    " SELECT " +
-                                    " FILMS.ID AS film_ID, " +
-                                    " FILMS.FILM_NAME AS FILM_NAME , " +
-                                    " FILMS.DESCRIPTION AS DESCRIPTION, " +
-                                    " FILMS.RELEASE_DATE AS RELEASE_DATE , " +
-                                    " FILMS.DURATION AS DURATION , " +
-                                    " FILMS.MPA_FILM_RATING_ID AS MPA_FILM_RATING_ID " +
-                                    " FROM FILMS  " +
-                                    " LEFT JOIN DIRECTORS_FILMS ON DIRECTORS_FILMS.FILM_ID  = FILMS.ID " +
-                                    " LEFT JOIN DIRECTORS ON DIRECTORS.ID = DIRECTORS_FILMS.DIRECTOR_ID " +
-                                    " WHERE LOWER(DIRECTORS.DIRECTOR_NAME  ) LIKE LOWER ('%" + query + "%') " +
-                                    " ) " +
-                                    " SELECT " +
-                                    " films_by_title.film_ID AS ID , " +
-                                    " films_by_title.FILM_NAME , " +
-                                    " films_by_title.DESCRIPTION , " +
-                                    " films_by_title.RELEASE_DATE ,  " +
-                                    " films_by_title.DURATION , " +
-                                    " films_by_title.MPA_FILM_RATING_ID , " +
-                                    " COUNT(IFNULL (FILM_LIKES.USER_ID, 0)) AS likes " +
-                                    " FROM films_by_title " +
-                                    " LEFT JOIN FILM_likes ON FILM_likes.FILM_ID  = films_by_title.film_ID " +
-                                    " WHERE FILM_LIKES.USER_ID > 0 AND FILM_LIKES.FILM_ID > 0 " +
-                                    " GROUP BY ID " +
-                                    " ORDER BY likes DESC ";
-                    return setObjectsInFilm(sqlDirectors);
-                }
-            } else {
-                String sqlDouble =
-                        " WITH films_by_title AS " +
-                                " (  " +
-                                " SELECT  " +
-                                " FILMS.ID AS film_ID, " +
-                                " FILMS.FILM_NAME AS FILM_NAME , " +
-                                " FILMS.DESCRIPTION AS DESCRIPTION, " +
-                                " FILMS.RELEASE_DATE AS RELEASE_DATE , " +
-                                " FILMS.DURATION AS DURATION , " +
-                                " FILMS.MPA_FILM_RATING_ID AS MPA_FILM_RATING_ID " +
-                                " FROM FILMS  " +
-                                " WHERE LOWER(FILMS.FILM_NAME ) LIKE LOWER ('%" + query + "%') " +
-                                " UNION " +
-                                " SELECT  " +
-                                " FILMS.ID AS film_ID, " +
-                                " FILMS.FILM_NAME AS FILM_NAME , " +
-                                " FILMS.DESCRIPTION AS DESCRIPTION, " +
-                                " FILMS.RELEASE_DATE AS RELEASE_DATE , " +
-                                " FILMS.DURATION AS DURATION , " +
-                                " FILMS.MPA_FILM_RATING_ID AS MPA_FILM_RATING_ID  " +
-                                " FROM FILMS  " +
-                                " LEFT JOIN DIRECTORS_FILMS ON DIRECTORS_FILMS.FILM_ID  = FILMS.ID  " +
-                                " LEFT JOIN DIRECTORS ON DIRECTORS.ID = DIRECTORS_FILMS.DIRECTOR_ID  " +
-                                " WHERE LOWER(DIRECTORS.DIRECTOR_NAME  ) LIKE LOWER ('%" + query + "%') " +
-                                " ) " +
-                                " SELECT " +
-                                " films_by_title.film_ID AS ID ,  " +
-                                " films_by_title.FILM_NAME , " +
-                                " films_by_title.DESCRIPTION , " +
-                                " films_by_title.RELEASE_DATE ,  " +
-                                " films_by_title.DURATION , " +
-                                " films_by_title.MPA_FILM_RATING_ID , " +
-                                " COUNT(FILM_LIKES.USER_ID) AS likes " +
-                                " FROM films_by_title " +
-                                " LEFT JOIN FILM_likes ON FILM_likes.FILM_ID  = films_by_title.film_ID " +
-                                " GROUP BY ID " +
-                                " ORDER BY likes DESC ";
-                return setObjectsInFilm(sqlDouble);
-            }
-        } else {
-            String sql =
-                    " SELECT " +
-                            " FILMS.ID , " +
-                            " FILMS.FILM_NAME , " +
-                            " FILMS.DESCRIPTION , " +
-                            " FILMS.RELEASE_DATE , " +
-                            " FILMS.DURATION ," +
-                            " FILMS.MPA_FILM_RATING_ID ," +
-                            " COUNT(IFNULL (FILM_LIKES.USER_ID, 0)) AS likes " +
-                            " FROM FILMS " +
-                            " LEFT JOIN FILM_likes ON FILM_likes.FILM_ID  = FILMS.ID " +
-                            " WHERE FILM_LIKES.USER_ID > 0 AND FILM_LIKES.FILM_ID > 0 " +
-                            " GROUP BY FILMS.ID " +
-                            " ORDER BY likes DESC ";
-            return setObjectsInFilm(sql);
-        }
+
+    public List<Film> searchFilms(Map<String, String> params) {
+
+        boolean isFilteredByDirector = params.containsKey("director");
+        String directorSearchString = isFilteredByDirector ? params.get("director") : "";
+
+        boolean isFilteredByTitle = params.containsKey("title");
+        String titleSearchString = isFilteredByTitle ? params.get("title") : "";
+
+        HashMap<String, Object> sqlParams = new HashMap<>();
+        sqlParams.put("IS_FILTERED_BY_DIRECTOR_NAME", isFilteredByDirector);
+        sqlParams.put("IS_FILTERED_BY_FILM_NAME", isFilteredByTitle);
+        sqlParams.put("FILM_SEARCH", "'%" + titleSearchString + "%'");
+        sqlParams.put("DIRECTOR_SEARCH", "'%" + directorSearchString + "%'");
+
+        String sql = "SELECT" +
+                "    *" +
+                "FROM" +
+                "    FILMS" +
+                "    INNER JOIN (" +
+                "        WITH filtered_films AS (" +
+                "            SELECT" +
+                "                FILMS.ID AS FILM_ID" +
+                "            FROM" +
+                "                FILMS" +
+                "            WHERE" +
+                "                NOT :IS_FILTERED_BY_FILM_NAME" +
+                "                OR LOWER(FILMS.FILM_NAME) LIKE LOWER(:FILM_SEARCH)" +
+                "            UNION" +
+                "            SELECT" +
+                "                FILM_ID" +
+                "            FROM" +
+                "                DIRECTORS_FILMS" +
+                "                INNER JOIN DIRECTORS ON DIRECTORS.ID = DIRECTORS_FILMS.DIRECTOR_ID" +
+                "            WHERE" +
+                "                NOT :IS_FILTERED_BY_DIRECTOR_NAME" +
+                "                OR LOWER(DIRECTORS.DIRECTOR_NAME) LIKE LOWER(:DIRECTOR_SEARCH)" +
+                "        )" +
+                "        SELECT" +
+                "            filtered_films.FILM_ID AS FILM_ID" +
+                "        FROM" +
+                "            filtered_films" +
+                "            LEFT JOIN FILM_likes ON filtered_films.FILM_ID = FILM_likes.FILM_ID" +
+                "        GROUP BY" +
+                "            FILM_ID" +
+                "        ORDER BY" +
+                "            COUNT(FILM_likes.FILM_ID) DESC" +
+                "    ) AS SORTED_FILMS ON SORTED_FILMS.FILM_ID = FILMS.ID";
+       
+
+        return namedParameterJdbcTemplate.query(sql, sqlParams, filmRowMapper);
+
+
+//                    return setObjectsInFilm(sqlTitle);
+//                } else {
+//                    String sqlDirectors =
+//                            " WITH films_by_title AS  " +
+//                                    " ( " +
+//                                    " SELECT " +
+//                                    " FILMS.ID AS film_ID, " +
+//                                    " FILMS.FILM_NAME AS FILM_NAME , " +
+//                                    " FILMS.DESCRIPTION AS DESCRIPTION, " +
+//                                    " FILMS.RELEASE_DATE AS RELEASE_DATE , " +
+//                                    " FILMS.DURATION AS DURATION , " +
+//                                    " FILMS.MPA_FILM_RATING_ID AS MPA_FILM_RATING_ID " +
+//                                    " FROM FILMS  " +
+//                                    " LEFT JOIN DIRECTORS_FILMS ON DIRECTORS_FILMS.FILM_ID  = FILMS.ID " +
+//                                    " LEFT JOIN DIRECTORS ON DIRECTORS.ID = DIRECTORS_FILMS.DIRECTOR_ID " +
+//                                    " WHERE LOWER(DIRECTORS.DIRECTOR_NAME  ) LIKE LOWER ('%" + query + "%') " +
+//                                    " ) " +
+//                                    " SELECT " +
+//                                    " films_by_title.film_ID AS ID , " +
+//                                    " films_by_title.FILM_NAME , " +
+//                                    " films_by_title.DESCRIPTION , " +
+//                                    " films_by_title.RELEASE_DATE ,  " +
+//                                    " films_by_title.DURATION , " +
+//                                    " films_by_title.MPA_FILM_RATING_ID , " +
+//                                    " COUNT(IFNULL (FILM_LIKES.USER_ID, 0)) AS likes " +
+//                                    " FROM films_by_title " +
+//                                    " LEFT JOIN FILM_likes ON FILM_likes.FILM_ID  = films_by_title.film_ID " +
+//                                    " WHERE FILM_LIKES.USER_ID > 0 AND FILM_LIKES.FILM_ID > 0 " +
+//                                    " GROUP BY ID " +
+//                                    " ORDER BY likes DESC ";
+//                    return setObjectsInFilm(sqlDirectors);
+//                }
+//            } else {
+//                String sqlDouble =
+//                        " WITH films_by_title AS " +
+//                                " (  " +
+//                                " SELECT  " +
+//                                " FILMS.ID AS film_ID, " +
+//                                " FILMS.FILM_NAME AS FILM_NAME , " +
+//                                " FILMS.DESCRIPTION AS DESCRIPTION, " +
+//                                " FILMS.RELEASE_DATE AS RELEASE_DATE , " +
+//                                " FILMS.DURATION AS DURATION , " +
+//                                " FILMS.MPA_FILM_RATING_ID AS MPA_FILM_RATING_ID " +
+//                                " FROM FILMS  " +
+//                                " WHERE LOWER(FILMS.FILM_NAME ) LIKE LOWER ('%" + query + "%') " +
+//                                " UNION " +
+//                                " SELECT  " +
+//                                " FILMS.ID AS film_ID, " +
+//                                " FILMS.FILM_NAME AS FILM_NAME , " +
+//                                " FILMS.DESCRIPTION AS DESCRIPTION, " +
+//                                " FILMS.RELEASE_DATE AS RELEASE_DATE , " +
+//                                " FILMS.DURATION AS DURATION , " +
+//                                " FILMS.MPA_FILM_RATING_ID AS MPA_FILM_RATING_ID  " +
+//                                " FROM FILMS  " +
+//                                " LEFT JOIN DIRECTORS_FILMS ON DIRECTORS_FILMS.FILM_ID  = FILMS.ID  " +
+//                                " LEFT JOIN DIRECTORS ON DIRECTORS.ID = DIRECTORS_FILMS.DIRECTOR_ID  " +
+//                                " WHERE LOWER(DIRECTORS.DIRECTOR_NAME  ) LIKE LOWER ('%" + query + "%') " +
+//                                " ) " +
+//                                " SELECT " +
+//                                " films_by_title.film_ID AS ID ,  " +
+//                                " films_by_title.FILM_NAME , " +
+//                                " films_by_title.DESCRIPTION , " +
+//                                " films_by_title.RELEASE_DATE ,  " +
+//                                " films_by_title.DURATION , " +
+//                                " films_by_title.MPA_FILM_RATING_ID , " +
+//                                " COUNT(FILM_LIKES.USER_ID) AS likes " +
+//                                " FROM films_by_title " +
+//                                " LEFT JOIN FILM_likes ON FILM_likes.FILM_ID  = films_by_title.film_ID " +
+//                                " GROUP BY ID " +
+//                                " ORDER BY likes DESC ";
+//                return setObjectsInFilm(sqlDouble);
+//            }
+//        } else {
+//            String sql =
+//                    " SELECT " +
+//                            " FILMS.ID , " +
+//                            " FILMS.FILM_NAME , " +
+//                            " FILMS.DESCRIPTION , " +
+//                            " FILMS.RELEASE_DATE , " +
+//                            " FILMS.DURATION ," +
+//                            " FILMS.MPA_FILM_RATING_ID ," +
+//                            " COUNT(IFNULL (FILM_LIKES.USER_ID, 0)) AS likes " +
+//                            " FROM FILMS " +
+//                            " LEFT JOIN FILM_likes ON FILM_likes.FILM_ID  = FILMS.ID " +
+//                            " WHERE FILM_LIKES.USER_ID > 0 AND FILM_LIKES.FILM_ID > 0 " +
+//                            " GROUP BY FILMS.ID " +
+//                            " ORDER BY likes DESC ";
+//            return setObjectsInFilm(sql);
+
     }
 
 

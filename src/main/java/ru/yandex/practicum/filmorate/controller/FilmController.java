@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.validator.IsValidBy;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Validated
@@ -38,9 +39,13 @@ public class FilmController {
     }
 
     @GetMapping("/search")
-    public List<Film> searchFilms(@RequestParam(required = false) String query,
-                                  @RequestParam(required = false) @IsValidBy List<String> by) {
-        return filmService.searchFilm(query, by);
+    public List<Film> searchFilms(@RequestParam(required = false) Optional<String> query,
+                                  @RequestParam(required = false) @IsValidBy Optional<List<String>> by) {
+        if (query.isEmpty() || by.isEmpty()) {
+            return filmService.searchFilms();
+        } else {
+            return filmService.searchFilms(query.get(), by.get());
+        }
     }
 
     @PostMapping()
@@ -73,6 +78,4 @@ public class FilmController {
     public List<Film> findFilmsByDirector(@PathVariable Integer directorId, @RequestParam String sortBy) {
         return filmService.findFilmByDirector(directorId, sortBy);
     }
-
-
 }
