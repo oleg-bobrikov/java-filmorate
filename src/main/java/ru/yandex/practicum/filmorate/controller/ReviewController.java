@@ -48,9 +48,9 @@ public class ReviewController {
         reviewService.like(reviewId, userId);
     }
 
-    @PutMapping("{review_id}/dislike/{userId}")
-    public void dislike(@PathVariable @NotNull Integer review_id, @PathVariable @NotNull Integer userId) {
-        reviewService.dislike(review_id, userId);
+    @PutMapping("{reviewId}/dislike/{userId}")
+    public void dislike(@PathVariable @NotNull Integer reviewId, @PathVariable @NotNull Integer userId) {
+        reviewService.dislike(reviewId, userId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
