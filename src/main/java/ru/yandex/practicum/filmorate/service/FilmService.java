@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +25,8 @@ public class FilmService {
     @Qualifier("filmH2Storage")
     private FilmStorage filmStorage;
 
+    private UserStorage userStorage;
+
     private final UserService userService;
 
     public List<Film> getPopular(int count) {
@@ -36,6 +39,11 @@ public class FilmService {
             throw new NotFoundException("Фильм с идентификатором " + id + " не найден.");
         }
         return filmOptional.get();
+    }
+
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 
     public void like(Integer id, Integer userId) {

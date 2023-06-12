@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.*;
 import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
+import ru.yandex.practicum.filmorate.mapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
@@ -21,23 +22,22 @@ import java.util.*;
 @Slf4j
 public class FilmH2Storage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
-
     private final MpaStorage mpaStorage;
     private final FilmRowMapper filmRowMapper;
-
+    private final GenreRowMapper genreRowMapper;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
 
     public FilmH2Storage(JdbcTemplate jdbcTemplate, GenreStorage genreStorage,
-                         MpaStorage mpaStorage, FilmRowMapper filmRowMapper, DirectorStorage directorStorage) {
+                         MpaStorage mpaStorage, FilmRowMapper filmRowMapper, DirectorStorage directorStorage, GenreRowMapper genreRowMapper) {
         this.jdbcTemplate = jdbcTemplate;
         this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
         this.mpaStorage = mpaStorage;
         this.filmRowMapper = filmRowMapper;
+        this.genreRowMapper = genreRowMapper;
         DataSource dataSource = jdbcTemplate.getDataSource();
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));
         generatedKeyHolder = new GeneratedKeyHolder();
@@ -235,7 +235,7 @@ public class FilmH2Storage implements FilmStorage {
     @Override
     public Optional<Film> getFilmById(int id) {
         String sql = "select * from films where id = ?";
-        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, id);
+        List<Film> films = jdbcTemplate.query(sql, new FilmRowMapper(mpaStorage), id);
         if (films.isEmpty()) {
             log.info("Фильм с идентификатором {} не найден.", id);
             return Optional.empty();
@@ -262,6 +262,63 @@ public class FilmH2Storage implements FilmStorage {
             return Optional.of(films.get(0));
         }
     }
+
+
+    @Override
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        String sqlQuery = "with sorted_films as " +
+                "( SELECT FILM_ID " +
+                " FROM FILM_LIKES AS film_likes" +
+                " WHERE film_likes.FILM_ID IN" +
+                " (SELECT film_likes.FILM_ID AS FILM_ID" +
+                " FROM FILM_LIKES AS film_likes" +
+                " WHERE FILM_LIKES.USER_ID IN(:user_id, :friend_id)" +
+                "  GROUP BY FILM_ID" +
+                "     HAVING COUNT(FILM_LIKES.USER_ID) = 2)" +
+                " GROUP BY FILM_ID" +
+                " ORDER BY count(USER_ID) DESC" +
+                ")" +
+                " SELECT * FROM Films " +
+                " INNER JOIN sorted_films" +
+                " ON FILMS.ID = sorted_films.FILM_ID";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("user_id", 1);
+        params.put("friend_id", 2);
+
+        List<Film> films = namedParameterJdbcTemplate.query(sqlQuery, params, filmRowMapper);
+
+        for (Film film : films) {
+            // get genres
+            String sql = "SELECT " +
+                    " GENRES.ID, " +
+                    " GENRES.GENRE_NAME" +
+                    " FROM FILM_GENRES" +
+                    " INNER JOIN GENRES ON GENRES.ID = FILM_GENRES.FILM_ID  AND GENRES.ID = :FILM_ID";
+            params.clear();
+            params.put("FILM_ID", film.getId());
+            List<Genre> genres = namedParameterJdbcTemplate.query(sql, params, genreRowMapper);
+            for (Genre genre : genres) {
+                film.getGenres().add(genre);
+            }
+
+            // get director
+            sql = "select director_id from directors_films where FILM_ID = ?";
+            SqlRowSet directorRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
+            while (directorRowSet.next()) {
+                film.getDirectors().add(directorStorage.getDirectorById(directorRowSet.getInt("DIRECTOR_ID")).get());
+            }
+            // get likes
+            sql = "select USER_ID from FILM_LIKES where FILM_ID = ?";
+            SqlRowSet likesRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
+            while (likesRowSet.next()) {
+                film.getLikes().add(likesRowSet.getInt("USER_ID"));
+            }
+
+        }
+        return films;
+    }
+
 
     @Override
     public void addLike(Film film, User user) {

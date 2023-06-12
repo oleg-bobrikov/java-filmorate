@@ -26,6 +26,8 @@ public class InMemoryFilmStorage implements FilmStorage {
         return film;
     }
 
+
+
     @Override
     public void deleteFilmById(int id) {
         films.remove(id);
@@ -60,6 +62,14 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .limit(count)
                 .collect(Collectors.toList());
     }
+
+
+
+    @Override
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return null;
+    }
+
 
     @Override
     public List<Film> findFilmByDirector(Integer directorId, String sortBy) {

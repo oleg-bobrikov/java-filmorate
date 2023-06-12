@@ -157,7 +157,7 @@ class UserStorageTest {
                 .contains(createdFriend1, createdFriend2);
     }
 
-    @Test
+   @Test
     void getUsers_returnUsers() {
         //arrange
         User user1 = User.builder()
