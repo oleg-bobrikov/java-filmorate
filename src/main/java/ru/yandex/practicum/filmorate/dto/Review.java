@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-@Builder(toBuilder=true)
+@Builder(toBuilder = true)
 public class Review {
 
     private Integer reviewId;
@@ -38,7 +38,4 @@ public class Review {
         params.put("USEFUL", useful);
         return params;
     }
-
-
-
 }
