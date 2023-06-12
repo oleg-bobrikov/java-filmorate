@@ -3,8 +3,10 @@ package ru.yandex.practicum.filmorate.mapper;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.Review;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 @Component
 public class ReviewRowMapper implements RowMapper<Review> {
     @Override
