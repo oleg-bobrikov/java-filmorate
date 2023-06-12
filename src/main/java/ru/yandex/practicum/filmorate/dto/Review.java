@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-@Builder
+@Builder(toBuilder=true)
 public class Review {
 
     private Integer reviewId;
