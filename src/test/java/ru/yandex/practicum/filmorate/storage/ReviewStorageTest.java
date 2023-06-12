@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,27 +17,28 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
-@RequiredArgsConstructor
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ReviewStorageTest {
-    @Autowired
-    private ReviewStorage reviewStorage;
+    private final ReviewStorage reviewStorage;
+    private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
+    private final User user1;
+    private final User user2;
+    private final Film film1;
 
-    @Qualifier("userH2Storage")
     @Autowired
-    private UserStorage userStorage;
-
-    @Qualifier("filmH2Storage")
-    @Autowired
-    private FilmStorage filmStorage;
-
+    public ReviewStorageTest(ReviewStorage reviewStorage, @Qualifier("userH2Storage") UserStorage userStorage, @Qualifier("filmH2Storage") FilmStorage filmStorage) {
+        this.reviewStorage = reviewStorage;
+        this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
+        this.user1 = createUser1();
+        this.user2 = createUser2();
+        this.film1 = createFilm1();
+    }
 
     @Test
     public void add_return_new_review() {
         //Arrange
-        User user1 = createUser1();
-        Film film1 = createFilm1();
-
         Review review1 = Review.builder()
                 .content("This is so cool!")
                 .filmId(film1.getId())
@@ -63,9 +63,6 @@ public class ReviewStorageTest {
     @Test
     public void update_return_updated_review() {
         //Arrange
-        User user1 = createUser1();
-        Film film1 = createFilm1();
-
         Review newReview = Review.builder()
                 .content("This is so cool!")
                 .filmId(film1.getId())
@@ -94,9 +91,6 @@ public class ReviewStorageTest {
     @Test
     public void delete_return_optional_empty() {
         //Arrange
-        User user1 = createUser1();
-        Film film1 = createFilm1();
-
         Review newReview = Review.builder()
                 .content("This is so cool!")
                 .filmId(film1.getId())
@@ -116,10 +110,6 @@ public class ReviewStorageTest {
     public void getAllReviewsByFilmId_return_review_list_by_film() {
 
         //Arrange
-        User user1 = createUser1();
-        User user2 = createUser2();
-        Film film1 = createFilm1();
-
         Review review1 = Review.builder()
                 .content("This is so cool!")
                 .filmId(film1.getId())
@@ -131,7 +121,6 @@ public class ReviewStorageTest {
                 .filmId(film1.getId())
                 .userId(user2.getId())
                 .isPositive(true).build();
-
 
         reviewStorage.add(review1);
         reviewStorage.add(review2);
@@ -147,12 +136,7 @@ public class ReviewStorageTest {
 
     @Test
     public void addAnyLike_is_like_review_useful_has_1() {
-
         //Arrange
-        User user1 = createUser1();
-        User user2 = createUser2();
-        Film film1 = createFilm1();
-
         Review newReview = Review.builder()
                 .content("This is so cool!")
                 .filmId(film1.getId())
@@ -178,12 +162,7 @@ public class ReviewStorageTest {
 
     @Test
     public void addAnyLike_is_dislike_review_useful_has_minus_1() {
-
         //Arrange
-        User user1 = createUser1();
-        User user2 = createUser2();
-        Film film1 = createFilm1();
-
         Review newReview = Review.builder()
                 .content("This is so cool!")
                 .filmId(film1.getId())
@@ -210,10 +189,6 @@ public class ReviewStorageTest {
     @Test
     public void removeAnyLike_review_useful_should_be_restored() {
         //Arrange
-        User user1 = createUser1();
-        User user2 = createUser2();
-        Film film1 = createFilm1();
-
         Review newReview = Review.builder()
                 .content("This is so cool!")
                 .filmId(film1.getId())
@@ -241,10 +216,6 @@ public class ReviewStorageTest {
     @Test
     public void removeDislike_review_useful_should_be_restored() {
         //Arrange
-        User user1 = createUser1();
-        User user2 = createUser2();
-        Film film1 = createFilm1();
-
         Review newReview = Review.builder()
                 .content("This is so cool!")
                 .filmId(film1.getId())
