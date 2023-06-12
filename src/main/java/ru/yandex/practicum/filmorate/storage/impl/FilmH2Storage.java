@@ -412,40 +412,39 @@ public class FilmH2Storage implements FilmStorage {
 
     @Override
     public List<Film> getRecommendations(Integer userId) {
-        String sql = "WITH SIMILAR_USERS_BY_PRIORITY AS (" +
-                "    WITH USER_FILMS AS (" +
-                "        SELECT" +
-                "            FILM_ID" +
-                "        FROM" +
-                "            FILM_LIKES" +
-                "        WHERE" +
-                "            USER_ID = :USER_ID" +
-                "    )" +
-                "    SELECT" +
-                "        FILM_LIKES.USER_ID," +
-                "        COUNT(FILM_LIKES.FILM_ID) AS PRIORITY" +
-                "    FROM" +
-                "        FILM_LIKES" +
-                "    WHERE" +
-                "        USER_ID <> :USER_ID" +
-                "        AND FILM_ID IN (" +
-                "            SELECT" +
-                "                FILM_ID" +
-                "            FROM" +
-                "                USER_FILMS" +
-                "        )" +
-                "    GROUP BY" +
-                "        USER_ID" +
-                ")" +
-                " SELECT" +
+        String sql = "SELECT" +
                 "    DISTINCT FILMS.ID," +
                 "    FILMS.FILM_NAME," +
                 "    FILMS.DESCRIPTION," +
                 "    FILMS.RELEASE_DATE," +
+                "    FILMS.DURATION," +
                 "    IFNULL(FILMS.MPA_FILM_RATING_ID, 0) AS MPA_FILM_RATING_ID," +
                 "    MPA_FILM_RATINGS.MPA_FILM_RATING_NAME" +
-                " FROM " +
-                "    SIMILAR_USERS_BY_PRIORITY" +
+                " FROM" +
+                "    (" +
+                "        SELECT" +
+                "            FILM_LIKES.USER_ID," +
+                "            COUNT(FILM_LIKES.FILM_ID) AS PRIORITY" +
+                "        FROM" +
+                "            FILM_LIKES" +
+                "        WHERE" +
+                "            USER_ID <> :USER_ID" +
+                "            AND FILM_ID IN (" +
+                "                SELECT" +
+                "                    FILM_ID" +
+                "                FROM" +
+                "                    (" +
+                "                        SELECT" +
+                "                            FILM_ID" +
+                "                        FROM" +
+                "                            FILM_LIKES" +
+                "                        WHERE" +
+                "                            USER_ID = :USER_ID" +
+                "                    ) AS USER_FILMS" +
+                "            )" +
+                "        GROUP BY" +
+                "            USER_ID" +
+                "    ) AS SIMILAR_USERS_BY_PRIORITY" +
                 "    INNER JOIN FILM_LIKES ON SIMILAR_USERS_BY_PRIORITY.USER_ID = FILM_LIKES.USER_ID" +
                 "    INNER JOIN FILMS ON FILMS.ID = FILM_LIKES.FILM_ID" +
                 "    LEFT JOIN MPA_FILM_RATINGS ON MPA_FILM_RATINGS.ID = FILMS.MPA_FILM_RATING_ID" +
@@ -453,14 +452,43 @@ public class FilmH2Storage implements FilmStorage {
                 "        SELECT" +
                 "            MAX(PRIORITY) AS PRIORITY" +
                 "        FROM" +
-                "            SIMILAR_USERS_BY_PRIORITY" +
+                "            (" +
+                "                SELECT" +
+                "                    COUNT(FILM_LIKES.FILM_ID) AS PRIORITY" +
+                "                FROM" +
+                "                    FILM_LIKES" +
+                "                WHERE" +
+                "                    USER_ID <> :USER_ID" +
+                "                    AND FILM_ID IN (" +
+                "                        SELECT" +
+                "                            FILM_ID" +
+                "                        FROM" +
+                "                            (" +
+                "                                SELECT" +
+                "                                    FILM_ID" +
+                "                                FROM" +
+                "                                    FILM_LIKES" +
+                "                                WHERE" +
+                "                                    USER_ID = :USER_ID" +
+                "                            ) AS USER_FILMS" +
+                "                    )" +
+                "                GROUP BY" +
+                "                    USER_ID" +
+                "            ) AS SIMILAR_USERS_BY_PRIORITY" +
                 "    ) AS MAX_PRIORITY ON SIMILAR_USERS_BY_PRIORITY.PRIORITY = MAX_PRIORITY.PRIORITY" +
                 " WHERE" +
                 "    NOT FILM_LIKES.FILM_ID IN (" +
                 "        SELECT" +
                 "            FILM_ID" +
                 "        FROM" +
-                "            USER_FILMS" +
+                "            (" +
+                "                SELECT" +
+                "                    FILM_ID" +
+                "                FROM" +
+                "                    FILM_LIKES" +
+                "                WHERE" +
+                "                    USER_ID = :USER_ID" +
+                "            )" +
                 "    )";
         HashMap<String, Object> params = new HashMap<>();
         params.put("USER_ID", userId);
@@ -480,7 +508,7 @@ public class FilmH2Storage implements FilmStorage {
                     " GENRES.ID, " +
                     " GENRES.GENRE_NAME" +
                     " FROM FILM_GENRES" +
-                    " INNER JOIN GENRES ON GENRES.ID = FILM_GENRES.FILM_ID  AND GENRES.ID = :FILM_ID";
+                    " INNER JOIN GENRES ON GENRES.ID = FILM_GENRES.GENRE_ID  AND FILM_GENRES.FILM_ID = :FILM_ID";
             List<Genre> genres = namedParameterJdbcTemplate.query(sql, params, genreRowMapper);
             film.setGenres(new HashSet<>(genres));
 
