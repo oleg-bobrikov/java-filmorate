@@ -28,4 +28,5 @@ public interface FilmStorage {
 
     List<Film> findFilmByDirector(Integer directorId, String sortBy);
 
+    List<Film> getRecommendations(Integer userId);
 }
