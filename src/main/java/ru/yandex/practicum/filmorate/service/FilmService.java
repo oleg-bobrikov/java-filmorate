@@ -80,4 +80,14 @@ public class FilmService {
         }
         return list;
     }
+
+
+    public List<Film> searchFilm(String query, List<String> by) {
+        if (by == null && query == null) {
+            return getFilms();
+        } else {
+            return filmStorage.searchFilms(query, by);
+        }
+    }
+
 }

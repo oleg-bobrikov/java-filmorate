@@ -9,8 +9,8 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.*;
 import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
@@ -42,6 +42,195 @@ public class FilmH2Storage implements FilmStorage {
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));
         generatedKeyHolder = new GeneratedKeyHolder();
     }
+
+    private List<Film> setLikesAndGenreInFilms(String sql) {
+
+        LinkedHashMap<Integer, Film> results = new LinkedHashMap<>();
+        jdbcTemplate.query(sql, filmRowMapper).forEach(film -> results.put(film.getId(), film));
+
+        //likes
+        sql = "select film_id, user_id from film_likes";
+        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
+        while (rs.next()) {
+            int fId = rs.getInt("film_id");
+            if (results.containsKey(fId)) {
+                results.get(fId)
+                        .getLikes()
+                        .add(rs.getInt("user_id"));
+            }
+        }
+
+        //genres
+
+        sql = "SELECT " +
+                " film_genres.film_id AS film_id, " +
+                " film_genres.genre_id AS genre_id, " +
+                " genres.genre_name AS genre_name " +
+                "FROM " +
+                " film_genres AS film_genres " +
+                "INNER JOIN " +
+                " genres AS genres " +
+                "ON film_genres.GENRE_ID = genres.id";
+        rs = jdbcTemplate.queryForRowSet(sql);
+        while (rs.next()) {
+            int filmId = rs.getInt("FILM_ID");
+            int genreId = rs.getInt("GENRE_ID");
+            Film film;
+            if (results.containsKey(filmId)) {
+                film = results.get(filmId);
+                Set<Genre> genres = film.getGenres();
+                Genre genre = genreStorage.getGenreById(genreId);
+                genres.add(genre);
+            }
+        }
+        // director
+        sql = "SELECT " +
+                " directors_films.film_id , " +
+                " directors_films.director_id, " +
+                " dir.director_name " +
+                "FROM " +
+                " directors_films  " +
+                "INNER JOIN " +
+                " directors AS dir " +
+                "ON directors_films.director_id = dir.id";
+        rs = jdbcTemplate.queryForRowSet(sql);
+        while (rs.next()) {
+            int filmId = rs.getInt("FILM_ID");
+            int directorId = rs.getInt("director_id");
+            String directorName = rs.getString("director_name");
+            Film film;
+            if (results.containsKey(filmId)) {
+                film = results.get(filmId);
+                Set<Director> directors = film.getDirectors();
+                Director director = new Director(directorId, directorName);
+                directors.add(director);
+            }
+        }
+
+        return new ArrayList<>(results.values());
+    }
+
+    @Override
+    public List<Film> searchFilms(String query, List<String> by) {
+        if (query != null && by != null) {
+            if (by.size() == 1) {
+                if (by.get(0).equals("title")) {
+                    String sqlTitle =
+                            " WITH films_by_title AS " +
+                                    "( " +
+                                    " SELECT " +
+                                    " FILMS.ID AS film_ID, " +
+                                    " FILMS.FILM_NAME AS FILM_NAME , " +
+                                    " FILMS.DESCRIPTION AS DESCRIPTION, " +
+                                    " FILMS.RELEASE_DATE AS RELEASE_DATE , " +
+                                    " FILMS.DURATION AS DURATION , " +
+                                    " FILMS.MPA_FILM_RATING_ID AS MPA_FILM_RATING_ID " +
+                                    " FROM FILMS " +
+                                    " WHERE LOWER(FILMS.FILM_NAME ) LIKE LOWER('%" + query + "%') " +
+                                    " ) " +
+                                    " SELECT " +
+                                    " films_by_title.film_ID AS ID ," +
+                                    " films_by_title.FILM_NAME , " +
+                                    " films_by_title.DESCRIPTION , " +
+                                    " films_by_title.RELEASE_DATE , " +
+                                    " films_by_title.DURATION , " +
+                                    " films_by_title.MPA_FILM_RATING_ID , " +
+                                    " COUNT(IFNULL (FILM_LIKES.USER_ID, 0)) AS likes " +
+                                    " FROM films_by_title " +
+                                    " LEFT JOIN FILM_likes ON FILM_likes.FILM_ID  = films_by_title.film_ID " +
+                                    " GROUP BY ID " +
+                                    " ORDER BY likes DESC ";
+                    return setLikesAndGenreInFilms(sqlTitle);
+                } else {
+                    String sqlDirectors =
+                            " WITH films_by_title AS  " +
+                                    " ( " +
+                                    " SELECT " +
+                                    " FILMS.ID AS film_ID, " +
+                                    " FILMS.FILM_NAME AS FILM_NAME , " +
+                                    " FILMS.DESCRIPTION AS DESCRIPTION, " +
+                                    " FILMS.RELEASE_DATE AS RELEASE_DATE , " +
+                                    " FILMS.DURATION AS DURATION , " +
+                                    " FILMS.MPA_FILM_RATING_ID AS MPA_FILM_RATING_ID " +
+                                    " FROM FILMS  " +
+                                    " LEFT JOIN DIRECTORS_FILMS ON DIRECTORS_FILMS.FILM_ID  = FILMS.ID " +
+                                    " LEFT JOIN DIRECTORS ON DIRECTORS.ID = DIRECTORS_FILMS.DIRECTOR_ID " +
+                                    " WHERE LOWER(DIRECTORS.DIRECTOR_NAME  ) LIKE LOWER ('%" + query + "%') " +
+                                    " ) " +
+                                    " SELECT " +
+                                    " films_by_title.film_ID AS ID , " +
+                                    " films_by_title.FILM_NAME , " +
+                                    " films_by_title.DESCRIPTION , " +
+                                    " films_by_title.RELEASE_DATE ,  " +
+                                    " films_by_title.DURATION , " +
+                                    " films_by_title.MPA_FILM_RATING_ID , " +
+                                    " COUNT(IFNULL (FILM_LIKES.USER_ID, 0)) AS likes " +
+                                    " FROM films_by_title " +
+                                    " LEFT JOIN FILM_likes ON FILM_likes.FILM_ID  = films_by_title.film_ID " +
+                                    " WHERE FILM_LIKES.USER_ID > 0 AND FILM_LIKES.FILM_ID > 0 " +
+                                    " GROUP BY ID " +
+                                    " ORDER BY likes DESC ";
+                    return setLikesAndGenreInFilms(sqlDirectors);
+                }
+            } else {
+                String sqlDouble =
+                        " WITH films_by_title AS " +
+                                " (  " +
+                                " SELECT  " +
+                                " FILMS.ID AS film_ID, " +
+                                " FILMS.FILM_NAME AS FILM_NAME , " +
+                                " FILMS.DESCRIPTION AS DESCRIPTION, " +
+                                " FILMS.RELEASE_DATE AS RELEASE_DATE , " +
+                                " FILMS.DURATION AS DURATION , " +
+                                " FILMS.MPA_FILM_RATING_ID AS MPA_FILM_RATING_ID " +
+                                " FROM FILMS  " +
+                                " WHERE LOWER(FILMS.FILM_NAME ) LIKE LOWER ('%" + query + "%') " +
+                                " UNION " +
+                                " SELECT  " +
+                                " FILMS.ID AS film_ID, " +
+                                " FILMS.FILM_NAME AS FILM_NAME , " +
+                                " FILMS.DESCRIPTION AS DESCRIPTION, " +
+                                " FILMS.RELEASE_DATE AS RELEASE_DATE , " +
+                                " FILMS.DURATION AS DURATION , " +
+                                " FILMS.MPA_FILM_RATING_ID AS MPA_FILM_RATING_ID  " +
+                                " FROM FILMS  " +
+                                " LEFT JOIN DIRECTORS_FILMS ON DIRECTORS_FILMS.FILM_ID  = FILMS.ID  " +
+                                " LEFT JOIN DIRECTORS ON DIRECTORS.ID = DIRECTORS_FILMS.DIRECTOR_ID  " +
+                                " WHERE LOWER(DIRECTORS.DIRECTOR_NAME  ) LIKE LOWER ('%" + query + "%') " +
+                                " ) " +
+                                " SELECT " +
+                                " films_by_title.film_ID AS ID ,  " +
+                                " films_by_title.FILM_NAME , " +
+                                " films_by_title.DESCRIPTION , " +
+                                " films_by_title.RELEASE_DATE ,  " +
+                                " films_by_title.DURATION , " +
+                                " films_by_title.MPA_FILM_RATING_ID , " +
+                                " COUNT(FILM_LIKES.USER_ID) AS likes " +
+                                " FROM films_by_title " +
+                                " LEFT JOIN FILM_likes ON FILM_likes.FILM_ID  = films_by_title.film_ID " +
+                                " GROUP BY ID " +
+                                " ORDER BY likes DESC ";
+                return setLikesAndGenreInFilms(sqlDouble);
+            }
+        } else {
+            String sql =
+                    " SELECT " +
+                            " FILMS.ID , " +
+                            " FILMS.FILM_NAME , " +
+                            " FILMS.DESCRIPTION , " +
+                            " FILMS.RELEASE_DATE , " +
+                            " FILMS.DURATION ," +
+                            " FILMS.MPA_FILM_RATING_ID ," +
+                            " COUNT(IFNULL (FILM_LIKES.USER_ID, 0)) AS likes " +
+                            " FROM FILMS " +
+                            " LEFT JOIN FILM_likes ON FILM_likes.FILM_ID  = FILMS.ID " +
+                            " WHERE FILM_LIKES.USER_ID > 0 AND FILM_LIKES.FILM_ID > 0 " +
+                            " GROUP BY FILMS.ID " +
+                            " ORDER BY likes DESC ";
+            return setLikesAndGenreInFilms(sql);
+        }
+    }
+
 
     @Override
     public Film add(Film film) {
@@ -174,62 +363,7 @@ public class FilmH2Storage implements FilmStorage {
                 " FROM" +
                 " FILMS AS FILMS " +
                 " LEFT JOIN MPA_FILM_RATINGS AS MFR ON MFR.ID = FILMS.MPA_FILM_RATING_ID;";
-
-        HashMap<Integer, Film> results = new HashMap<>();
-        jdbcTemplate.query(sql, filmRowMapper).forEach(film -> results.put(film.getId(), film));
-
-        //likes
-        sql = "select film_id, user_id from film_likes";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
-        while (rs.next()) {
-            results.get(rs.getInt("film_id"))
-                    .getLikes()
-                    .add(rs.getInt("user_id"));
-        }
-
-        //genres
-
-        sql = "SELECT " +
-                " film_genres.film_id AS film_id, " +
-                " film_genres.genre_id AS genre_id, " +
-                " genres.genre_name AS genre_name " +
-                "FROM " +
-                " film_genres AS film_genres " +
-                "INNER JOIN " +
-                " genres AS genres " +
-                "ON film_genres.GENRE_ID = genres.id";
-        rs = jdbcTemplate.queryForRowSet(sql);
-        while (rs.next()) {
-            int filmId = rs.getInt("FILM_ID");
-            int genreId = rs.getInt("GENRE_ID");
-            Film film = results.get(filmId);
-            Set<Genre> genres = film.getGenres();
-            Genre genre = genreStorage.getGenreById(genreId);
-            genres.add(genre);
-        }
-        // director
-        sql = "SELECT " +
-                " directors_films.film_id , " +
-                " directors_films.director_id, " +
-                " dir.director_name " +
-                "FROM " +
-                " directors_films  " +
-                "INNER JOIN " +
-                " directors AS dir " +
-                "ON directors_films.director_id = dir.id";
-        rs = jdbcTemplate.queryForRowSet(sql);
-        while (rs.next()) {
-            int filmId = rs.getInt("FILM_ID");
-            int directorId = rs.getInt("director_id");
-            String directorName = rs.getString("director_name");
-            Film film = results.get(filmId);
-            Set<Director> directors = film.getDirectors();
-
-            Director director = new Director(directorId, directorName);
-            directors.add(director);
-        }
-
-        return new ArrayList<>(results.values());
+        return setLikesAndGenreInFilms(sql);
     }
 
     @Override

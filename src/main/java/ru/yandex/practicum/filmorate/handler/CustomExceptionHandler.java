@@ -11,9 +11,23 @@ import ru.yandex.practicum.filmorate.exception.DirectorAlreadyExistedException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ResponseError;
 
+import javax.validation.ConstraintViolationException;
+
 @Slf4j
 @RestControllerAdvice
 public class CustomExceptionHandler {
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseError handle(ConstraintViolationException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseError.builder()
+                .error("BAD REQUEST")
+                .status(200)
+                .exception("org.springframework.web.bind.MethodArgumentNotValidException")
+                .message(exception.getMessage())
+                .build();
+    }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseError handle(NotFoundException exception) {

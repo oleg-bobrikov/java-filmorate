@@ -10,10 +10,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dto.Director;
 import ru.yandex.practicum.filmorate.storage.impl.DirectorH2Storage;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @SpringBootTest
@@ -30,6 +30,7 @@ class DirectorStorageTest {
     private static Director director4;
 
 
+    // TODO: 12.06.2023 Переименовать в setUp
     @BeforeEach
     void testCreateDirectors() {
         director1 = new Director(1, "Pavel");
@@ -42,6 +43,8 @@ class DirectorStorageTest {
         directorStorage.createDirector(director3);
         directorStorage.createDirector(director4);
     }
+
+    // TODO: 12.06.2023 Добавить тест на создание режиссера с асертами
 
     @Test
     void testGetAllDirectors() {
