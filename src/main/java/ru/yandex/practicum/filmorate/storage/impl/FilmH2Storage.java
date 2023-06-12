@@ -43,7 +43,7 @@ public class FilmH2Storage implements FilmStorage {
         generatedKeyHolder = new GeneratedKeyHolder();
     }
 
-    private List<Film> setLikesAndGenreInFilms(String sql) {
+    private List<Film> setObjectsInFilm(String sql) {
 
         LinkedHashMap<Integer, Film> results = new LinkedHashMap<>();
         jdbcTemplate.query(sql, filmRowMapper).forEach(film -> results.put(film.getId(), film));
@@ -140,7 +140,7 @@ public class FilmH2Storage implements FilmStorage {
                                     " LEFT JOIN FILM_likes ON FILM_likes.FILM_ID  = films_by_title.film_ID " +
                                     " GROUP BY ID " +
                                     " ORDER BY likes DESC ";
-                    return setLikesAndGenreInFilms(sqlTitle);
+                    return setObjectsInFilm(sqlTitle);
                 } else {
                     String sqlDirectors =
                             " WITH films_by_title AS  " +
@@ -170,7 +170,7 @@ public class FilmH2Storage implements FilmStorage {
                                     " WHERE FILM_LIKES.USER_ID > 0 AND FILM_LIKES.FILM_ID > 0 " +
                                     " GROUP BY ID " +
                                     " ORDER BY likes DESC ";
-                    return setLikesAndGenreInFilms(sqlDirectors);
+                    return setObjectsInFilm(sqlDirectors);
                 }
             } else {
                 String sqlDouble =
@@ -210,7 +210,7 @@ public class FilmH2Storage implements FilmStorage {
                                 " LEFT JOIN FILM_likes ON FILM_likes.FILM_ID  = films_by_title.film_ID " +
                                 " GROUP BY ID " +
                                 " ORDER BY likes DESC ";
-                return setLikesAndGenreInFilms(sqlDouble);
+                return setObjectsInFilm(sqlDouble);
             }
         } else {
             String sql =
@@ -227,7 +227,7 @@ public class FilmH2Storage implements FilmStorage {
                             " WHERE FILM_LIKES.USER_ID > 0 AND FILM_LIKES.FILM_ID > 0 " +
                             " GROUP BY FILMS.ID " +
                             " ORDER BY likes DESC ";
-            return setLikesAndGenreInFilms(sql);
+            return setObjectsInFilm(sql);
         }
     }
 
@@ -363,7 +363,7 @@ public class FilmH2Storage implements FilmStorage {
                 " FROM" +
                 " FILMS AS FILMS " +
                 " LEFT JOIN MPA_FILM_RATINGS AS MFR ON MFR.ID = FILMS.MPA_FILM_RATING_ID;";
-        return setLikesAndGenreInFilms(sql);
+        return setObjectsInFilm(sql);
     }
 
     @Override
