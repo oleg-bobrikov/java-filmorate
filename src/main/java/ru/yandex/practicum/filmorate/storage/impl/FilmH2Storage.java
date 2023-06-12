@@ -18,15 +18,12 @@ import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import javax.sql.DataSource;
 import java.util.*;
 
-
 @Component
 @Slf4j
 public class FilmH2Storage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
-
     private final MpaStorage mpaStorage;
     private final FilmRowMapper filmRowMapper;
     private final GenreRowMapper genreRowMapper;
@@ -301,7 +298,7 @@ public class FilmH2Storage implements FilmStorage {
             params.clear();
             params.put("FILM_ID", film.getId());
             List<Genre> genres = namedParameterJdbcTemplate.query(sql, params, genreRowMapper);
-            for(Genre genre: genres){
+            for (Genre genre : genres) {
                 film.getGenres().add(genre);
             }
 
