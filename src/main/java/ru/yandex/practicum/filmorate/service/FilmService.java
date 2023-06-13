@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -14,8 +13,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import javax.validation.Valid;
-import javax.validation.ValidationException;
+
 import java.util.*;
 
 @Slf4j
@@ -23,15 +21,16 @@ import java.util.*;
 @Validated
 @RequiredArgsConstructor
 public class FilmService {
-    private final FilmStorage filmStorage;
+    @Qualifier("filmH2Storage")
+    private  final FilmStorage filmStorage;
 
     private UserStorage userStorage;
 
     private final UserService userService;
 
-    public List<Film> getPopular(int count) {
+    /*public List<Film> getPopular(int count) {
         return filmStorage.getPopular(count);
-    }
+    }*/
 
     public Film getFilmById(Integer id) {
         Optional<Film> filmOptional = filmStorage.getFilmById(id);
@@ -89,7 +88,7 @@ public class FilmService {
         return list;
     }
     public List<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
-        List<Film> result = new ArrayList<>();
+        List<Film> result;
         if (genreId == null && year == null){
             result =  filmStorage.getPopular(count);
         } else if (genreId != null && year != null){

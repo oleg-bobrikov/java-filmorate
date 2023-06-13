@@ -36,10 +36,10 @@ public class FilmController {
         return filmService.getCommonFilms(userId, friendId);
     }
 
-    @GetMapping("/popular")
+   /* @GetMapping("/popular")
     public List<Film> getPopular(@RequestParam(defaultValue = "10", required = false) Integer count) {
         return filmService.getPopular(count);
-    }
+    }*/
 
     @PostMapping()
     public Film add(@NotNull @Valid @RequestBody Film film) {

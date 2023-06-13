@@ -18,6 +18,8 @@ import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import javax.sql.DataSource;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 @Component
@@ -533,7 +535,6 @@ public class FilmH2Storage implements FilmStorage {
 
     }*/
     @Override
-    @Transactional
     public List<Film> getPopularFilmsSortedByYear(Integer count, Integer year){
         String sqlQueryPopularFilms = "WITH SORTERED_FILMS AS(" +
                 "SELECT DISTINCT f.ID," +
@@ -565,8 +566,7 @@ public class FilmH2Storage implements FilmStorage {
                 "ORDER BY COUNT(FL.USER_ID) DESC " +
                 "LIMIT ? ";
         List<Film> films = jdbcTemplate.query(sqlQueryPopularFilms, this::mapRowFilm, year, count);
-
-
+        restoreFilms(films);
         return films;
     }
     @Override
@@ -602,7 +602,7 @@ public class FilmH2Storage implements FilmStorage {
                 "LIMIT ?";
 
         List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, this::mapRowFilm, genreId, year, count);
-
+        restoreFilms(films);
         return films;
     }
     @Override
@@ -658,37 +658,7 @@ public class FilmH2Storage implements FilmStorage {
                 .build();
     }
 
-    private void restoreFilms(List<Film> films) {
-        HashMap<String, Object> params = new HashMap<>();
-        for (Film film : films) {
-            params.put("FILM_ID", film.getId());
 
-            // get genres
-            String sql = "SELECT " +
-                    " GENRES.ID, " +
-                    " GENRES.GENRE_NAME" +
-                    " FROM FILM_GENRES" +
-                    " INNER JOIN GENRES ON GENRES.ID = FILM_GENRES.GENRE_ID  AND FILM_GENRES.FILM_ID = :FILM_ID";
-            List<Genre> genres = namedParameterJdbcTemplate.query(sql, params);
-            film.setGenres(new HashSet<>(genres));
-
-            // get directors
-            sql = "select " +
-                    " DIRECTORS.ID, " +
-                    " DIRECTOR_NAME " +
-                    " FROM " +
-                    "   directors_films " +
-                    " INNER JOIN DIRECTORS ON DIRECTORS_FILMS.DIRECTOR_ID = DIRECTORS.ID" +
-                    " WHERE FILM_ID = :FILM_ID";
-            List<Director> directors = namedParameterJdbcTemplate.query(sql, params);
-            film.setDirectors(new HashSet<>(directors));
-
-            // get likes
-            sql = "select USER_ID from FILM_LIKES where FILM_ID = :FILM_ID";
-            List<Integer> likes = namedParameterJdbcTemplate.query(sql, params);
-            film.setLikes(new HashSet<>(likes));
-        }
-    }
 
     /*@Override
     public Film delete(Integer filmId) {
