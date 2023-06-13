@@ -91,8 +91,7 @@ public class FilmService {
     }
 
     public List<Film> searchFilms() {
-        //ToDO: change mehtod
-        return getFilms();
+        return filmStorage.searchFilms(null);
     }
 
 }

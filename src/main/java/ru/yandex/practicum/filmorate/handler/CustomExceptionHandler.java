@@ -22,7 +22,7 @@ public class CustomExceptionHandler {
         log.error(exception.getMessage(), exception);
         return ResponseError.builder()
                 .error("BAD REQUEST")
-                .status(200)
+                .status(400)
                 .exception("org.springframework.web.bind.MethodArgumentNotValidException")
                 .message(exception.getMessage())
                 .build();
