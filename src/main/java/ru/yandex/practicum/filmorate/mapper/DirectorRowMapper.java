@@ -8,10 +8,11 @@ import ru.yandex.practicum.filmorate.dto.Director;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class DirectorRowMapper  implements RowMapper<Director> {
+public class DirectorRowMapper implements RowMapper<Director> {
     @Override
     public Director mapRow(ResultSet rs, int rowNum) throws SQLException {
         return Director.builder()
