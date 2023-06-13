@@ -122,46 +122,76 @@ public class FilmH2Storage implements FilmStorage {
 
         boolean isFilteredByTitle = params.containsKey("title");
         String titleSearchString = isFilteredByTitle ? params.get("title") : "";
+        String sql =  "SELECT\n" +
+                "    FILMS.ID,\n" +
+                "    FILMS.FILM_NAME,\n" +
+                "    FILMS.DESCRIPTION,\n" +
+                "    FILMS.RELEASE_DATE,\n" +
+                "    FILMS.DURATION,\n" +
+                "    IFNULL(FILMS.MPA_FILM_RATING_ID,0)\n" +
+                "FROM\n" +
+                "    (\n" +
+                "        SELECT\n" +
+                "            FILMS.ID AS FILM_ID\n" +
+                "        FROM\n" +
+                "            FILMS\n" +
+                "        WHERE\n" +
+                "            NOT :IS_FILTERED_BY_FILM_NAME\n" +
+                "            OR LOWER(FILMS.FILM_NAME) LIKE LOWER(:DIRECTOR_SEARCH)\n" +
+                "        UNION\n" +
+                "        SELECT\n" +
+                "            FILM_ID\n" +
+                "        FROM\n" +
+                "            DIRECTORS_FILMS\n" +
+                "            INNER JOIN DIRECTORS ON DIRECTORS.ID = DIRECTORS_FILMS.DIRECTOR_ID\n" +
+                "        WHERE\n" +
+                "            NOT :IS_FILTERED_BY_DIRECTOR_NAME\n" +
+                "            OR LOWER(DIRECTORS.DIRECTOR_NAME) LIKE LOWER(:FILM_SEARCH)\n" +
+                "    ) AS SORTED_FLMS\n" +
+                "    INNER JOIN FILMS ON SORTED_FLMS.FILM_ID = FILMS.ID";
 
 
-        String sql =
+
+
+
+        String sql3 =
                 "SELECT " +
-                        "  FILMS.ID, " +
-                        "  FILMS.FILM_NAME, " +
-                        "  FILMS.DESCRIPTION, " +
-                        "  FILMS.RELEASE_DATE, " +
-                        "  FILMS.DURATION, " +
-                        "  FILMS.MPA_FILM_RATING_ID, " +
-                        "FROM " +
-                        "  (" +
-                        "    SELECT " +
-                        "      FILM_IDs, " +
-                        "    FROM " +
-                        "      (" +
-                        "        SELECT " +
-                        "          FILMS.ID AS FILM_IDs " +
-                        "        FROM " +
-                        "          FILMS " +
-                        "        WHERE " +
-                        "          NOT :IS_FILTERED_BY_FILM_NAME " +
-                        "          OR LOWER(FILMS.FILM_NAME) LIKE LOWER(:DIRECTOR_SEARCH) " +
-                        "        UNION " +
-                        "        SELECT " +
-                        "          FILM_ID " +
-                        "        FROM " +
-                        "          DIRECTORS_FILMS " +
-                        "          INNER JOIN DIRECTORS ON DIRECTORS.ID = DIRECTORS_FILMS.DIRECTOR_ID " +
-                        "        WHERE " +
-                        "          NOT :IS_FILTERED_BY_DIRECTOR_NAME " +
-                        "          OR LOWER(DIRECTORS.DIRECTOR_NAME) LIKE LOWER(:FILM_SEARCH)" +
-                        "      ) " +
-                        "      LEFT JOIN FILM_likes ON FILM_IDs = FILM_likes.FILM_ID " +
-                        "    GROUP BY " +
-                        "      FILM_IDs " +
-                        "    ORDER BY " +
-                        "      COUNT(FILM_likes.FILM_ID) DESC " +
-                        "  ) " +
-                        "  INNER JOIN FILMS ON FILMS.ID = FILM_IDs ";
+                "  FILMS.ID, " +
+                "  FILMS.FILM_NAME, " +
+                "  FILMS.DESCRIPTION, " +
+                "  FILMS.RELEASE_DATE, " +
+                "  FILMS.DURATION, " +
+                "  FILMS.MPA_FILM_RATING_ID " +
+                " FROM " +
+                "  (" +
+                "    SELECT " +
+                "      FILTERED_FILMS.FILM_ID " +
+                "    FROM " +
+                "      (" +
+                "        SELECT " +
+                "          FILMS.ID AS FILM_ID " +
+                "        FROM " +
+                "          FILMS " +
+                "        WHERE " +
+                "          NOT :IS_FILTERED_BY_FILM_NAME " +
+                "          OR LOWER(FILMS.FILM_NAME) LIKE LOWER(:FILM_SEARCH) " +
+                "        UNION " +
+                "        SELECT " +
+                "          FILM_ID " +
+                "        FROM " +
+                "          DIRECTORS_FILMS " +
+                "          INNER JOIN DIRECTORS ON DIRECTORS.ID = DIRECTORS_FILMS.DIRECTOR_ID " +
+                "        WHERE " +
+                "          NOT :IS_FILTERED_BY_DIRECTOR_NAME " +
+                "          OR LOWER(DIRECTORS.DIRECTOR_NAME) LIKE LOWER(:DIRECTOR_SEARCH)" +
+                "      ) as FILTERED_FILMS" +
+                "      LEFT JOIN FILM_likes ON FILTERED_FILMS.FILM_ID = FILM_likes.FILM_ID" +
+                "    GROUP BY " +
+                "      FILTERED_FILMS.FILM_ID " +
+                "    ORDER BY " +
+                "      COUNT(FILM_likes.FILM_ID) DESC " +
+                "  ) as SORTED_FILMS" +
+                "  INNER JOIN FILMS ON FILMS.ID = SORTED_FILMS.FILM_ID ";
 
         HashMap<String, Object> sqlParams = new HashMap<>();
         sqlParams.put("IS_FILTERED_BY_DIRECTOR_NAME", isFilteredByDirector);
@@ -169,7 +199,7 @@ public class FilmH2Storage implements FilmStorage {
         sqlParams.put("FILM_SEARCH", "'%" + titleSearchString + "%'");
         sqlParams.put("DIRECTOR_SEARCH", "'%" + directorSearchString + "%'");
 
-        return namedParameterJdbcTemplate.query(sql, new MapSqlParameterSource(sqlParams), filmRowMapper);
+        return namedParameterJdbcTemplate.query(sql, sqlParams, filmRowMapper);
     }
 
 
@@ -500,20 +530,20 @@ public class FilmH2Storage implements FilmStorage {
                 "ORDER BY YEAR(films.release_date)";
 
 
+        List<Integer> filmsId;
         if (sortBy.equals("year")) {
-            List<Integer> filmsId = jdbcTemplate.query(sqlQueryByYear, (rs, rowNum) -> rs.getInt("film_id"), directorId);
+            filmsId = jdbcTemplate.query(sqlQueryByYear, (rs, rowNum) -> rs.getInt("film_id"), directorId);
 
             for (Integer id : filmsId) {
                 films.add(getFilmById(id).get());
             }
-            return films;
         } else {
-            List<Integer> filmsId = jdbcTemplate.query(sqlQueryByLikes, (rs, rowNum) -> rs.getInt("film_id"), directorId);
+            filmsId = jdbcTemplate.query(sqlQueryByLikes, (rs, rowNum) -> rs.getInt("film_id"), directorId);
             for (Integer id : filmsId) {
                 films.add(getFilmById(id).get());
             }
-            return films;
         }
+        return films;
     }
 
 }
