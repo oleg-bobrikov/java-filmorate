@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.Valid;
 import javax.validation.ValidationException;
@@ -23,6 +24,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
+
+    private UserStorage userStorage;
 
     private final UserService userService;
 
@@ -36,6 +39,11 @@ public class FilmService {
             throw new NotFoundException("Фильм с идентификатором " + id + " не найден.");
         }
         return filmOptional.get();
+    }
+
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 
     public void like(Integer id, Integer userId) {

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dto.User;
 
 import java.time.LocalDate;
@@ -17,6 +18,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class UserStorageTest {
     @Autowired
     @Qualifier("userH2Storage")
@@ -157,7 +159,7 @@ class UserStorageTest {
                 .contains(createdFriend1, createdFriend2);
     }
 
-    @Test
+   @Test
     void getUsers_returnUsers() {
         //arrange
         User user1 = User.builder()

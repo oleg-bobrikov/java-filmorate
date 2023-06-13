@@ -41,7 +41,7 @@ class FilmValidatorTest {
         Assertions.assertTrue(dtoHasErrorMessage(film, "Maximum description length is 200 characters"));
     }
 
-    @Test
+   @Test
     public void film_errorMessage_releaseDate() {
         Film film = Film.builder()
                 .name("Запах женщины")

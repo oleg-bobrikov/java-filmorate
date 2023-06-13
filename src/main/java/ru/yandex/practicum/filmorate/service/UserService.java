@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
@@ -16,11 +17,16 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserService {
+    private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
+
     @Autowired
-    @Qualifier("userH2Storage")
-    private UserStorage userStorage;
+    public UserService(@Qualifier("userH2Storage") UserStorage userStorage,
+                       @Qualifier("filmH2Storage") FilmStorage filmStorage) {
+        this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
+    }
 
     public void addFriend(Integer id, Integer friendId) {
         Optional<User> userOpt = userStorage.findUserById(id);
@@ -68,7 +74,7 @@ public class UserService {
         }
         Optional<User> friend = userStorage.findUserById(friendId);
         if (friend.isEmpty()) {
-            throw new NotFoundException("user with id=" + friendId + " not found.");
+            throw new NotFoundException("friend with id=" + friendId + " not found.");
         }
         userStorage.removeFriend(user.get(), friend.get());
     }
@@ -92,5 +98,10 @@ public class UserService {
         }
         findUserById(user.getId());
         userStorage.update(user);
+    }
+
+    public List<Film> getRecommendations(Integer userId) {
+        findUserById(userId);
+        return filmStorage.getRecommendations(userId);
     }
 }

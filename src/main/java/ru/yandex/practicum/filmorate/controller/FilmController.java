@@ -2,31 +2,23 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
+@RequiredArgsConstructor
 public class FilmController {
 
     private final FilmService filmService;
-
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
 
     @GetMapping()
     public List<Film> getFilms() {
@@ -34,14 +26,20 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable @NotBlank Integer id) {
+    public Film getFilmById(@PathVariable @NotNull Integer id) {
         return filmService.getFilmById(id);
     }
 
-    /*@GetMapping("/popular")
+    @GetMapping(value = "/common")
+    public List<Film> findCommonFilms(@RequestParam Integer userId, @RequestParam Integer friendId) {
+        log.info("Получен запрос к эндпоинту: {} /common{}/{}", "GET", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/popular")
     public List<Film> getPopular(@RequestParam(defaultValue = "10", required = false) Integer count) {
         return filmService.getPopular(count);
-    }*/
+    }
 
     @PostMapping()
     public Film add(@NotNull @Valid @RequestBody Film film) {
@@ -63,9 +61,9 @@ public class FilmController {
         filmService.like(id, userId);
     }
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("{id}/like/{userId}")
-    public void removeLike(@PathVariable @NotBlank Integer id, @PathVariable @NotBlank Integer userId) {
+    public void removeLike(@PathVariable @NotNull Integer id, @PathVariable @NotBlank Integer userId) {
         filmService.removeLike(id, userId);
     }
 

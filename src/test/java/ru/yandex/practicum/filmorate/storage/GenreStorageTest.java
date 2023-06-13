@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.Genre;
 import ru.yandex.practicum.filmorate.dto.Mpa;
@@ -21,6 +22,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class GenreStorageTest {
     @Autowired
     private GenreStorage genreStorage;
@@ -28,7 +30,7 @@ class GenreStorageTest {
     @Qualifier("filmH2Storage")
     private FilmStorage filmStorage;
 
-    @Test
+   @Test
     void getAll_returnAllGenres() {
         //arrange
         Genre genre1 = genreStorage.getGenreById(1);
@@ -45,7 +47,7 @@ class GenreStorageTest {
         assertThat(actual).asList().contains(genre1, genre2, genre3, genre4, genre5, genre6);
     }
 
-    @Test
+   @Test
     void updateFilmGenres_assignNewGenres() {
         //arrange
         Mpa mpa1 = Mpa.builder().id(1).build();
