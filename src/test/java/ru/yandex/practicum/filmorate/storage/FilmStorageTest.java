@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,15 +21,154 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
-@RequiredArgsConstructor
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class FilmStorageTest {
+
+    private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
+    private final Film film1;
+    private final Film film2;
+    private final Film film3;
+    private final Film film4;
+    private final Film film5;
+    private final User user1;
+    private final User user2;
+    private final User user3;
+    private final User user4;
+    private final User user5;
+
     @Autowired
-    @Qualifier("filmH2Storage")
-    private FilmStorage filmStorage;
-    @Autowired
-    @Qualifier("userH2Storage")
-    private UserStorage userStorage;
+    public FilmStorageTest(@Qualifier("filmH2Storage") FilmStorage filmStorage,
+                           @Qualifier("userH2Storage") UserStorage userStorage) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
+        this.film1 = createFilm1();
+        this.film2 = createFilm2();
+        this.film3 = createFilm3();
+        this.film4 = createFilm4();
+        this.film5 = createFilm5();
+        this.user1 = getCreatedUser1();
+        this.user2 = getCreatedUser2();
+        this.user3 = getCreatedUser3();
+        this.user4 = getCreatedUser4();
+        this.user5 = getCreatedUser5();
+    }
+
+    private Film createFilm1() {
+        Mpa mpa1 = Mpa.builder().id(1).build();
+        Genre thriller = Genre.builder().id(4).build();
+        Film newFilm = Film.builder()
+                .name("Аватар")
+                .description("3D")
+                .duration(180)
+                .releaseDate(LocalDate.of(2009, 12, 1))
+                .mpa(mpa1).build();
+        newFilm.setGenres(Set.of(thriller));
+        return filmStorage.add(newFilm);
+    }
+
+    private User getCreatedUser1() {
+        User newUser = User.builder()
+                .email("guest1@ya.ru")
+                .login("guest1@ya.ru")
+                .name("guest1")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
+        return userStorage.add(newUser);
+    }
+
+    private User getCreatedUser2() {
+        User newUser = User.builder()
+                .email("guest2@ya.ru")
+                .login("guest2@ya.ru")
+                .name("guest2")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
+        return userStorage.add(newUser);
+    }
+
+    private User getCreatedUser3() {
+        User newUser = User.builder()
+                .email("guest3@ya.ru")
+                .login("guest3@ya.ru")
+                .name("guest3")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
+        return userStorage.add(newUser);
+    }
+
+    private User getCreatedUser4() {
+        User newUser = User.builder()
+                .email("guest4@ya.ru")
+                .login("guest4@ya.ru")
+                .name("guest4")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
+        return userStorage.add(newUser);
+    }
+
+    private User getCreatedUser5() {
+        User newUser = User.builder()
+                .email("guest5@ya.ru")
+                .login("guest5@ya.ru")
+                .name("guest5")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
+        return userStorage.add(newUser);
+    }
+
+    private Film createFilm2() {
+        Mpa mpa1 = Mpa.builder().id(1).build();
+        Genre thriller = Genre.builder().id(4).build();
+        Film newFilm = Film.builder()
+                .name("Аватар 2")
+                .description("5D")
+                .duration(180)
+                .releaseDate(LocalDate.of(2022, 12, 1))
+                .mpa(mpa1).build();
+        newFilm.setGenres(Set.of(thriller));
+        return filmStorage.add(newFilm);
+    }
+
+    private Film createFilm3() {
+        Mpa mpa1 = Mpa.builder().id(1).build();
+        Genre thriller = Genre.builder().id(4).build();
+        Film newFilm = Film.builder()
+                .name("Wednesday")
+                .description("popular")
+                .duration(180)
+                .releaseDate(LocalDate.of(2022, 12, 1))
+                .mpa(mpa1).build();
+        newFilm.setGenres(Set.of(thriller));
+        return filmStorage.add(newFilm);
+    }
+
+    private Film createFilm4() {
+        Mpa mpa1 = Mpa.builder().id(1).build();
+        Genre thriller = Genre.builder().id(4).build();
+        Film newFilm = Film.builder()
+                .name("Harry Potter")
+                .description("popular")
+                .duration(180)
+                .releaseDate(LocalDate.of(2022, 12, 1))
+                .mpa(mpa1).build();
+        newFilm.setGenres(Set.of(thriller));
+        return filmStorage.add(newFilm);
+    }
+
+    private Film createFilm5() {
+        Mpa mpa1 = Mpa.builder().id(1).build();
+        Genre thriller = Genre.builder().id(4).build();
+        Film newFilm = Film.builder()
+                .name("Крепкий Орешик")
+                .description("popular")
+                .duration(180)
+                .releaseDate(LocalDate.of(2022, 12, 1))
+                .mpa(mpa1).build();
+        newFilm.setGenres(Set.of(thriller));
+        return filmStorage.add(newFilm);
+    }
+
 
     @Test
     public void update_returnUpdatedFilm() {
@@ -39,7 +177,10 @@ class FilmStorageTest {
         Mpa mpa2 = Mpa.builder().id(2).build();
         Genre genre1 = Genre.builder().id(1).build();
         Genre genre2 = Genre.builder().id(2).build();
-        Film testFilm = Film.builder().name("Папаши").description("Франзцузская комедия").duration(92).releaseDate(LocalDate.of(1983, 2, 1)).mpa(mpa1).build();
+        Film testFilm = Film.builder().name("Папаши")
+                .description("Франзцузская комедия")
+                .duration(92)
+                .releaseDate(LocalDate.of(1983, 2, 1)).mpa(mpa1).build();
         testFilm.setGenres(Set.of(genre1));
         Film createdFilm = filmStorage.add(testFilm);
         testFilm.setId(createdFilm.getId());
@@ -150,119 +291,77 @@ class FilmStorageTest {
     @Test
     void getPopular_return2PopularFilms() {
         //arrange
-        Mpa mpa1 = Mpa.builder().id(1).build();
-        Genre thriller = Genre.builder().id(4).build();
-        Film newFilm = Film.builder().name("Аватар").description("3D").duration(180).releaseDate(LocalDate.of(2009, 12, 1)).mpa(mpa1).build();
-        newFilm.setGenres(Set.of(thriller));
-        Film createdFilm1 = filmStorage.add(newFilm);
 
-        newFilm = Film.builder().name("Аватар 2").description("5D").duration(180).releaseDate(LocalDate.of(2022, 12, 1)).mpa(mpa1).build();
-        newFilm.setGenres(Set.of(thriller));
-        Film createdFilm2 = filmStorage.add(newFilm);
-
-        newFilm = Film.builder().name("Wednesday").description("popular").duration(180).releaseDate(LocalDate.of(2022, 12, 1)).mpa(mpa1).build();
-        newFilm.setGenres(Set.of(thriller));
-        Film createdFilm3 = filmStorage.add(newFilm);
-
-        User user = User.builder().email("guest1@ya.ru").login("guest1@ya.ru").name("guest1").birthday(LocalDate.of(2000, 1, 1)).build();
-        User createdUser1 = userStorage.add(user);
-
-        user = User.builder().email("guest2@ya.ru").login("guest2@ya.ru").name("guest2").birthday(LocalDate.of(2000, 1, 1)).build();
-        User createdUser2 = userStorage.add(user);
-
-        user = User.builder().email("guest3@ya.ru").login("guest3@ya.ru").name("guest3").birthday(LocalDate.of(2000, 1, 1)).build();
-        User createdUser3 = userStorage.add(user);
-
-        filmStorage.addLike(createdFilm3, createdUser1);
-        filmStorage.addLike(createdFilm3, createdUser2);
-        filmStorage.addLike(createdFilm3, createdUser3);
-        filmStorage.addLike(createdFilm2, createdUser1);
-        filmStorage.addLike(createdFilm2, createdUser2);
-        filmStorage.addLike(createdFilm1, createdUser1);
+        filmStorage.addLike(film3, user1);
+        filmStorage.addLike(film3, user2);
+        filmStorage.addLike(film3, user3);
+        filmStorage.addLike(film2, user1);
+        filmStorage.addLike(film2, user2);
+        filmStorage.addLike(film1, user1);
         //act
         List<Film> actual = filmStorage.getPopular(2);
 
         //assert
-        assertThat(actual).asList().hasSize(2).contains(createdFilm3, createdFilm2);
+        assertThat(actual).asList().hasSize(2).contains(film3, film2);
+    }
+
+    @Test
+    void getRecommendedFilms_returnRecommendedListOfFilms() {
+        // arrange
+        // act
+        List<Film> actual = filmStorage.getRecommendations(user1.getId());
+        // assert
+        assertThat(actual).asList().isEmpty();
+
+        // arrange
+        filmStorage.addLike(film3, user1);
+        filmStorage.addLike(film3, user2);
+        filmStorage.addLike(film2, user2);
+
+        // act
+        actual = filmStorage.getRecommendations(user1.getId());
+        assertThat(actual).asList()
+                .hasSize(1)
+                .satisfies(list -> assertThat(list.get(0)).isEqualTo(film2));
     }
 
     @Test
     void getCommonFilms_returnCommonFilmsSortedByPopularity() {
         //arrange
-        Mpa mpa1 = Mpa.builder().id(1).build();
 
-        Film newFilm = Film.builder().name("Аватар").description("3D").duration(180).releaseDate(LocalDate.of(2009, 12, 1)).mpa(mpa1).build();
+        userStorage.addFriend(user1, user2);
 
-        final Film createdFilm1 = filmStorage.add(newFilm);
+        filmStorage.addLike(film1, user1);
+        filmStorage.addLike(film1, user2);
+        filmStorage.addLike(film1, user3);
+        final Film updatedFilm1 = filmStorage.getFilmById(film1.getId()).get();
 
-        newFilm = Film.builder().name("Wednesday").description("popular").duration(180).releaseDate(LocalDate.of(2022, 12, 1)).mpa(mpa1).build();
+        filmStorage.addLike(film2, user1);
+        filmStorage.addLike(film2, user2);
+        filmStorage.addLike(film2, user3);
+        filmStorage.addLike(film2, user4);
+        final Film updatedFilm2 = filmStorage.getFilmById(film2.getId()).get();
 
-        final Film createdFilm2 = filmStorage.add(newFilm);
+        filmStorage.addLike(film3, user1);
+        filmStorage.addLike(film3, user2);
+        filmStorage.addLike(film3, user3);
+        filmStorage.addLike(film3, user4);
+        filmStorage.addLike(film3, user5);
+        final Film updatedFilm3 = filmStorage.getFilmById(film3.getId()).get();
 
-        newFilm = Film.builder().name("Thursday").description("pop").duration(180).releaseDate(LocalDate.of(2008, 12, 1)).mpa(mpa1).build();
-
-        final Film createdFilm3 = filmStorage.add(newFilm);
-
-
-        newFilm = Film.builder().name("Wednesday").description("popular1").duration(170).releaseDate(LocalDate.of(2007, 12, 1)).mpa(mpa1).build();
-
-        final Film createdFilm4 = filmStorage.add(newFilm);
-
-        newFilm = Film.builder().name("Friday").description("popular2").duration(160).releaseDate(LocalDate.of(2006, 12, 1)).mpa(mpa1).build();
-
-        final Film createdFilm5 = filmStorage.add(newFilm);
-
-        User user = User.builder().email("guest1@ya.ru").login("guest1@ya.ru").name("guest1").birthday(LocalDate.of(2000, 1, 1)).build();
-
-        final User createdUser1 = userStorage.add(user);
-
-        user = User.builder().email("guest2@ya.ru").login("guest2@ya.ru").name("guest2").birthday(LocalDate.of(2000, 2, 1)).build();
-
-        final User createdUser2 = userStorage.add(user);
-
-        user = User.builder().email("guest3@ya.ru").login("guest3@ya.ru").name("guest3").birthday(LocalDate.of(2000, 3, 1)).build();
-
-        final User createdUser3 = userStorage.add(user);
-
-        user = User.builder().email("guest4@ya.ru").login("guest4@ya.ru").name("guest4").birthday(LocalDate.of(2000, 4, 1)).build();
-
-        final User createdUser4 = userStorage.add(user);
-
-        user = User.builder().email("guest5@ya.ru").login("guest5@ya.ru").name("guest5").birthday(LocalDate.of(2000, 5, 1)).build();
-
-        final User createdUser5 = userStorage.add(user);
-
-        userStorage.addFriend(createdUser1, createdUser2);
-
-        filmStorage.addLike(createdFilm1, createdUser1);
-        filmStorage.addLike(createdFilm1, createdUser2);
-        filmStorage.addLike(createdFilm1, createdUser3);
-        final Film updatedFilm1 = filmStorage.getFilmById(createdFilm1.getId()).get();
-
-        filmStorage.addLike(createdFilm2, createdUser1);
-        filmStorage.addLike(createdFilm2, createdUser2);
-        filmStorage.addLike(createdFilm2, createdUser3);
-        filmStorage.addLike(createdFilm2, createdUser4);
-        final Film updatedFilm2 = filmStorage.getFilmById(createdFilm2.getId()).get();
-
-        filmStorage.addLike(createdFilm3, createdUser1);
-        filmStorage.addLike(createdFilm3, createdUser2);
-        filmStorage.addLike(createdFilm3, createdUser3);
-        filmStorage.addLike(createdFilm3, createdUser4);
-        filmStorage.addLike(createdFilm3, createdUser5);
-        final Film updatedFilm3 = filmStorage.getFilmById(createdFilm3.getId()).get();
-
-        filmStorage.addLike(createdFilm4, createdUser1);
-        filmStorage.addLike(createdFilm5, createdUser2);
+        filmStorage.addLike(film4, user1);
+        filmStorage.addLike(film5, user2);
 
         //act
         List<Film> films = filmStorage.getCommonFilms(1, 2);
 
         //assert
-        assertThat(films).asList().hasSize(3).contains(createdFilm3, createdFilm2, createdFilm1).satisfies(list -> {
-            assertThat(list.get(0)).isEqualTo(updatedFilm3);
-            assertThat(list.get(1)).isEqualTo(updatedFilm2);
-            assertThat(list.get(2)).isEqualTo(updatedFilm1);
-        });
+        assertThat(films).asList().hasSize(3)
+                .contains(film3, film2, film1)
+                .satisfies(list -> {
+                    assertThat(list.get(0)).isEqualTo(updatedFilm3);
+                    assertThat(list.get(1)).isEqualTo(updatedFilm2);
+                    assertThat(list.get(2)).isEqualTo(updatedFilm1);
+                });
     }
 }

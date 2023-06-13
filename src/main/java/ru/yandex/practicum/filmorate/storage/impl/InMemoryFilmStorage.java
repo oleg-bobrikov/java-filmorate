@@ -76,4 +76,9 @@ public class InMemoryFilmStorage implements FilmStorage {
         return null;
     }
 
+    @Override
+    public List<Film> getRecommendations(Integer userId) {
+        return new ArrayList<>();
+    }
+
 }
