@@ -502,40 +502,8 @@ public class FilmH2Storage implements FilmStorage {
         return films;
     }
 
-    /*@Override
-    public List<Film> getPopularFilms(HashMap<String, Object> params) {
-
-        *//*String sqlQueryPopularFilms = "SELECT id, film_name, description, release_date, duration, mpa_film_rating_id " +
-                "FROM films LEFT JOIN film_likes ON films.id = film_likes.film_id " +
-                "left JOIN FILM_GENRES ON films.id = FILM_GENRES.FILM_ID " +
-                "WHERE ((NOT :filtered_by_year) OR  YEAR = :YEAR) " +
-                "AND ((NOT :filtered_by_genre_id) OR  genre_id = :genre_id)" +
-                "GROUP BY films.id " +
-                "ORDER BY COUNT(film_likes.user_id) DESC LIMIT ? ";*//*
-        String sqlQueryPopularFilms = "WITH FILTERED_FILMS AS ( " +
-                "SELECT films.id AS film_id  " +
-                "FROM FILMS " +
-                "WHERE :is_filtered_by_year OR EXTRACT(YEAR FROM FILMS.RELEASE_DATE) = :year " +
-                "UNION  " +
-                "SELECT film_genres.film_id  " +
-                "FROM FILM_GENRES  " +
-                "WHERE :is_filtered_by_genre_id OR genre_id = :genre_id) " +
-                "SELECT films.ID, films.FILM_NAME, films.DESCRIPTION, films.RELEASE_DATE, films.DURATION" +
-                " FROM FILMS  " +
-                "   INNER JOIN ( " +
-                "       SELECT FILTERED_FILMS.FILM_ID  " +
-                "       FROM FILTERED_FILMS  " +
-                "      LEFT JOIN FILM_LIKES ON FILTERED_FILMS.FILM_ID = FILM_LIKES.FILM_ID  " +
-                "    GROUP BY FILTERED_FILMS.FILM_ID " +
-                "    ORDER BY COUNT(FILM_LIKES.USER_ID) DESC) AS SORTED_FILMS " +
-                "         ON SORTED_FILMS.FILM_ID = FILMS.ID " +
-                "LIMIT :count";
-
-        return  namedParameterJdbcTemplate.query(sqlQueryPopularFilms, params, filmRowMapper);
-
-    }*/
     @Override
-    public List<Film> getPopularFilmsSortedByYear(Integer count, Integer year){
+    public List<Film> getPopularFilmsSortedByYear(Integer count, Integer year) {
         String sqlQueryPopularFilms = "WITH SORTERED_FILMS AS(" +
                 "SELECT DISTINCT f.ID," +
                 "  f.FILM_NAME," +
@@ -569,8 +537,9 @@ public class FilmH2Storage implements FilmStorage {
         restoreFilms(films);
         return films;
     }
+
     @Override
-    public List<Film> getPopularFilms(Integer count, Integer genreId, Integer year){
+    public List<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
         String sqlQueryGetPopularFilms = "WITH SORTERED_FILMS AS (" +
                 "SELECT DISTINCT f.ID," +
                 "  f.FILM_NAME," +
@@ -605,8 +574,9 @@ public class FilmH2Storage implements FilmStorage {
         restoreFilms(films);
         return films;
     }
+
     @Override
-    public List<Film> getPopularFilmsSortedByGenre(Integer count, Integer genreId){
+    public List<Film> getPopularFilmsSortedByGenre(Integer count, Integer genreId) {
         String sqlQueryGetPopularFilms = "WITH SORTERED_FILMS AS (" +
                 "SELECT DISTINCT f.ID," +
                 "  f.FILM_NAME," +
@@ -617,7 +587,7 @@ public class FilmH2Storage implements FilmStorage {
                 "   FG.GENRE_ID " +
                 "FROM films AS f " +
                 " LEFT OUTER JOIN FILM_GENRES FG ON F.ID = FG.FILM_ID " +
-                " INNER JOIN GENRES ON GENRES.ID = FG.GENRE_ID "  +
+                " INNER JOIN GENRES ON GENRES.ID = FG.GENRE_ID " +
                 "WHERE FG.GENRE_ID = ? " +
                 ")" +
                 "select SF.ID, " +
@@ -640,7 +610,6 @@ public class FilmH2Storage implements FilmStorage {
         List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, this::mapRowFilm, genreId, count);
         restoreFilms(films);
         return films;
-
     }
 
 
@@ -657,15 +626,6 @@ public class FilmH2Storage implements FilmStorage {
                 .mpa(mpa)
                 .build();
     }
-
-
-
-    /*@Override
-    public Film delete(Integer filmId) {
-        Film film = getFilmById(filmId).get();
-        String sqlQuery = "DELETE FROM films WHERE id = ? ";
-        return jdbcTemplate.update(sqlQuery, filmId);
-    }*/
 
     private void restoreFilms(List<Film> films) {
         HashMap<String, Object> params = new HashMap<>();

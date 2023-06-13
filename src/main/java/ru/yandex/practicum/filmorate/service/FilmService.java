@@ -10,8 +10,6 @@ import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
-
 
 import java.util.*;
 
@@ -23,7 +21,7 @@ public class FilmService {
     private final UserService userService;
 
     public FilmService(@Qualifier("filmH2Storage") FilmStorage filmStorage,
-                        UserService userService) {
+                       UserService userService) {
         this.filmStorage = filmStorage;
         this.userService = userService;
     }
@@ -95,43 +93,7 @@ public class FilmService {
             result = filmStorage.getPopularFilmsSortedByYear(count, year);
         } else result = filmStorage.getPopularFilmsSortedByGenre(count, genreId);
 
-
-        /*if (count == null){
-            if (year == null){
-                result = filmStorage.getPopular(genreId);
-            } else result = filmStorage.getPopularFilmsSortedByYear(year);
-        }
-
-        if (genreId == null && year == null){
-            result =  filmStorage.getPopular(count);
-        }*/
         return result;
 
-
-       /* @Override
-        public List<Film> getTopFilms(Integer count, Integer genreId, Integer year) {
-            if (genreId != null && year != null) {
-                return filmStorage.getPopularFilms(count, genreId, year);
-            } else if (genreId == null && year == null) {
-                return filmStorage.getPopularFilms(count);
-            } else if (genreId != null) {
-                return filmStorage.getPopularFilms(count, genreId);
-            } else {
-                return filmStorage.getPopularFilmsSortedByYear(count, year);
-            }
-        }*/
-
-
-        //List<Film> list = filmStorage.getPopularFilms((HashMap<String, Object>) params);
-
     }
-    /*public Film delete(Integer filmId){
-        if (filmId == null){
-            throw new ValidationException("Идентификатор фильма не может быть пустым.");
-        }
-        if (filmStorage.getFilmById(filmId).isEmpty()){
-            throw new NotFoundException("Данного фильма не существует.");
-        }
-        return filmStorage.delete(filmId);
-    }*/
 }
