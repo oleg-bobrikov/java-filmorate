@@ -159,7 +159,7 @@ class UserStorageTest {
                 .contains(createdFriend1, createdFriend2);
     }
 
-   @Test
+    @Test
     void getUsers_returnUsers() {
         //arrange
         User user1 = User.builder()
@@ -216,5 +216,26 @@ class UserStorageTest {
         assertThat(actual)
                 .asList()
                 .isEmpty();
+    }
+
+    @Test
+    void deleteUserById_returnEmpty() {
+        //arrange
+        User user = User.builder()
+                .email("egor@ya.ru")
+                .login("egor@ya.ru")
+                .name("Egor")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
+
+        User createdUser = userStorage.add(user);
+        final int id = createdUser.getId();
+
+        //act
+        userStorage.deleteUserById(id);
+        List<User> actual = userStorage.getUsers();
+
+        //assert
+        assertThat(actual).asList().isEmpty();
     }
 }

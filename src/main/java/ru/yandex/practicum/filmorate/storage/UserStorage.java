@@ -10,9 +10,7 @@ public interface UserStorage {
 
     User update(User user);
 
-    void deleteUserById(int id);
-
-     Optional<User> findUserById(int id);
+    Optional<User> findUserById(int id);
 
     void addFriend(User user, User friend);
 
@@ -21,4 +19,6 @@ public interface UserStorage {
     List<User> getUsers();
 
     void removeFriend(User user, User friend);
+
+    void deleteUserById(int id);
 }
