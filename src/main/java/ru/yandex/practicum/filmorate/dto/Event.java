@@ -3,12 +3,12 @@ package ru.yandex.practicum.filmorate.dto;
 import lombok.Builder;
 import lombok.Data;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Data
 @Builder
 public class Event {
-    Timestamp timestamp;
+    Instant timestamp;
     Integer userId;
     String eventType;
     String operation;
