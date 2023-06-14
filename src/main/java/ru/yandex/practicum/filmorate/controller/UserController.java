@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.Event;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -45,6 +46,10 @@ public class UserController {
         return userService.getRecommendations(id);
     }
 
+    @GetMapping("/{id}/feed")
+    public List<Event> getEvents(@PathVariable @NotNull Integer id) {
+        return userService.getEventsByUserId(id);
+    }
     @PutMapping()
     public User update(@NotNull @Valid @RequestBody User user) {
         userService.update(user);

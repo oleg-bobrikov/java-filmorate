@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.Event;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -103,5 +104,10 @@ public class UserService {
     public List<Film> getRecommendations(Integer userId) {
         findUserById(userId);
         return filmStorage.getRecommendations(userId);
+    }
+
+    public List<Event> getEventsByUserId(Integer userId) {
+        findUserById(userId);
+        return userStorage.getEventsByUserId(userId);
     }
 }
