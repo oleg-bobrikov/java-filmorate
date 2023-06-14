@@ -25,11 +25,6 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void deleteUserById(int id) {
-        users.remove(id);
-    }
-
-    @Override
     public Optional<User> findUserById(int id) {
         return Optional.of(users.get(id));
     }
@@ -56,4 +51,8 @@ public class InMemoryUserStorage implements UserStorage {
         user.getFriends().remove(friend.getId());
     }
 
+    @Override
+    public void deleteUserById(int id) {
+        users.remove(id);
+    }
 }

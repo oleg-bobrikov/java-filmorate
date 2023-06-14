@@ -40,3 +40,4 @@ SELECT friend_id
 FROM user_friends
 WHERE user_id = :user_id
 ```
+ ![img.png](img.png)

@@ -3,19 +3,16 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.validator.IsValidBy;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
-@Validated
 @RestController
 @RequestMapping("/films")
 @RequiredArgsConstructor
@@ -33,19 +30,10 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
-    @GetMapping("/popular")
-    public List<Film> getPopular(@RequestParam(defaultValue = "10", required = false) Integer count) {
-        return filmService.getPopular(count);
-    }
-
-    @GetMapping("/search")
-    public List<Film> searchFilms(@RequestParam(required = false) Optional<String> query,
-                                  @RequestParam(required = false) @IsValidBy Optional<List<String>>by) {
-        if (query.isEmpty() || by.isEmpty()) {
-            return filmService.searchFilms();
-        } else {
-            return filmService.searchFilms(query.get(), by.get());
-        }
+    @GetMapping(value = "/common")
+    public List<Film> findCommonFilms(@RequestParam Integer userId, @RequestParam Integer friendId) {
+        log.info("Получен запрос к эндпоинту: {} /common{}/{}", "GET", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
     }
 
     @PostMapping()
@@ -64,18 +52,31 @@ public class FilmController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("{id}/like/{userId}")
-    public void like(@PathVariable @NotNull Integer id, @PathVariable @NotNull Integer userId) {
+    public void like(@PathVariable @NotBlank Integer id, @PathVariable @NotBlank Integer userId) {
         filmService.like(id, userId);
     }
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("{id}/like/{userId}")
-    public void removeLike(@PathVariable @NotNull Integer id, @PathVariable @NotNull Integer userId) {
+    public void removeLike(@PathVariable @NotNull Integer id, @PathVariable @NotBlank Integer userId) {
         filmService.removeLike(id, userId);
     }
 
     @GetMapping("/director/{directorId}")
     public List<Film> findFilmsByDirector(@PathVariable Integer directorId, @RequestParam String sortBy) {
         return filmService.findFilmByDirector(directorId, sortBy);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count,
+                                      @RequestParam(required = false) Integer genreId,
+                                      @RequestParam(required = false) Integer year) {
+        return filmService.getPopularFilms(count, genreId, year);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("{filmId}")
+    public void delete(@PathVariable Integer filmId) {
+        filmService.delete(filmId);
     }
 }

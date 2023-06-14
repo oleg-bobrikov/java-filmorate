@@ -11,6 +11,7 @@ import java.util.Map;
 @Builder
 public class Director {
     private Integer id;
+
     @NotBlank(message = "Name cannot be empty")
     private String name;
 

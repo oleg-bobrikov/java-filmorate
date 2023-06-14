@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -39,6 +40,11 @@ public class UserController {
         return userService.getCommonFriends(id, otherId);
     }
 
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable @NotNull Integer id) {
+        return userService.getRecommendations(id);
+    }
+
     @PutMapping()
     public User update(@NotNull @Valid @RequestBody User user) {
         userService.update(user);
@@ -61,6 +67,12 @@ public class UserController {
     @PostMapping()
     public User add(@NotNull @Valid @RequestBody User user) {
         return userService.add(user);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("{userId}")
+    public void delete(@PathVariable Integer userId) {
+        userService.delete(userId);
     }
 
 }

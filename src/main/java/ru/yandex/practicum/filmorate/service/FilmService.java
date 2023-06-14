@@ -1,35 +1,31 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
+@Validated
 public class FilmService {
-    @Autowired
-    @Qualifier("filmH2Storage")
-    private FilmStorage filmStorage;
-
+    private final FilmStorage filmStorage;
     private final UserService userService;
 
-    public List<Film> getPopular(int count) {
-        return filmStorage.getPopular(count);
+    public FilmService(@Qualifier("filmH2Storage") FilmStorage filmStorage,
+                       UserService userService) {
+        this.filmStorage = filmStorage;
+        this.userService = userService;
     }
+
 
     public Film getFilmById(Integer id) {
         Optional<Film> filmOptional = filmStorage.getFilmById(id);
@@ -37,6 +33,11 @@ public class FilmService {
             throw new NotFoundException("Фильм с идентификатором " + id + " не найден.");
         }
         return filmOptional.get();
+    }
+
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 
     public void like(Integer id, Integer userId) {
@@ -82,16 +83,23 @@ public class FilmService {
         return list;
     }
 
-    public List<Film> searchFilms(String query, List<String> by) {
-        HashMap<String, String> params = new HashMap<>();
-        for(String filter: by){
-            params.put(filter,query);
+    public List<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
+        List<Film> result;
+        if (genreId == null && year == null) {
+            result = filmStorage.getPopular(count);
+        } else if (genreId != null && year != null) {
+            result = filmStorage.getPopularFilms(count, genreId, year);
+        } else if (genreId == null) {
+            result = filmStorage.getPopularFilmsSortedByYear(count, year);
+        } else result = filmStorage.getPopularFilmsSortedByGenre(count, genreId);
+
+        return result;
+    }
+
+    public void delete(Integer userId) {
+        if (filmStorage.getFilmById(userId).isEmpty()) {
+            throw new NotFoundException("Такого фильма нет.");
         }
-        return filmStorage.searchFilms(params);
+        filmStorage.deleteFilmById(userId);
     }
-
-    public List<Film> searchFilms() {
-        return filmStorage.searchFilms(null);
-    }
-
 }

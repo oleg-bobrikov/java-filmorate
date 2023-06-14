@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmorate.exception.DataBaseException;
 import ru.yandex.practicum.filmorate.exception.DirectorAlreadyExistedException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ResponseError;
@@ -57,6 +58,19 @@ public class CustomExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseError handle(DataAccessException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseError.builder()
+                .error("INTERNAL_SERVER_ERROR")
+                .status(500)
+                .exception("org.springframework.dao.DataAccessException")
+                .message(exception.getMessage())
+                .path(getPath(exception))
+                .build();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseError handle(DataBaseException exception) {
         log.error(exception.getMessage(), exception);
         return ResponseError.builder()
                 .error("INTERNAL_SERVER_ERROR")

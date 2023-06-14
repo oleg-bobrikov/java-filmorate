@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dto.User;
 
 import java.time.LocalDate;
@@ -17,6 +18,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class UserStorageTest {
     @Autowired
     @Qualifier("userH2Storage")
@@ -214,5 +216,26 @@ class UserStorageTest {
         assertThat(actual)
                 .asList()
                 .isEmpty();
+    }
+
+    @Test
+    void deleteUserById_returnEmpty() {
+        //arrange
+        User user = User.builder()
+                .email("egor@ya.ru")
+                .login("egor@ya.ru")
+                .name("Egor")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
+
+        User createdUser = userStorage.add(user);
+        final int id = createdUser.getId();
+
+        //act
+        userStorage.deleteUserById(id);
+        List<User> actual = userStorage.getUsers();
+
+        //assert
+        assertThat(actual).asList().isEmpty();
     }
 }

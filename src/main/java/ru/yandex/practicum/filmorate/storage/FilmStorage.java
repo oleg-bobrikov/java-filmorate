@@ -4,7 +4,6 @@ import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public interface FilmStorage {
@@ -13,7 +12,7 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    void deleteFilmById(int id);
+    void deleteFilmById(Integer id);
 
     List<Film> getFilms();
 
@@ -25,7 +24,15 @@ public interface FilmStorage {
 
     List<Film> getPopular(int count);
 
+    List<Film> getCommonFilms(Integer userId, Integer friendId);
+
     List<Film> findFilmByDirector(Integer directorId, String sortBy);
 
-    List<Film> searchFilms(Map<String, String> params);
+    List<Film> getPopularFilmsSortedByYear(Integer year, Integer integer);
+
+    List<Film> getPopularFilms(Integer count, Integer genreId, Integer year);
+
+    List<Film> getPopularFilmsSortedByGenre(Integer count, Integer genreId);
+
+    List<Film> getRecommendations(Integer userId);
 }
