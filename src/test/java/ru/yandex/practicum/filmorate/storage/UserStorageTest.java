@@ -8,11 +8,13 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dto.User;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
@@ -159,7 +161,7 @@ class UserStorageTest {
                 .contains(createdFriend1, createdFriend2);
     }
 
-   @Test
+    @Test
     void getUsers_returnUsers() {
         //arrange
         User user1 = User.builder()
@@ -220,9 +222,7 @@ class UserStorageTest {
 
     @Test
     void deleteUserById_returnEmpty() {
-
-        //Mpa mpa1 = Mpa.builder().id(1).build();
-
+        //arrange
         User user = User.builder()
                 .email("egor@ya.ru")
                 .login("egor@ya.ru")
