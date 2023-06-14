@@ -24,11 +24,6 @@ public class InMemoryUserStorage implements UserStorage {
         return user;
     }
 
-    /*@Override
-    public void deleteUserById(int id) {
-        users.remove(id);
-    }*/
-
     @Override
     public Optional<User> findUserById(int id) {
         return Optional.of(users.get(id));
@@ -60,6 +55,4 @@ public class InMemoryUserStorage implements UserStorage {
     public void deleteUserById(int id) {
         users.remove(id);
     }
-
-
 }
