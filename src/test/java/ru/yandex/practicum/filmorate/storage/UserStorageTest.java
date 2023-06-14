@@ -238,7 +238,6 @@ class UserStorageTest {
         List<User> actual = userStorage.getUsers();
 
         //assert
-        assertEquals(actual, userStorage.getUsers());
         assertThat(actual).asList().isEmpty();
     }
 }
