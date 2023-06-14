@@ -196,7 +196,7 @@ public class UserH2Storage implements UserStorage {
 
     @Override
     public List<Event> getEventsByUserId(Integer userId) {
-        String sql = "select * from EVENTS where USER_ID = :USER_ID";
+        String sql = "select * from EVENTS where USER_ID = :USER_ID order by EVENT_TIMESTAMP";
         HashMap<String, Object> params = new HashMap<>();
         params.put("USER_ID", userId);
         return namedParameterJdbcTemplate.query(sql,params, eventRowMapper);
