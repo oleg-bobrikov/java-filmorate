@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dto.Event;
 import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -54,6 +55,11 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void removeFriend(User user, User friend) {
         user.getFriends().remove(friend.getId());
+    }
+
+    @Override
+    public List<Event> getEventsByUserId(Integer userId) {
+        return new ArrayList<>();
     }
 
 }
