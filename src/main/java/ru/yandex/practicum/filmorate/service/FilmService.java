@@ -94,6 +94,11 @@ public class FilmService {
         } else result = filmStorage.getPopularFilmsSortedByGenre(count, genreId);
 
         return result;
-
+    }
+    public void delete(Integer userId){
+        if (filmStorage.getFilmById(userId).isEmpty()){
+            throw new NotFoundException("Такого фильма нет.");
+        }
+        filmStorage.deleteFilmById(userId);
     }
 }

@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS users
 
 CREATE TABLE IF NOT EXISTS user_friends
 (
-    user_id   int4 NOT NULL references users (id),
-    friend_id int4 NOT NULL references users (id),
+    user_id   int4 NOT NULL references users (id) ON DELETE CASCADE,
+    friend_id int4 NOT NULL references users (id) ON DELETE CASCADE,
     constraint user_friends_pkey primary key (user_id, friend_id)
 );
 
@@ -45,14 +45,16 @@ CREATE TABLE IF NOT EXISTS films
 
 CREATE TABLE IF NOT EXISTS film_likes
 (
-    film_id int4 NOT NULL references films (id),
-    user_id int4 NOT NULL references users (id),
+    film_id int4 NOT NULL references films (id) ON DELETE CASCADE,
+    user_id int4 NOT NULL references users (id) ON
+        DELETE
+        CASCADE,
     primary key (film_id, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS film_genres
 (
-    film_id  int4 NOT NULL references films (id),
+    film_id  int4 NOT NULL references films (id) ON DELETE CASCADE,
     genre_id int4 NOT NULL references genres (id),
     primary key (film_id, genre_id)
 );

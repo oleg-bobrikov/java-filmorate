@@ -69,4 +69,10 @@ public class UserController {
         return userService.add(user);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("{userId}")
+    public void delete(@PathVariable Integer userId) {
+        userService.delete(userId);
+    }
+
 }

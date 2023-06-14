@@ -8,11 +8,11 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dto.User;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
@@ -216,5 +216,29 @@ class UserStorageTest {
         assertThat(actual)
                 .asList()
                 .isEmpty();
+    }
+
+    @Test
+    void deleteUserById_returnEmpty() {
+
+        //Mpa mpa1 = Mpa.builder().id(1).build();
+
+        User user = User.builder()
+                .email("egor@ya.ru")
+                .login("egor@ya.ru")
+                .name("Egor")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
+
+        User createdUser = userStorage.add(user);
+        final int id = createdUser.getId();
+
+        //act
+        userStorage.deleteUserById(id);
+        List<User> actual = userStorage.getUsers();
+
+        //assert
+        assertEquals(actual, userStorage.getUsers());
+        assertThat(actual).asList().isEmpty();
     }
 }

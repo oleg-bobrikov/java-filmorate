@@ -160,7 +160,7 @@ public class FilmH2Storage implements FilmStorage {
     }
 
     @Override
-    public void deleteFilmById(int id) {
+    public void deleteFilmById(Integer id) {
         String sql = "delete from film_genres where film_id = :film_id; " +
                 "delete from film_likes where film_id = :film_id; " +
                 "delete from films where id = :film_id; " +

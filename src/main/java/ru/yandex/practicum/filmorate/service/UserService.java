@@ -64,6 +64,10 @@ public class UserService {
     }
 
     public List<User> getUserFriends(Integer id) {
+
+        if (userStorage.findUserById(id).isEmpty()) {
+            throw new NotFoundException("user with id=" + id + " not found.");
+        }
         return userStorage.getUserFriendsById(id);
     }
 
@@ -103,5 +107,9 @@ public class UserService {
     public List<Film> getRecommendations(Integer userId) {
         findUserById(userId);
         return filmStorage.getRecommendations(userId);
+    }
+
+    public void delete(Integer userId) {
+        userStorage.deleteUserById(userId);
     }
 }
