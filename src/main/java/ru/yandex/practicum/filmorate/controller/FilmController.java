@@ -38,6 +38,7 @@ public class FilmController {
         log.info("Получен запрос к эндпоинту: {} /common{}/{}", "GET", userId, friendId);
         return filmService.getCommonFilms(userId, friendId);
     }
+
     @GetMapping("/search")
     public List<Film> searchFilms(@RequestParam(required = false) Optional<String> query,
                                   @RequestParam(required = false) @IsValidBy Optional<List<String>> by) {
@@ -47,6 +48,7 @@ public class FilmController {
             return filmService.searchFilms(query.get(), by.get());
         }
     }
+
     @PostMapping()
     public Film add(@NotNull @Valid @RequestBody Film film) {
         filmService.add(film);
