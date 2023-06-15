@@ -1,21 +1,16 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.dto.Film;
-import ru.yandex.practicum.filmorate.dto.Genre;
-import ru.yandex.practicum.filmorate.dto.Mpa;
-import ru.yandex.practicum.filmorate.dto.User;
+import ru.yandex.practicum.filmorate.dto.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -24,6 +19,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class FilmStorageTest {
 
+    private final DirectorStorage directorStorage;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final Film film1;
@@ -36,12 +32,18 @@ class FilmStorageTest {
     private final User user3;
     private final User user4;
     private final User user5;
+    private final Director director1;
+    private final Director director2;
+    private final Director director3;
+    private final Director director4;
 
     @Autowired
     public FilmStorageTest(@Qualifier("filmH2Storage") FilmStorage filmStorage,
-                           @Qualifier("userH2Storage") UserStorage userStorage) {
+                           @Qualifier("userH2Storage") UserStorage userStorage,
+                           @Qualifier("directorH2Storage") DirectorStorage directorStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.directorStorage = directorStorage;
         this.film1 = createFilm1();
         this.film2 = createFilm2();
         this.film3 = createFilm3();
@@ -52,6 +54,15 @@ class FilmStorageTest {
         this.user3 = getCreatedUser3();
         this.user4 = getCreatedUser4();
         this.user5 = getCreatedUser5();
+        director1 = new Director(1, "Pavel");
+        director2 = new Director(2, "Roman");
+        director3 = new Director(1, "Kate");
+        director4 = new Director(1, "Potter");
+
+        directorStorage.createDirector(director1);
+        directorStorage.createDirector(director2);
+        directorStorage.createDirector(director3);
+        directorStorage.createDirector(director4);
     }
 
     private Film createFilm1() {
@@ -382,5 +393,102 @@ class FilmStorageTest {
                     assertThat(list.get(1)).isEqualTo(updatedFilm2);
                     assertThat(list.get(2)).isEqualTo(updatedFilm1);
                 });
+    }
+
+    @Test
+    void searchFilms_returnSortedListFilmsByTitle() {
+        //arrange
+        filmStorage.addLike(film1, user1);
+        filmStorage.addLike(film1, user2);
+        filmStorage.addLike(film2, user3);
+        HashMap<String, String> params = new HashMap<>();
+        params.put("title", "ав");
+
+        //expected
+        List<Film> exp = filmStorage.searchFilms(params);
+
+        //assert
+        Assertions.assertEquals(film1, exp.get(0));
+        Assertions.assertEquals(film2, exp.get(1));
+    }
+
+    @Test
+    public void searchFilms_returnSortedListFilmsByDirector() {
+        //arrange
+        HashMap<String, String> params = new HashMap<>();
+        filmStorage.addLike(film3, user1);
+        filmStorage.addLike(film3, user2);
+        filmStorage.addLike(film3, user3);
+        filmStorage.addLike(film3, user4);
+        filmStorage.addLike(film3, user5);
+        filmStorage.addLike(film2, user1);
+        filmStorage.addLike(film2, user2);
+        filmStorage.addLike(film1, user3);
+        film2.setDirectors(new HashSet<>(List.of(director1)));
+        film1.setDirectors(new HashSet<>(List.of(director1)));
+        directorStorage.updateFilmDirector(film1, new HashSet<>(List.of(director1)));
+        directorStorage.updateFilmDirector(film2, new HashSet<>(List.of(director1)));
+        params.put("director", "pav");
+
+        //expected
+        List<Film> exp = filmStorage.searchFilms(params);
+
+        //assert
+        Assertions.assertEquals(film2, exp.get(0));
+        Assertions.assertEquals(film1, exp.get(1));
+    }
+
+    @Test
+    void searchFilms_returnSortedListFilmsByDirectorAndTitle() {
+        //arrange
+        HashMap<String, String> params = new HashMap<>();
+        filmStorage.addLike(film2, user1);
+        filmStorage.addLike(film4, user3);
+        filmStorage.addLike(film4, user2);
+        film2.setDirectors(new HashSet<>(List.of(director1)));
+        film3.setDirectors(new HashSet<>(List.of(director4)));
+        directorStorage.updateFilmDirector(film2, new HashSet<>(List.of(director4)));
+        directorStorage.updateFilmDirector(film4, new HashSet<>(List.of(director1)));
+        film4.setDirectors(Set.of(director1));
+        film2.setDirectors(Set.of(director4));
+
+        params.put("director", "ter");
+        params.put("title", "ter");
+
+        //expected
+        List<Film> exp = filmStorage.searchFilms(params);
+
+        Assertions.assertEquals(film4, exp.get(0));
+        Assertions.assertEquals(film2, exp.get(1));
+    }
+
+    @Test
+    void searchFilms_returnSortedListFilmsWithOutParams() {
+        //arrange
+        HashMap<String, String> params = new HashMap<>();
+        filmStorage.addLike(film3, user1);
+        filmStorage.addLike(film3, user2);
+        filmStorage.addLike(film3, user3);
+        filmStorage.addLike(film3, user4);
+        filmStorage.addLike(film3, user5);
+        filmStorage.addLike(film2, user1);
+        filmStorage.addLike(film4, user3);
+        filmStorage.addLike(film4, user2);
+        film2.setDirectors(new HashSet<>(List.of(director1)));
+        film3.setDirectors(new HashSet<>(List.of(director4)));
+        directorStorage.updateFilmDirector(film2, new HashSet<>(List.of(director4)));
+        directorStorage.updateFilmDirector(film4, new HashSet<>(List.of(director1)));
+        directorStorage.updateFilmDirector(film3, new HashSet<>(List.of(director2)));
+
+        film4.setDirectors(Set.of(director1));
+        film2.setDirectors(Set.of(director4));
+        film3.setDirectors(Set.of(director2));
+
+        //expected
+        List<Film> exp = filmStorage.searchFilms(params);
+
+        Assertions.assertEquals(film3, exp.get(0));
+        Assertions.assertEquals(film4, exp.get(1));
+        Assertions.assertEquals(film2, exp.get(2));
     }
 }

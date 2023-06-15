@@ -57,6 +57,7 @@ public class InMemoryUserStorage implements UserStorage {
         user.getFriends().remove(friend.getId());
     }
 
+
     @Override
     public List<Event> getEventsByUserId(Integer userId) {
         return new ArrayList<>();

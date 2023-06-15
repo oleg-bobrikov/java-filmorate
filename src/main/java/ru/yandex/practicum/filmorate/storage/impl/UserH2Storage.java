@@ -72,21 +72,6 @@ public class UserH2Storage implements UserStorage {
         return user;
     }
 
-    @Override
-    public void deleteUserById(int id) {
-        String sql = "delete from users " +
-                "where id = :id;";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("id", id);
-
-        int rowsAffected = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
-        if (rowsAffected > 0) {
-            log.info("Пользователь с идентификатором {} удален.", id);
-        } else {
-            log.info("Пользователь с идентификатором {} не найден.", id);
-        }
-    }
 
     @Override
     public Optional<User> findUserById(int id) {
@@ -200,5 +185,23 @@ public class UserH2Storage implements UserStorage {
         HashMap<String, Object> params = new HashMap<>();
         params.put("USER_ID", userId);
         return namedParameterJdbcTemplate.query(sql,params, eventRowMapper);
+    }
+
+
+    @Override
+    public void deleteUserById(int id) {
+        String sql = "delete from film_likes where user_id = :user_id; " +
+                "delete from users where id = :user_id; " +
+                "delete from user_friends where user_id =:user_id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("user_id", id);
+
+        int rowsAffected = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
+        if (rowsAffected > 0) {
+            log.info("Фильм с идентификатором {} удален", id);
+        } else {
+            log.info("Фильм с идентификатором {} не найден", id);
+        }
     }
 }

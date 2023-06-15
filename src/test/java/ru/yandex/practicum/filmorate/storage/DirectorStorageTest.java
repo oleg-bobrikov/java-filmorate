@@ -10,11 +10,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dto.Director;
 import ru.yandex.practicum.filmorate.storage.impl.DirectorH2Storage;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @SpringBootTest
@@ -29,7 +28,6 @@ class DirectorStorageTest {
     private static Director director2;
     private static Director director3;
     private static Director director4;
-
 
     @BeforeEach
     void testCreateDirectors() {

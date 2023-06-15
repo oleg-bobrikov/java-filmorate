@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.dto.Event;
+
 import ru.yandex.practicum.filmorate.dto.User;
 
 import java.util.List;
@@ -11,9 +12,7 @@ public interface UserStorage {
 
     User update(User user);
 
-    void deleteUserById(int id);
-
-     Optional<User> findUserById(int id);
+    Optional<User> findUserById(int id);
 
     void addFriend(User user, User friend);
 
@@ -24,4 +23,6 @@ public interface UserStorage {
     void removeFriend(User user, User friend);
 
     List<Event> getEventsByUserId(Integer userId);
+
+    void deleteUserById(int id);
 }
