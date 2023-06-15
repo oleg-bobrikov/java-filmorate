@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +27,7 @@ class GenreStorageTest {
 
     private final FilmStorage filmStorage;
 
+    @Autowired
     public GenreStorageTest(GenreStorage genreStorage, @Qualifier("filmH2Storage") FilmStorage filmStorage) {
         this.genreStorage = genreStorage;
         this.filmStorage = filmStorage;
