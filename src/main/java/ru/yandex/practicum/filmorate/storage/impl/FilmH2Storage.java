@@ -692,9 +692,8 @@ public class FilmH2Storage implements FilmStorage {
     }
 
     private void restoreFilms(List<Film> films) {
-        List<Film> filmLinkedList = new LinkedList<>(films);
         HashMap<String, Object> params = new HashMap<>();
-        for (Film film : filmLinkedList) {
+        for (Film film : films) {
             params.put("FILM_ID", film.getId());
 
             // get genres

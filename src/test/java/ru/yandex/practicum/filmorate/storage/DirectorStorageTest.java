@@ -29,8 +29,6 @@ class DirectorStorageTest {
     private static Director director3;
     private static Director director4;
 
-
-    //toDo переименовать в setUp
     @BeforeEach
     void testCreateDirectors() {
         director1 = new Director(1, "Pavel");
