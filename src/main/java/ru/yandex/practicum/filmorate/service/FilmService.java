@@ -106,11 +106,12 @@ public class FilmService {
 
     public List<Film> searchFilms(String query, List<String> by) {
         HashMap<String, String> params = new HashMap<>();
-        for(String filter: by){
-            params.put(filter,query);
+        for (String filter : by) {
+            params.put(filter, query);
         }
         return filmStorage.searchFilms(params);
     }
+
     public List<Film> searchFilms() {
         return filmStorage.searchFilms(new HashMap<>());
     }
