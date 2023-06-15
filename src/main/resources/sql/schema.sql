@@ -118,14 +118,6 @@ CREATE TRIGGER FILM_LIKES_DELETE AFTER
     DELETE
     ON FILM_LIKES FOR EACH ROW CALL "ru.yandex.practicum.filmorate.trigger.RemoveFilmLikeTrigger";
 
-CREATE TRIGGER REVIEW_LIKES_INSERT AFTER
-    INSERT
-    ON REVIEW_LIKES FOR EACH ROW CALL "ru.yandex.practicum.filmorate.trigger.AddReviewLikeTrigger";
-
-CREATE TRIGGER REVIEW_LIKES_DELETE AFTER
-    DELETE
-    ON REVIEW_LIKES FOR EACH ROW CALL "ru.yandex.practicum.filmorate.trigger.RemoveFilmLikeTrigger";
-
 CREATE TRIGGER REVIEWS_INSERT AFTER
     INSERT
     ON REVIEWS FOR EACH ROW CALL "ru.yandex.practicum.filmorate.trigger.AddReviewTrigger";
