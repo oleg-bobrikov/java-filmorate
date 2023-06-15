@@ -87,7 +87,7 @@ public class FilmH2Storage implements FilmStorage {
                         "        FROM  " +
                         "          FILMS  " +
                         "        WHERE  " +
-                        " NOT :IS_FILTERED_BY_FILM_NAME AND NOT :SHOULD_FIND_BY_DIRECTOR_NAME" +
+                        " NOT :IS_FILTERED_BY_FILM_NAME AND NOT :IS_FILTERED_BY_DIRECTOR_NAME" +
                         "          OR ( " +
                         "            :IS_FILTERED_BY_FILM_NAME  " +
                         "            AND LOWER(FILMS.FILM_NAME) LIKE LOWER(:FILM_SEARCH) " +
@@ -117,8 +117,6 @@ public class FilmH2Storage implements FilmStorage {
         sqlParams.put("IS_FILTERED_BY_FILM_NAME", isFilteredByTitle);
         sqlParams.put("FILM_SEARCH", "%" + titleSearchString + "%");
         sqlParams.put("DIRECTOR_SEARCH", "%" + directorSearchString + "%");
-        sqlParams.put("SHOULD_FIND_BY_DIRECTOR_NAME", isFilteredByDirector);
-        sqlParams.put("SHOULD_FIND_BY_FILM_NAME", isFilteredByTitle);
 
         List<Film> films = namedParameterJdbcTemplate.query(sql, sqlParams, filmRowMapper);
         restoreFilms(films);
