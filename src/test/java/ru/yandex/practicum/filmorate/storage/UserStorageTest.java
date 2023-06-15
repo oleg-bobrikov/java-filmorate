@@ -151,7 +151,7 @@ class UserStorageTest {
         userStorage.addFriend(createdUser, createdFriend2);
 
         //act
-        List<User> actual = userStorage.getUserFriendsById(createdUser.getId());
+        List<User> actual = userStorage.findUserFriendsById(createdUser.getId());
 
         //assert
         assertThat(actual)
@@ -211,7 +211,7 @@ class UserStorageTest {
         userStorage.removeFriend(createdUser, createdFriend);
 
         //act
-        List<User> actual = userStorage.getUserFriendsById(createdUser.getId());
+        List<User> actual = userStorage.findUserFriendsById(createdUser.getId());
 
         //assert
         assertThat(actual)

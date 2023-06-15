@@ -33,14 +33,14 @@ public class DirectorH2Storage implements DirectorStorage {
     }
 
     @Override
-    public List<Director> getAll() {
+    public List<Director> findAll() {
         String sqlQueryGetAll = "SELECT ID, DIRECTOR_NAME FROM DIRECTORS ORDER BY ID";
         return jdbcTemplate.query(sqlQueryGetAll, this::mapRowToDirector);
     }
 
 
     @Override
-    public Optional<Director> getDirectorById(Integer id) {
+    public Optional<Director> findDirectorById(Integer id) {
         String sqlQueryGetDirector = "select * from DIRECTORS where Id = ?";
         try {
             return Optional.ofNullable(jdbcTemplate.queryForObject(sqlQueryGetDirector, this::mapRowToDirector, id));
@@ -76,7 +76,7 @@ public class DirectorH2Storage implements DirectorStorage {
             return Optional.empty();
         }
 
-        return Optional.ofNullable(getDirectorById(director.getId()));
+        return Optional.ofNullable(findDirectorById(director.getId()));
     }
 
 

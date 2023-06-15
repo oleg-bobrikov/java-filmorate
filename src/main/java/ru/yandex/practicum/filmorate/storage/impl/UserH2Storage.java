@@ -108,7 +108,7 @@ public class UserH2Storage implements UserStorage {
     }
 
     @Override
-    public List<User> getUserFriendsById(int id) {
+    public List<User> findUserFriendsById(int id) {
         String sql = "select * from users where id in " +
                 "(select friend_id from user_friends where user_id = ?)";
 

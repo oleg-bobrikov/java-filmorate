@@ -231,8 +231,8 @@ class FilmStorageTest {
         final int id = createdFilm.getId();
 
         //act
-        filmStorage.deleteFilmById(id);
-        Optional<Film> actual = filmStorage.getFilmById(id);
+        filmStorage.removeFilmById(id);
+        Optional<Film> actual = filmStorage.findFilmById(id);
 
         //assert
         assertThat(actual).isEmpty();
@@ -288,7 +288,7 @@ class FilmStorageTest {
 
         //act
         filmStorage.addLike(createdFilm, createdUser);
-        Optional<Film> actual = filmStorage.getFilmById(createdFilm.getId());
+        Optional<Film> actual = filmStorage.findFilmById(createdFilm.getId());
 
         //assert
         assertThat(actual).isPresent().hasValueSatisfying(film -> assertThat(new ArrayList<>(film.getLikes())).asList().hasSize(1).contains(createdUser.getId()));
@@ -312,7 +312,7 @@ class FilmStorageTest {
         //act
         filmStorage.addLike(createdFilm, createdUser);
         filmStorage.removeLike(createdFilm, createdUser);
-        Optional<Film> actual = filmStorage.getFilmById(createdFilm.getId());
+        Optional<Film> actual = filmStorage.findFilmById(createdFilm.getId());
 
         //assert
         assertThat(actual).isPresent().hasValueSatisfying(film -> assertThat(new ArrayList<>(film.getLikes())).asList().hasSize(0));
@@ -364,20 +364,20 @@ class FilmStorageTest {
         filmStorage.addLike(film1, user1);
         filmStorage.addLike(film1, user2);
         filmStorage.addLike(film1, user3);
-        final Film updatedFilm1 = filmStorage.getFilmById(film1.getId()).get();
+        final Film updatedFilm1 = filmStorage.findFilmById(film1.getId()).get();
 
         filmStorage.addLike(film2, user1);
         filmStorage.addLike(film2, user2);
         filmStorage.addLike(film2, user3);
         filmStorage.addLike(film2, user4);
-        final Film updatedFilm2 = filmStorage.getFilmById(film2.getId()).get();
+        final Film updatedFilm2 = filmStorage.findFilmById(film2.getId()).get();
 
         filmStorage.addLike(film3, user1);
         filmStorage.addLike(film3, user2);
         filmStorage.addLike(film3, user3);
         filmStorage.addLike(film3, user4);
         filmStorage.addLike(film3, user5);
-        final Film updatedFilm3 = filmStorage.getFilmById(film3.getId()).get();
+        final Film updatedFilm3 = filmStorage.findFilmById(film3.getId()).get();
 
         filmStorage.addLike(film4, user1);
         filmStorage.addLike(film5, user2);

@@ -27,7 +27,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void deleteFilmById(Integer id) {
+    public void removeFilmById(Integer id) {
         films.remove(id);
     }
 
@@ -37,7 +37,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> getFilmById(int id) {
+    public Optional<Film> findFilmById(int id) {
         return Optional.ofNullable(films.get(id));
     }
 

@@ -13,11 +13,11 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    void deleteFilmById(Integer id);
+    void removeFilmById(Integer id);
 
     List<Film> getFilms();
 
-    Optional<Film> getFilmById(int id);
+    Optional<Film> findFilmById(int id);
 
     void addLike(Film film, User user);
 

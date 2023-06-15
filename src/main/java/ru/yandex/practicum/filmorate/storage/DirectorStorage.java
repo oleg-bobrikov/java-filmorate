@@ -8,9 +8,9 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface DirectorStorage {
-    List<Director> getAll();
+    List<Director> findAll();
 
-    Optional<Director> getDirectorById(Integer id);
+    Optional<Director> findDirectorById(Integer id);
 
     Optional<Director> createDirector(Director director);
 

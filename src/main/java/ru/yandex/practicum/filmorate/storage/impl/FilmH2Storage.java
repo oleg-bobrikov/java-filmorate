@@ -18,8 +18,6 @@ import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import javax.sql.DataSource;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 @Component
@@ -128,7 +126,7 @@ public class FilmH2Storage implements FilmStorage {
         // update mpa
         Mpa mpa = film.getMpa();
         if (mpa != null) {
-            film.setMpa(mpaStorage.getMpaById(mpa.getId()));
+            film.setMpa(mpaStorage.findMpaById(mpa.getId()));
         }
 
         String sql = "insert into films (film_name, description, release_date, duration, mpa_film_rating_id) " +
@@ -150,7 +148,7 @@ public class FilmH2Storage implements FilmStorage {
 
         for (Genre genre : film.getGenres()) {
             Integer genreId = genre.getId();
-            newGenres.add(genreStorage.getGenreById(genreId));
+            newGenres.add(genreStorage.findGenreById(genreId));
         }
         genreStorage.updateFilmGenres(film, newGenres);
         film.setGenres(newGenres);
@@ -160,7 +158,7 @@ public class FilmH2Storage implements FilmStorage {
 
         for (Director director : film.getDirectors()) {
             Integer directorId = director.getId();
-            newDirector.add(directorStorage.getDirectorById(directorId).get());
+            newDirector.add(directorStorage.findDirectorById(directorId).get());
         }
         directorStorage.updateFilmDirector(film, newDirector);
         film.setDirectors(newDirector);
@@ -182,7 +180,7 @@ public class FilmH2Storage implements FilmStorage {
         // update mpa
         Mpa mpa = film.getMpa();
         if (mpa != null) {
-            film.setMpa(mpaStorage.getMpaById(mpa.getId()));
+            film.setMpa(mpaStorage.findMpaById(mpa.getId()));
         }
 
         String sql =
@@ -207,7 +205,7 @@ public class FilmH2Storage implements FilmStorage {
         // update genres
         Set<Genre> newGenres = new TreeSet<>(Comparator.comparing(Genre::getId));
         for (Genre genre : film.getGenres()) {
-            newGenres.add(genreStorage.getGenreById(genre.getId()));
+            newGenres.add(genreStorage.findGenreById(genre.getId()));
         }
         genreStorage.updateFilmGenres(film, newGenres);
         film.setGenres(newGenres);
@@ -215,7 +213,7 @@ public class FilmH2Storage implements FilmStorage {
         // update director
         Set<Director> newDirector = new TreeSet<>(Comparator.comparing(Director::getId));
         for (Director director : film.getDirectors()) {
-            newDirector.add(directorStorage.getDirectorById(director.getId()).get());
+            newDirector.add(directorStorage.findDirectorById(director.getId()).get());
         }
         directorStorage.updateFilmDirector(film, newDirector);
         film.setDirectors(newDirector);
@@ -224,7 +222,7 @@ public class FilmH2Storage implements FilmStorage {
     }
 
     @Override
-    public void deleteFilmById(Integer id) {
+    public void removeFilmById(Integer id) {
         String sql = "delete from film_genres where film_id = :film_id; " +
                 "delete from film_likes where film_id = :film_id; " +
                 "delete from films where id = :film_id; " +
@@ -261,7 +259,7 @@ public class FilmH2Storage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> getFilmById(int id) {
+    public Optional<Film> findFilmById(int id) {
         String sql = "select * from films where id = ?";
         List<Film> films = jdbcTemplate.query(sql, new FilmRowMapper(mpaStorage), id);
         if (films.isEmpty()) {
@@ -313,7 +311,7 @@ public class FilmH2Storage implements FilmStorage {
         int updatedRows = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
         log.info("Updated rows: {}", updatedRows);
         log.info("Фильм с идентификатором {} получил лайк от пользователя с идентификатором {}", film.getId(), user.getId());
-        Optional<Film> filmOptional = getFilmById(film.getId());
+        Optional<Film> filmOptional = findFilmById(film.getId());
         filmOptional.ifPresent(value -> film.setLikes(value.getLikes()));
     }
 
@@ -328,7 +326,7 @@ public class FilmH2Storage implements FilmStorage {
         namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
 
         log.info("У фильма с идентификатором {} удален лайк от пользователя с идентификатором {}", film.getId(), user.getId());
-        Optional<Film> filmOptional = getFilmById(film.getId());
+        Optional<Film> filmOptional = findFilmById(film.getId());
         filmOptional.ifPresent(value -> film.setLikes(value.getLikes()));
     }
 
@@ -413,7 +411,7 @@ public class FilmH2Storage implements FilmStorage {
             int filmId = rs.getInt("FILM_ID");
             int genreId = rs.getInt("GENRE_ID");
             Film film = films.get(filmId);
-            film.getGenres().add(genreStorage.getGenreById(genreId));
+            film.getGenres().add(genreStorage.findGenreById(genreId));
         }
 
         // director
@@ -434,7 +432,7 @@ public class FilmH2Storage implements FilmStorage {
             int filmId = rs.getInt("FILM_ID");
             int directorId = rs.getInt("DIRECTOR_ID");
             Film film = films.get(filmId);
-            film.getDirectors().add(directorStorage.getDirectorById(directorId).get());
+            film.getDirectors().add(directorStorage.findDirectorById(directorId).get());
         }
 
         sql = "DROP TABLE IF EXISTS popular_films_tmp;";
@@ -467,12 +465,12 @@ public class FilmH2Storage implements FilmStorage {
             filmsId = jdbcTemplate.query(sqlQueryByYear, (rs, rowNum) -> rs.getInt("film_id"), directorId);
 
             for (Integer id : filmsId) {
-                films.add(getFilmById(id).get());
+                films.add(findFilmById(id).get());
             }
         } else {
             filmsId = jdbcTemplate.query(sqlQueryByLikes, (rs, rowNum) -> rs.getInt("film_id"), directorId);
             for (Integer id : filmsId) {
-                films.add(getFilmById(id).get());
+                films.add(findFilmById(id).get());
             }
         }
         return films;
@@ -597,7 +595,7 @@ public class FilmH2Storage implements FilmStorage {
                 "         SF.MPA_FILM_RATING_ID " +
                 "ORDER BY COUNT(FL.USER_ID) DESC " +
                 "LIMIT ? ";
-        List<Film> films = jdbcTemplate.query(sqlQueryPopularFilms, this::mapRowFilm, year, count);
+        List<Film> films = jdbcTemplate.query(sqlQueryPopularFilms, filmRowMapper, year, count);
         restoreFilms(films);
         return films;
     }
@@ -634,7 +632,7 @@ public class FilmH2Storage implements FilmStorage {
                 "ORDER BY count(FL.USER_ID) DESC " +
                 "LIMIT ?";
 
-        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, this::mapRowFilm, genreId, year, count);
+        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, filmRowMapper, genreId, year, count);
         restoreFilms(films);
         return films;
     }
@@ -671,24 +669,9 @@ public class FilmH2Storage implements FilmStorage {
                 "       SF.MPA_FILM_RATING_ID " +
                 "order by count(FL.USER_ID) desc " +
                 "limit ?";
-        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, this::mapRowFilm, genreId, count);
+        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, filmRowMapper, genreId, count);
         restoreFilms(films);
         return films;
-    }
-
-
-    public Film mapRowFilm(ResultSet rs, int rowNum) throws SQLException {
-        int mpaId = rs.getInt("MPA_FILM_RATING_ID");
-        Mpa mpa = mpaId == 0 ? null : mpaStorage.getMpaById(mpaId);
-
-        return Film.builder()
-                .id(rs.getInt("ID"))
-                .name(rs.getString("FILM_NAME"))
-                .description(rs.getString("DESCRIPTION"))
-                .releaseDate(Objects.requireNonNull(rs.getDate("RELEASE_DATE")).toLocalDate())
-                .duration(rs.getInt("DURATION"))
-                .mpa(mpa)
-                .build();
     }
 
     private void restoreFilms(List<Film> films) {

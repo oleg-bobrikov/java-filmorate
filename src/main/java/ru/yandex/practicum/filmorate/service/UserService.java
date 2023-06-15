@@ -69,7 +69,7 @@ public class UserService {
         if (userStorage.findUserById(id).isEmpty()) {
             throw new NotFoundException("user with id=" + id + " not found.");
         }
-        return userStorage.getUserFriendsById(id);
+        return userStorage.findUserFriendsById(id);
     }
 
     public void removeFriend(Integer id, Integer friendId) {

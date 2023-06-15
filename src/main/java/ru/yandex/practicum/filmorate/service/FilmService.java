@@ -28,7 +28,7 @@ public class FilmService {
 
 
     public Film getFilmById(Integer id) {
-        Optional<Film> filmOptional = filmStorage.getFilmById(id);
+        Optional<Film> filmOptional = filmStorage.findFilmById(id);
         if (filmOptional.isEmpty()) {
             throw new NotFoundException("Фильм с идентификатором " + id + " не найден.");
         }
@@ -48,7 +48,7 @@ public class FilmService {
 
     public Film update(Film film) {
         final Integer filmId = film.getId();
-        Optional<Film> filmOptional = filmStorage.getFilmById(filmId);
+        Optional<Film> filmOptional = filmStorage.findFilmById(filmId);
         if (filmOptional.isEmpty()) {
             throw new NotFoundException("Фильм с идентификатором " + filmId + " не найден.");
         }
@@ -97,10 +97,10 @@ public class FilmService {
     }
 
     public void delete(Integer userId) {
-        if (filmStorage.getFilmById(userId).isEmpty()) {
+        if (filmStorage.findFilmById(userId).isEmpty()) {
             throw new NotFoundException("Такого фильма нет.");
         }
-        filmStorage.deleteFilmById(userId);
+        filmStorage.removeFilmById(userId);
     }
 
 
