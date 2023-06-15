@@ -3,18 +3,21 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.validator.IsValidBy;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
+@Validated
 @RequiredArgsConstructor
 public class FilmController {
 
@@ -35,7 +38,15 @@ public class FilmController {
         log.info("Получен запрос к эндпоинту: {} /common{}/{}", "GET", userId, friendId);
         return filmService.getCommonFilms(userId, friendId);
     }
-
+    @GetMapping("/search")
+    public List<Film> searchFilms(@RequestParam(required = false) Optional<String> query,
+                                  @RequestParam(required = false) @IsValidBy Optional<List<String>> by) {
+        if (query.isEmpty() || by.isEmpty()) {
+            return filmService.searchFilms();
+        } else {
+            return filmService.searchFilms(query.get(), by.get());
+        }
+    }
     @PostMapping()
     public Film add(@NotNull @Valid @RequestBody Film film) {
         filmService.add(film);
@@ -52,13 +63,13 @@ public class FilmController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("{id}/like/{userId}")
-    public void like(@PathVariable @NotBlank Integer id, @PathVariable @NotBlank Integer userId) {
+    public void like(@PathVariable @NotNull Integer id, @PathVariable @NotNull Integer userId) {
         filmService.like(id, userId);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("{id}/like/{userId}")
-    public void removeLike(@PathVariable @NotNull Integer id, @PathVariable @NotBlank Integer userId) {
+    public void removeLike(@PathVariable @NotNull Integer id, @PathVariable @NotNull Integer userId) {
         filmService.removeLike(id, userId);
     }
 

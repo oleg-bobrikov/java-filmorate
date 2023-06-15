@@ -58,6 +58,74 @@ public class FilmH2Storage implements FilmStorage {
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));
         generatedKeyHolder = new GeneratedKeyHolder();
     }
+@Override
+    public List<Film> searchFilms(Map<String, String> params) {
+
+        boolean isFilteredByDirector = params.containsKey("director");
+        String directorSearchString = isFilteredByDirector ? params.get("director") : "";
+
+        boolean isFilteredByTitle = params.containsKey("title");
+        String titleSearchString = isFilteredByTitle ? params.get("title") : "";
+
+        String sql =
+                "SELECT " +
+                        "  FILMS.ID,  " +
+                        "  FILMS.FILM_NAME,  " +
+                        "  FILMS.DESCRIPTION,  " +
+                        "  FILMS.RELEASE_DATE,  " +
+                        "  FILMS.DURATION,  " +
+                        "  FILMS.MPA_FILM_RATING_ID  " +
+                        "FROM  " +
+                        "  ( " +
+                        "    SELECT  " +
+                        "      FILTERED_FILMS.FILM_ID  " +
+                        "    FROM  " +
+                        "      ( " +
+                        "        SELECT  " +
+                        "          FILMS.ID AS FILM_ID  " +
+                        "        FROM  " +
+                        "          FILMS  " +
+                        "        WHERE  " +
+                        "          :SHOULD_FIND_BY_FILM_NAME  " +
+                        "          AND ( " +
+                        "            NOT :IS_FILTERED_BY_FILM_NAME  " +
+                        "            OR LOWER(FILMS.FILM_NAME) LIKE LOWER(:FILM_SEARCH) " +
+                        "          )  " +
+                        "          OR  (NOT :SHOULD_FIND_BY_FILM_NAME AND NOT :SHOULD_FIND_BY_DIRECTOR_NAME)" +
+                        "        UNION " +
+                        "        SELECT " +
+                        "          FILM_ID " +
+                        "        FROM " +
+                        "          DIRECTORS_FILMS " +
+                        "          INNER JOIN DIRECTORS ON DIRECTORS.ID = DIRECTORS_FILMS.DIRECTOR_ID " +
+                        "        WHERE " +
+                        "          :SHOULD_FIND_BY_DIRECTOR_NAME " +
+                        "          AND ( " +
+                        "            NOT :IS_FILTERED_BY_DIRECTOR_NAME " +
+                        "            OR LOWER(DIRECTORS.DIRECTOR_NAME) LIKE LOWER(:DIRECTOR_SEARCH) " +
+                        "          ) " +
+                        "      ) as FILTERED_FILMS " +
+                        "      LEFT JOIN FILM_likes ON FILTERED_FILMS.FILM_ID = FILM_likes.FILM_ID " +
+                        "    GROUP BY " +
+                        "      FILTERED_FILMS.FILM_ID " +
+                        "    ORDER BY " +
+                        "      COUNT(FILM_likes.FILM_ID) DESC " +
+                        "  ) as SORTED_FILMS " +
+                        "  LEFT JOIN FILMS ON FILMS.ID = SORTED_FILMS.FILM_ID ";
+
+
+        HashMap<String, Object> sqlParams = new HashMap<>();
+        sqlParams.put("IS_FILTERED_BY_DIRECTOR_NAME", isFilteredByDirector);
+        sqlParams.put("IS_FILTERED_BY_FILM_NAME", isFilteredByTitle);
+        sqlParams.put("FILM_SEARCH", "%" + titleSearchString + "%");
+        sqlParams.put("DIRECTOR_SEARCH", "%" + directorSearchString + "%");
+        sqlParams.put("SHOULD_FIND_BY_DIRECTOR_NAME", isFilteredByDirector);
+        sqlParams.put("SHOULD_FIND_BY_FILM_NAME", isFilteredByTitle);
+
+        List<Film> films = namedParameterJdbcTemplate.query(sql, sqlParams, filmRowMapper);
+        restoreFilms(films);
+        return films;
+    }
 
     @Override
     public Film add(Film film) {
@@ -628,8 +696,9 @@ public class FilmH2Storage implements FilmStorage {
     }
 
     private void restoreFilms(List<Film> films) {
+        List<Film> filmLinkedList = new LinkedList<>(films);
         HashMap<String, Object> params = new HashMap<>();
-        for (Film film : films) {
+        for (Film film : filmLinkedList) {
             params.put("FILM_ID", film.getId());
 
             // get genres
