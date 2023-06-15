@@ -19,8 +19,8 @@ public class AddFriendTrigger implements Trigger {
 
         PreparedStatement prep = connection.prepareStatement(sql);
         prep.setString(1, "FRIEND"); // EVENT_TYPE
-        prep.setInt(2, (Integer) newRow[0]); // ENTITY_ID
-        prep.setInt(3, (Integer) newRow[1]); // USER_ID
+        prep.setInt(2, (Integer) newRow[1]); // ENTITY_ID
+        prep.setInt(3, (Integer) newRow[0]); // USER_ID
         prep.setString(4, "ADD"); // OPERATION
 
         prep.execute();
