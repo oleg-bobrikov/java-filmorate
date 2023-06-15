@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,7 +21,7 @@ class UserStorageTest {
 
     private final UserStorage userStorage;
 
-    public UserStorageTest( @Qualifier("userH2Storage") UserStorage userStorage) {
+    public UserStorageTest(@Qualifier("userH2Storage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -162,7 +160,7 @@ class UserStorageTest {
                 .contains(createdFriend1, createdFriend2);
     }
 
-   @Test
+    @Test
     void getUsers_returnUsers() {
         //arrange
         User user1 = User.builder()
@@ -222,7 +220,7 @@ class UserStorageTest {
     }
 
     @Test
-    void getEventsByUserId_returns_list_events_sorted_by_asc_date_filtered_by_user_id(){
+    void getEventsByUserId_returns_list_events_sorted_by_asc_date_filtered_by_user_id() {
         // arrange
         User user1 = User.builder()
                 .email("albert@ya.ru")
@@ -250,7 +248,7 @@ class UserStorageTest {
         User createdFriend2 = userStorage.add(friend2);
         userStorage.addFriend(createdUser1, createdFriend2);
 
-        userStorage.removeFriend(createdUser1,createdFriend2);
+        userStorage.removeFriend(createdUser1, createdFriend2);
 
         // act
         List<Event> actual = userStorage.getEventsByUserId(createdUser1.getId());
@@ -260,14 +258,14 @@ class UserStorageTest {
                 .hasSize(3)
                 .satisfies(list -> {
                     assertThat(list.get(0))
-                            .hasFieldOrPropertyWithValue("eventType","FRIEND")
-                            .hasFieldOrPropertyWithValue("operation","ADD");
+                            .hasFieldOrPropertyWithValue("eventType", "FRIEND")
+                            .hasFieldOrPropertyWithValue("operation", "ADD");
                     assertThat(list.get(1))
-                            .hasFieldOrPropertyWithValue("eventType","FRIEND")
-                            .hasFieldOrPropertyWithValue("operation","ADD");
+                            .hasFieldOrPropertyWithValue("eventType", "FRIEND")
+                            .hasFieldOrPropertyWithValue("operation", "ADD");
                     assertThat(list.get(2))
-                            .hasFieldOrPropertyWithValue("eventType","FRIEND")
-                            .hasFieldOrPropertyWithValue("operation","REMOVE");
+                            .hasFieldOrPropertyWithValue("eventType", "FRIEND")
+                            .hasFieldOrPropertyWithValue("operation", "REMOVE");
                 });
 
 
