@@ -87,12 +87,11 @@ public class FilmH2Storage implements FilmStorage {
                         "        FROM  " +
                         "          FILMS  " +
                         "        WHERE  " +
-                        "          :SHOULD_FIND_BY_FILM_NAME  " +
-                        "          AND ( " +
-                        "            NOT :IS_FILTERED_BY_FILM_NAME  " +
-                        "            OR LOWER(FILMS.FILM_NAME) LIKE LOWER(:FILM_SEARCH) " +
+                        " NOT :IS_FILTERED_BY_FILM_NAME AND NOT :SHOULD_FIND_BY_DIRECTOR_NAME" +
+                        "          OR ( " +
+                        "            :IS_FILTERED_BY_FILM_NAME  " +
+                        "            AND LOWER(FILMS.FILM_NAME) LIKE LOWER(:FILM_SEARCH) " +
                         "          )  " +
-                        "          OR  (NOT :SHOULD_FIND_BY_FILM_NAME AND NOT :SHOULD_FIND_BY_DIRECTOR_NAME)" +
                         "        UNION " +
                         "        SELECT " +
                         "          FILM_ID " +
@@ -100,11 +99,9 @@ public class FilmH2Storage implements FilmStorage {
                         "          DIRECTORS_FILMS " +
                         "          INNER JOIN DIRECTORS ON DIRECTORS.ID = DIRECTORS_FILMS.DIRECTOR_ID " +
                         "        WHERE " +
-                        "          :SHOULD_FIND_BY_DIRECTOR_NAME " +
-                        "          AND ( " +
-                        "            NOT :IS_FILTERED_BY_DIRECTOR_NAME " +
-                        "            OR LOWER(DIRECTORS.DIRECTOR_NAME) LIKE LOWER(:DIRECTOR_SEARCH) " +
-                        "          ) " +
+                        " :IS_FILTERED_BY_DIRECTOR_NAME " +
+                        "          AND  " +
+                        "            LOWER(DIRECTORS.DIRECTOR_NAME) LIKE LOWER(:DIRECTOR_SEARCH) " +
                         "      ) as FILTERED_FILMS " +
                         "      LEFT JOIN FILM_likes ON FILTERED_FILMS.FILM_ID = FILM_likes.FILM_ID " +
                         "    GROUP BY " +
