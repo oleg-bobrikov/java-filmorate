@@ -8,7 +8,9 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dto.Event;
 import ru.yandex.practicum.filmorate.dto.User;
+import ru.yandex.practicum.filmorate.mapper.EventRowMapper;
 import ru.yandex.practicum.filmorate.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -21,9 +23,11 @@ public class UserH2Storage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
+    private final EventRowMapper eventRowMapper;
 
-    public UserH2Storage(JdbcTemplate jdbcTemplate, UserRowMapper userRowMapper) {
+    public UserH2Storage(JdbcTemplate jdbcTemplate, EventRowMapper eventRowMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.eventRowMapper = eventRowMapper;
         DataSource dataSource = jdbcTemplate.getDataSource();
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));
         generatedKeyHolder = new GeneratedKeyHolder();
@@ -67,6 +71,7 @@ public class UserH2Storage implements UserStorage {
 
         return user;
     }
+
 
     @Override
     public Optional<User> findUserById(int id) {
@@ -172,6 +177,14 @@ public class UserH2Storage implements UserStorage {
 
         namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
         log.info("Для пользователя с идентификатором {} удален друг с идентификатором {}", user.getId(), friend.getId());
+    }
+
+    @Override
+    public List<Event> getEventsByUserId(Integer userId) {
+        String sql = "select * from EVENTS where USER_ID = :USER_ID order by EVENT_TIMESTAMP";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("USER_ID", userId);
+        return namedParameterJdbcTemplate.query(sql,params, eventRowMapper);
     }
 
 
