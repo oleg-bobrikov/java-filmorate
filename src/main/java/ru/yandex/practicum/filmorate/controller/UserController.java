@@ -50,6 +50,7 @@ public class UserController {
     public List<Event> getEventsByUserId(@PathVariable @NotNull Integer id) {
         return userService.getEventsByUserId(id);
     }
+
     @PutMapping()
     public User update(@NotNull @Valid @RequestBody User user) {
         userService.update(user);
