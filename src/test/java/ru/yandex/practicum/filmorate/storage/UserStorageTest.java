@@ -1,12 +1,11 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.yandex.practicum.filmorate.dto.Event;
 import ru.yandex.practicum.filmorate.dto.User;
 
 import java.time.LocalDate;
@@ -17,12 +16,14 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
-@RequiredArgsConstructor
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class UserStorageTest {
-    @Autowired
-    @Qualifier("userH2Storage")
-    private UserStorage userStorage;
+
+    private final UserStorage userStorage;
+
+    public UserStorageTest( @Qualifier("userH2Storage") UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
 
     @Test
     public void findUserById_returnUser_userExists() {
@@ -216,5 +217,57 @@ class UserStorageTest {
         assertThat(actual)
                 .asList()
                 .isEmpty();
+    }
+
+    @Test
+    void getEventsByUserId_returns_list_events_sorted_by_asc_date_filtered_by_user_id(){
+        // arrange
+        User user1 = User.builder()
+                .email("albert@ya.ru")
+                .login("albert@ya.ru")
+                .name("Albert")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
+        User createdUser1 = userStorage.add(user1);
+
+        User friend1 = User.builder()
+                .email("julia@ya.ru")
+                .login("julia@ya.ru")
+                .name("Julia")
+                .birthday(LocalDate.of(2003, 11, 1))
+                .build();
+        User createdFriend1 = userStorage.add(friend1);
+        userStorage.addFriend(createdUser1, createdFriend1);
+
+        User friend2 = User.builder()
+                .email("eugenia@ya.ru")
+                .login("eugenia@ya.ru")
+                .name("Eugenia")
+                .birthday(LocalDate.of(2003, 5, 1))
+                .build();
+        User createdFriend2 = userStorage.add(friend2);
+        userStorage.addFriend(createdUser1, createdFriend2);
+
+        userStorage.removeFriend(createdUser1,createdFriend2);
+
+        // act
+        List<Event> actual = userStorage.getEventsByUserId(createdUser1.getId());
+
+        // assert
+        assertThat(actual).asList()
+                .hasSize(3)
+                .satisfies(list -> {
+                    assertThat(list.get(0))
+                            .hasFieldOrPropertyWithValue("eventType","FRIEND")
+                            .hasFieldOrPropertyWithValue("operation","ADD");
+                    assertThat(list.get(1))
+                            .hasFieldOrPropertyWithValue("eventType","FRIEND")
+                            .hasFieldOrPropertyWithValue("operation","ADD");
+                    assertThat(list.get(2))
+                            .hasFieldOrPropertyWithValue("eventType","FRIEND")
+                            .hasFieldOrPropertyWithValue("operation","REMOVE");
+                });
+
+
     }
 }
