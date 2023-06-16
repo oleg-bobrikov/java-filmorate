@@ -108,17 +108,13 @@ CREATE TRIGGER USER_FRIENDS_INSERT AFTER
     INSERT
     ON USER_FRIENDS FOR EACH ROW CALL "ru.yandex.practicum.filmorate.trigger.AddFriendTrigger";
 
-CREATE TRIGGER USER_FRIENDS_DELETE AFTER
-    DELETE
-    ON USER_FRIENDS FOR EACH ROW CALL "ru.yandex.practicum.filmorate.trigger.RemoveFriendTrigger";
-
 CREATE TRIGGER FILM_LIKES_INSERT AFTER
     INSERT
     ON FILM_LIKES FOR EACH ROW CALL "ru.yandex.practicum.filmorate.trigger.AddFilmLikeTrigger";
 
-CREATE TRIGGER FILM_LIKES_DELETE AFTER
-    DELETE
-    ON FILM_LIKES FOR EACH ROW CALL "ru.yandex.practicum.filmorate.trigger.RemoveFilmLikeTrigger";
+CREATE TRIGGER FILM_LIKES_UPDATE AFTER
+    UPDATE
+    ON FILM_LIKES FOR EACH ROW CALL "ru.yandex.practicum.filmorate.trigger.AddFilmLikeTrigger";
 
 CREATE TRIGGER REVIEWS_INSERT AFTER
     INSERT

@@ -103,7 +103,7 @@ public class UserH2Storage implements UserStorage {
         params.put("userId", user.getId());
         params.put("friendId", friend.getId());
 
-        namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
+        namedParameterJdbcTemplate.update(sql, params);
         log.info("Для пользователя с идентификатором {} добавлен друг с идентификатором {}", user.getId(), friend.getId());
     }
 
@@ -168,15 +168,25 @@ public class UserH2Storage implements UserStorage {
 
     @Override
     public void removeFriend(User user, User friend) {
-        String sql = "delete from user_friends " +
-                "where user_id = :userId and friend_id = :friendId;";
+        String sql = "delete from USER_FRIENDS " +
+                "where USER_ID = :USER_ID and FRIEND_ID = :FRIEND_ID";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("userId", user.getId());
-        params.put("friendId", friend.getId());
+        params.put("USER_ID", user.getId());
+        params.put("FRIEND_ID", friend.getId());
 
-        namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
+        namedParameterJdbcTemplate.update(sql, params);
         log.info("Для пользователя с идентификатором {} удален друг с идентификатором {}", user.getId(), friend.getId());
+
+        // create a history log separately,
+        // cause log could not being created by "on delete trigger"
+        // (observed ON DELETE CASCADE PROBLEM. It's deleting several rows instead of one which is required by Postman)
+        sql = "insert into EVENTS (EVENT_TIMESTAMP, EVENT_TYPE, ENTITY_ID, USER_ID, OPERATION) " +
+                "VALUES(CURRENT_TIMESTAMP, :EVENT_TYPE, :ENTITY_ID, :USER_ID, :OPERATION)";
+        params.put("EVENT_TYPE", "FRIEND");
+        params.put("ENTITY_ID", friend.getId());
+        params.put("OPERATION", "REMOVE");
+        namedParameterJdbcTemplate.update(sql, params);
     }
 
     @Override
@@ -184,7 +194,7 @@ public class UserH2Storage implements UserStorage {
         String sql = "select * from EVENTS where USER_ID = :USER_ID order by EVENT_TIMESTAMP";
         HashMap<String, Object> params = new HashMap<>();
         params.put("USER_ID", userId);
-        return namedParameterJdbcTemplate.query(sql,params, eventRowMapper);
+        return namedParameterJdbcTemplate.query(sql, params, eventRowMapper);
     }
 
 

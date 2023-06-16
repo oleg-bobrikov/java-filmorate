@@ -302,14 +302,13 @@ public class FilmH2Storage implements FilmStorage {
 
     @Override
     public void addLike(Film film, User user) {
-        String sql = "merge into film_likes key (film_id, user_id) VALUES(:film_id, :user_id)";
+        String sql = "merge into film_likes key (film_id, user_id) VALUES (:film_id, :user_id)";
 
         Map<String, Object> params = new HashMap<>();
         params.put("film_id", film.getId());
         params.put("user_id", user.getId());
 
-        int updatedRows = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
-        log.info("Updated rows: {}", updatedRows);
+        namedParameterJdbcTemplate.update(sql, params);
         log.info("Фильм с идентификатором {} получил лайк от пользователя с идентификатором {}", film.getId(), user.getId());
         Optional<Film> filmOptional = findFilmById(film.getId());
         filmOptional.ifPresent(value -> film.setLikes(value.getLikes()));
@@ -317,17 +316,27 @@ public class FilmH2Storage implements FilmStorage {
 
     @Override
     public void removeLike(Film film, User user) {
-        String sql = "delete from film_likes where film_id = :film_id and user_id = :user_id";
+        String sql = "delete from film_likes where film_id = :FILM_ID and user_id = :USER_ID";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("film_id", film.getId());
-        params.put("user_id", user.getId());
+        params.put("FILM_ID", film.getId());
+        params.put("USER_ID", user.getId());
 
-        namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
+        namedParameterJdbcTemplate.update(sql, params);
 
         log.info("У фильма с идентификатором {} удален лайк от пользователя с идентификатором {}", film.getId(), user.getId());
         Optional<Film> filmOptional = findFilmById(film.getId());
         filmOptional.ifPresent(value -> film.setLikes(value.getLikes()));
+
+        // create a history log separately,
+        // cause log could not being created by "on delete trigger"
+        // (observed ON DELETE CASCADE PROBLEM. It's deleting several rows instead of one which is required by Postman)
+        sql = "insert into EVENTS (EVENT_TIMESTAMP, EVENT_TYPE, ENTITY_ID, USER_ID, OPERATION) " +
+                "VALUES(CURRENT_TIMESTAMP, :EVENT_TYPE, :ENTITY_ID, :USER_ID, :OPERATION)";
+        params.put("EVENT_TYPE", "LIKE");
+        params.put("ENTITY_ID", film.getId());
+        params.put("OPERATION", "REMOVE");
+        namedParameterJdbcTemplate.update(sql, params);
     }
 
     @Override

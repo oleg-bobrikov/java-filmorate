@@ -40,8 +40,8 @@ public class FilmService {
         return filmStorage.getCommonFilms(userId, friendId);
     }
 
-    public void like(Integer id, Integer userId) {
-        Film film = getFilmById(id);
+    public void like(Integer filmId, Integer userId) {
+        Film film = getFilmById(filmId);
         User user = userService.findUserById(userId);
         filmStorage.addLike(film, user);
     }
