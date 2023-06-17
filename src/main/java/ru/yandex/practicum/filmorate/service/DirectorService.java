@@ -22,13 +22,13 @@ public class DirectorService {
     }
 
     public List<Director> getAll() {
-        List<Director> directors = directorStorage.getAll();
+        List<Director> directors = directorStorage.findAll();
         if (directors.isEmpty()) log.warn("Список режессеров пуст!");
         return directors;
     }
 
     public Director getDirectorById(Integer id) {
-        return directorStorage.getDirectorById(id).orElseThrow(() ->
+        return directorStorage.findDirectorById(id).orElseThrow(() ->
                 new NotFoundException("Режессер с идентификатором " + id + " не найден."));
     }
 
@@ -43,7 +43,7 @@ public class DirectorService {
     }
 
     public void removeDirector(int id) {
-        directorStorage.getDirectorById(id).orElseThrow(() ->
+        directorStorage.findDirectorById(id).orElseThrow(() ->
                 new NotFoundException("Такого режессера нет."));
         directorStorage.removeDirector(id);
     }

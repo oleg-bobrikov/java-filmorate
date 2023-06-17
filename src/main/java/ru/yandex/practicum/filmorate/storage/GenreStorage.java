@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Set;
 
 public interface GenreStorage {
-    List<Genre> getAll();
+    List<Genre> findAll();
 
-    Genre getGenreById(Integer id);
+    Genre findGenreById(Integer id);
 
     void updateFilmGenres(Film film, Set<Genre> genres);
 }

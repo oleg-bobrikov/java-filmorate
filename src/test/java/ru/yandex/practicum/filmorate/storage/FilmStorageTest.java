@@ -207,7 +207,12 @@ class FilmStorageTest {
         Film actual = filmStorage.update(testFilm);
 
         //assert
-        assertThat(actual).hasFieldOrPropertyWithValue("id", testFilm.getId()).hasFieldOrPropertyWithValue("name", testFilm.getName()).hasFieldOrPropertyWithValue("description", testFilm.getDescription()).hasFieldOrPropertyWithValue("releaseDate", testFilm.getReleaseDate()).hasFieldOrPropertyWithValue("mpa", testFilm.getMpa()).hasFieldOrPropertyWithValue("genres", testFilm.getGenres());
+        assertThat(actual).hasFieldOrPropertyWithValue("id", testFilm.getId())
+                .hasFieldOrPropertyWithValue("name", testFilm.getName())
+                .hasFieldOrPropertyWithValue("description", testFilm.getDescription())
+                .hasFieldOrPropertyWithValue("releaseDate", testFilm.getReleaseDate())
+                .hasFieldOrPropertyWithValue("mpa", testFilm.getMpa())
+                .hasFieldOrPropertyWithValue("genres", testFilm.getGenres());
     }
 
     @Test
@@ -215,14 +220,19 @@ class FilmStorageTest {
         //arrange
         Mpa mpa1 = Mpa.builder().id(1).build();
         Genre genre1 = Genre.builder().id(1).build();
-        Film newFilm = Film.builder().name("Перевозчик").description("Триллер").duration(92).releaseDate(LocalDate.of(2002, 2, 1)).mpa(mpa1).build();
+        Film newFilm = Film.builder().name("Перевозчик")
+                .description("Триллер")
+                .duration(92)
+                .releaseDate(LocalDate.of(2002, 2, 1))
+                .mpa(mpa1)
+                .build();
         newFilm.setGenres(Set.of(genre1));
         Film createdFilm = filmStorage.add(newFilm);
         final int id = createdFilm.getId();
 
         //act
-        filmStorage.deleteFilmById(id);
-        Optional<Film> actual = filmStorage.getFilmById(id);
+        filmStorage.removeFilmById(id);
+        Optional<Film> actual = filmStorage.findFilmById(id);
 
         //assert
         assertThat(actual).isEmpty();
@@ -235,12 +245,21 @@ class FilmStorageTest {
         Mpa mpa2 = Mpa.builder().id(2).build();
         Genre genre1 = Genre.builder().id(1).build();
         Genre genre2 = Genre.builder().id(2).build();
-        Film newFilm1 = Film.builder().name("Перевозчик 1").description("Триллер").duration(92).releaseDate(LocalDate.of(2002, 2, 1)).mpa(mpa1).build();
+        Film newFilm1 = Film.builder().name("Перевозчик 1")
+                .description("Триллер")
+                .duration(92)
+                .releaseDate(LocalDate.of(2002, 2, 1))
+                .mpa(mpa1)
+                .build();
         newFilm1.setGenres(Set.of(genre1));
         Film createdFilm1 = filmStorage.add(newFilm1);
         newFilm1.setId(createdFilm1.getId());
 
-        Film newFilm2 = Film.builder().name("Перевозчик 2").description("Триллер").duration(92).releaseDate(LocalDate.of(2005, 2, 1)).mpa(mpa2).build();
+        Film newFilm2 = Film.builder().name("Перевозчик 2")
+                .description("Триллер")
+                .duration(92)
+                .releaseDate(LocalDate.of(2005, 2, 1))
+                .mpa(mpa2).build();
         newFilm2.setGenres(Set.of(genre2));
         Film createdFilm2 = filmStorage.add(newFilm2);
         newFilm2.setId(createdFilm2.getId());
@@ -269,7 +288,7 @@ class FilmStorageTest {
 
         //act
         filmStorage.addLike(createdFilm, createdUser);
-        Optional<Film> actual = filmStorage.getFilmById(createdFilm.getId());
+        Optional<Film> actual = filmStorage.findFilmById(createdFilm.getId());
 
         //assert
         assertThat(actual).isPresent().hasValueSatisfying(film -> assertThat(new ArrayList<>(film.getLikes())).asList().hasSize(1).contains(createdUser.getId()));
@@ -293,7 +312,7 @@ class FilmStorageTest {
         //act
         filmStorage.addLike(createdFilm, createdUser);
         filmStorage.removeLike(createdFilm, createdUser);
-        Optional<Film> actual = filmStorage.getFilmById(createdFilm.getId());
+        Optional<Film> actual = filmStorage.findFilmById(createdFilm.getId());
 
         //assert
         assertThat(actual).isPresent().hasValueSatisfying(film -> assertThat(new ArrayList<>(film.getLikes())).asList().hasSize(0));
@@ -345,20 +364,20 @@ class FilmStorageTest {
         filmStorage.addLike(film1, user1);
         filmStorage.addLike(film1, user2);
         filmStorage.addLike(film1, user3);
-        final Film updatedFilm1 = filmStorage.getFilmById(film1.getId()).get();
+        final Film updatedFilm1 = filmStorage.findFilmById(film1.getId()).get();
 
         filmStorage.addLike(film2, user1);
         filmStorage.addLike(film2, user2);
         filmStorage.addLike(film2, user3);
         filmStorage.addLike(film2, user4);
-        final Film updatedFilm2 = filmStorage.getFilmById(film2.getId()).get();
+        final Film updatedFilm2 = filmStorage.findFilmById(film2.getId()).get();
 
         filmStorage.addLike(film3, user1);
         filmStorage.addLike(film3, user2);
         filmStorage.addLike(film3, user3);
         filmStorage.addLike(film3, user4);
         filmStorage.addLike(film3, user5);
-        final Film updatedFilm3 = filmStorage.getFilmById(film3.getId()).get();
+        final Film updatedFilm3 = filmStorage.findFilmById(film3.getId()).get();
 
         filmStorage.addLike(film4, user1);
         filmStorage.addLike(film5, user2);

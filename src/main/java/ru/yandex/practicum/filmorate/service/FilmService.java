@@ -28,7 +28,7 @@ public class FilmService {
 
 
     public Film getFilmById(Integer id) {
-        Optional<Film> filmOptional = filmStorage.getFilmById(id);
+        Optional<Film> filmOptional = filmStorage.findFilmById(id);
         if (filmOptional.isEmpty()) {
             throw new NotFoundException("Фильм с идентификатором " + id + " не найден.");
         }
@@ -40,15 +40,15 @@ public class FilmService {
         return filmStorage.getCommonFilms(userId, friendId);
     }
 
-    public void like(Integer id, Integer userId) {
-        Film film = getFilmById(id);
+    public void like(Integer filmId, Integer userId) {
+        Film film = getFilmById(filmId);
         User user = userService.findUserById(userId);
         filmStorage.addLike(film, user);
     }
 
     public Film update(Film film) {
         final Integer filmId = film.getId();
-        Optional<Film> filmOptional = filmStorage.getFilmById(filmId);
+        Optional<Film> filmOptional = filmStorage.findFilmById(filmId);
         if (filmOptional.isEmpty()) {
             throw new NotFoundException("Фильм с идентификатором " + filmId + " не найден.");
         }
@@ -97,10 +97,23 @@ public class FilmService {
     }
 
     public void delete(Integer userId) {
-        if (filmStorage.getFilmById(userId).isEmpty()) {
+        if (filmStorage.findFilmById(userId).isEmpty()) {
             throw new NotFoundException("Такого фильма нет.");
         }
-        filmStorage.deleteFilmById(userId);
+        filmStorage.removeFilmById(userId);
+    }
+
+
+    public List<Film> searchFilms(String query, List<String> by) {
+        HashMap<String, String> params = new HashMap<>();
+        for (String filter : by) {
+            params.put(filter, query);
+        }
+        return filmStorage.searchFilms(params);
+    }
+
+    public List<Film> searchFilms() {
+        return filmStorage.searchFilms(new HashMap<>());
     }
 
 

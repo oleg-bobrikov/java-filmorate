@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.Event;
 import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -68,7 +69,7 @@ public class UserService {
         if (userStorage.findUserById(id).isEmpty()) {
             throw new NotFoundException("user with id=" + id + " not found.");
         }
-        return userStorage.getUserFriendsById(id);
+        return userStorage.findUserFriendsById(id);
     }
 
     public void removeFriend(Integer id, Integer friendId) {
@@ -111,5 +112,10 @@ public class UserService {
 
     public void delete(Integer userId) {
         userStorage.deleteUserById(userId);
+    }
+
+    public List<Event> getEventsByUserId(Integer userId) {
+        findUserById(userId);
+        return userStorage.getEventsByUserId(userId);
     }
 }

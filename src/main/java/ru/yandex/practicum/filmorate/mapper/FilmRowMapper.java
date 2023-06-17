@@ -21,7 +21,7 @@ public class FilmRowMapper implements RowMapper<Film> {
     @Override
     public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
         int mpaId = rs.getInt("MPA_FILM_RATING_ID");
-        Mpa mpa = mpaId == 0 ? null : mpaStorage.getMpaById(mpaId);
+        Mpa mpa = mpaId == 0 ? null : mpaStorage.findMpaById(mpaId);
 
         return  Film.builder()
                 .id(rs.getInt("ID"))

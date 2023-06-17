@@ -45,28 +45,28 @@ class DirectorStorageTest {
     @Test
     void testGetAllDirectors() {
 
-        Director director1 = directorStorage.getDirectorById(1).get();
-        Director director2 = directorStorage.getDirectorById(2).get();
-        Director director3 = directorStorage.getDirectorById(3).get();
-        Director director4 = directorStorage.getDirectorById(4).get();
+        Director director1 = directorStorage.findDirectorById(1).get();
+        Director director2 = directorStorage.findDirectorById(2).get();
+        Director director3 = directorStorage.findDirectorById(3).get();
+        Director director4 = directorStorage.findDirectorById(4).get();
 
-        List<Director> list = directorStorage.getAll();
+        List<Director> list = directorStorage.findAll();
 
-        assertEquals(list.getClass(), directorStorage.getAll().getClass());
-        assertEquals(4, directorStorage.getAll().size());
+        assertEquals(list.getClass(), directorStorage.findAll().getClass());
+        assertEquals(4, directorStorage.findAll().size());
         assertThat(list).asList().contains(director1, director2, director3, director4);
     }
 
 
     @Test
     void testGetDirectorById() {
-        Director director = directorStorage.getDirectorById(1).get();
+        Director director = directorStorage.findDirectorById(1).get();
         assertThat(director)
                 .hasFieldOrPropertyWithValue("id", 1)
                 .hasFieldOrPropertyWithValue("name", "Pavel");
 
-        assertEquals(director1, directorStorage.getDirectorById(1).get());
-        assertNotEquals(director4, directorStorage.getDirectorById(1).get());
+        assertEquals(director1, directorStorage.findDirectorById(1).get());
+        assertNotEquals(director4, directorStorage.findDirectorById(1).get());
     }
 
 
@@ -75,7 +75,7 @@ class DirectorStorageTest {
         Director director = new Director(2, "Vlad");
         directorStorage.updateDirector(director);
         assertNotEquals(director2, director);
-        assertEquals(director, directorStorage.getDirectorById(2).get());
+        assertEquals(director, directorStorage.findDirectorById(2).get());
         assertThat(director)
                 .hasFieldOrPropertyWithValue("id", 2)
                 .hasFieldOrPropertyWithValue("name", "Vlad");
@@ -84,15 +84,15 @@ class DirectorStorageTest {
     @Test
     void testRemoveDirector() {
         directorStorage.removeDirector(1);
-        assertEquals(3, directorStorage.getAll().size());
+        assertEquals(3, directorStorage.findAll().size());
 
-        Director director2 = directorStorage.getDirectorById(2).get();
-        Director director3 = directorStorage.getDirectorById(3).get();
-        Director director4 = directorStorage.getDirectorById(4).get();
+        Director director2 = directorStorage.findDirectorById(2).get();
+        Director director3 = directorStorage.findDirectorById(3).get();
+        Director director4 = directorStorage.findDirectorById(4).get();
 
-        List<Director> list = directorStorage.getAll();
+        List<Director> list = directorStorage.findAll();
 
-        assertEquals(list.getClass(), directorStorage.getAll().getClass());
+        assertEquals(list.getClass(), directorStorage.findAll().getClass());
         assertThat(list).asList().contains(director2, director3, director4);
     }
 }

@@ -15,11 +15,11 @@ public class GenreService {
     private final GenreStorage genreStorage;
 
     public List<Genre> getAll() {
-        return genreStorage.getAll();
+        return genreStorage.findAll();
     }
 
     public Genre getGenreById(Integer id) {
-        Genre genre = genreStorage.getGenreById(id);
+        Genre genre = genreStorage.findGenreById(id);
         if (genre == null) {
             throw new NotFoundException("Жанр с идентификатором " + id + " не найден.");
         }

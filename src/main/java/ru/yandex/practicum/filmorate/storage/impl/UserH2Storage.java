@@ -8,7 +8,9 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dto.Event;
 import ru.yandex.practicum.filmorate.dto.User;
+import ru.yandex.practicum.filmorate.mapper.EventRowMapper;
 import ru.yandex.practicum.filmorate.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -21,9 +23,11 @@ public class UserH2Storage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
+    private final EventRowMapper eventRowMapper;
 
-    public UserH2Storage(JdbcTemplate jdbcTemplate, UserRowMapper userRowMapper) {
+    public UserH2Storage(JdbcTemplate jdbcTemplate, EventRowMapper eventRowMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.eventRowMapper = eventRowMapper;
         DataSource dataSource = jdbcTemplate.getDataSource();
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));
         generatedKeyHolder = new GeneratedKeyHolder();
@@ -68,6 +72,7 @@ public class UserH2Storage implements UserStorage {
         return user;
     }
 
+
     @Override
     public Optional<User> findUserById(int id) {
         return Optional.ofNullable(getUserById(id));
@@ -98,12 +103,12 @@ public class UserH2Storage implements UserStorage {
         params.put("userId", user.getId());
         params.put("friendId", friend.getId());
 
-        namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
+        namedParameterJdbcTemplate.update(sql, params);
         log.info("Для пользователя с идентификатором {} добавлен друг с идентификатором {}", user.getId(), friend.getId());
     }
 
     @Override
-    public List<User> getUserFriendsById(int id) {
+    public List<User> findUserFriendsById(int id) {
         String sql = "select * from users where id in " +
                 "(select friend_id from user_friends where user_id = ?)";
 
@@ -163,15 +168,33 @@ public class UserH2Storage implements UserStorage {
 
     @Override
     public void removeFriend(User user, User friend) {
-        String sql = "delete from user_friends " +
-                "where user_id = :userId and friend_id = :friendId;";
+        String sql = "delete from USER_FRIENDS " +
+                "where USER_ID = :USER_ID and FRIEND_ID = :FRIEND_ID";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("userId", user.getId());
-        params.put("friendId", friend.getId());
+        params.put("USER_ID", user.getId());
+        params.put("FRIEND_ID", friend.getId());
 
-        namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
+        namedParameterJdbcTemplate.update(sql, params);
         log.info("Для пользователя с идентификатором {} удален друг с идентификатором {}", user.getId(), friend.getId());
+
+        // create a history log separately,
+        // cause log could not being created by "on delete trigger"
+        // (observed ON DELETE CASCADE PROBLEM. It's deleting several rows instead of one which is required by Postman)
+        sql = "insert into EVENTS (EVENT_TIMESTAMP, EVENT_TYPE, ENTITY_ID, USER_ID, OPERATION) " +
+                "VALUES(CURRENT_TIMESTAMP, :EVENT_TYPE, :ENTITY_ID, :USER_ID, :OPERATION)";
+        params.put("EVENT_TYPE", "FRIEND");
+        params.put("ENTITY_ID", friend.getId());
+        params.put("OPERATION", "REMOVE");
+        namedParameterJdbcTemplate.update(sql, params);
+    }
+
+    @Override
+    public List<Event> getEventsByUserId(Integer userId) {
+        String sql = "select * from EVENTS where USER_ID = :USER_ID order by EVENT_TIMESTAMP";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("USER_ID", userId);
+        return namedParameterJdbcTemplate.query(sql, params, eventRowMapper);
     }
 
 

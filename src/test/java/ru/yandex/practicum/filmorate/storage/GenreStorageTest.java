@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,38 +20,42 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
-@RequiredArgsConstructor
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class GenreStorageTest {
-    @Autowired
-    private GenreStorage genreStorage;
-    @Autowired
-    @Qualifier("filmH2Storage")
-    private FilmStorage filmStorage;
 
-   @Test
+    private final GenreStorage genreStorage;
+
+    private final FilmStorage filmStorage;
+
+    @Autowired
+    public GenreStorageTest(GenreStorage genreStorage, @Qualifier("filmH2Storage") FilmStorage filmStorage) {
+        this.genreStorage = genreStorage;
+        this.filmStorage = filmStorage;
+    }
+
+    @Test
     void getAll_returnAllGenres() {
         //arrange
-        Genre genre1 = genreStorage.getGenreById(1);
-        Genre genre2 = genreStorage.getGenreById(2);
-        Genre genre3 = genreStorage.getGenreById(3);
-        Genre genre4 = genreStorage.getGenreById(4);
-        Genre genre5 = genreStorage.getGenreById(5);
-        Genre genre6 = genreStorage.getGenreById(6);
+        Genre genre1 = genreStorage.findGenreById(1);
+        Genre genre2 = genreStorage.findGenreById(2);
+        Genre genre3 = genreStorage.findGenreById(3);
+        Genre genre4 = genreStorage.findGenreById(4);
+        Genre genre5 = genreStorage.findGenreById(5);
+        Genre genre6 = genreStorage.findGenreById(6);
 
         //act
-        List<Genre> actual = genreStorage.getAll();
+        List<Genre> actual = genreStorage.findAll();
 
         //assert
         assertThat(actual).asList().contains(genre1, genre2, genre3, genre4, genre5, genre6);
     }
 
-   @Test
+    @Test
     void updateFilmGenres_assignNewGenres() {
         //arrange
         Mpa mpa1 = Mpa.builder().id(1).build();
-        Genre thriller = genreStorage.getGenreById(4);
-        Genre drama = genreStorage.getGenreById(1);
+        Genre thriller = genreStorage.findGenreById(4);
+        Genre drama = genreStorage.findGenreById(1);
         Film newFilm = Film.builder()
                 .name("Бойцовский клуб")
                 .description("режиссер Дэвид Финчер")
@@ -66,7 +69,7 @@ class GenreStorageTest {
 
         //act
         genreStorage.updateFilmGenres(createdFilm1, Set.of(thriller, drama));
-        Optional<Film> actual = filmStorage.getFilmById(createdFilm1.getId());
+        Optional<Film> actual = filmStorage.findFilmById(createdFilm1.getId());
 
 
         //assert
@@ -82,7 +85,7 @@ class GenreStorageTest {
     void getMpaById_returnGenre_forTheFirstId() {
 
         //act
-        Genre actual = genreStorage.getGenreById(1);
+        Genre actual = genreStorage.findGenreById(1);
 
         //assert
         assertThat(actual)
@@ -94,7 +97,7 @@ class GenreStorageTest {
     void getMpaById_returnGenre_forTheSixthId() {
 
         //act
-        Genre actual = genreStorage.getGenreById(6);
+        Genre actual = genreStorage.findGenreById(6);
 
         //assert
         assertThat(actual)

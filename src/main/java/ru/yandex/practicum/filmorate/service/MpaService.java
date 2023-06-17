@@ -15,11 +15,11 @@ public class MpaService {
     private final MpaStorage mpaStorage;
 
     public List<Mpa> getAll() {
-        return mpaStorage.getAll();
+        return mpaStorage.findAll();
     }
 
     public Mpa getMpaById(Integer id) {
-        Mpa mpa = mpaStorage.getMpaById(id);
+        Mpa mpa = mpaStorage.findMpaById(id);
         if (mpa == null) {
             throw new NotFoundException("Рейтинг фильма с идентификатором " + id + " не найден.");
         }
