@@ -112,15 +112,13 @@ public class FilmService {
     }
 
 
-    public List<Film> searchFilms(String query, List<String> by) {
+    public List<Film> searchFilms(Optional<String> query, Optional<List<String>> by) {
         HashMap<String, String> params = new HashMap<>();
-        for (String filter : by) {
-            params.put(filter, query);
+        if (!query.isEmpty() || !by.isEmpty()) {
+            for (String filter : by.get()) {
+                params.put(filter, query.get());
+            }
         }
         return filmStorage.searchFilms(params);
-    }
-
-    public List<Film> searchFilms() {
-        return filmStorage.searchFilms(new HashMap<>());
     }
 }

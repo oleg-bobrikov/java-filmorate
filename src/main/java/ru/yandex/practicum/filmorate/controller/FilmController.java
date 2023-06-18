@@ -42,11 +42,9 @@ public class FilmController {
     @GetMapping("/search")
     public List<Film> searchFilms(@RequestParam(required = false) Optional<String> query,
                                   @RequestParam(required = false) @IsValidBy Optional<List<String>> by) {
-        if (query.isEmpty() || by.isEmpty()) {
-            return filmService.searchFilms();
-        } else {
-            return filmService.searchFilms(query.get(), by.get());
-        }
+
+        return filmService.searchFilms(query, by);
+
     }
 
     @PostMapping()
