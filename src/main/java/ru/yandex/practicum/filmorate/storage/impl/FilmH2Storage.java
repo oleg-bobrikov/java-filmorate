@@ -437,16 +437,16 @@ public class FilmH2Storage implements FilmStorage {
 
     @Override
     public List<Film> getRecommendations(Integer userId) {
-        String sql = "SELECT" +
-                "    DISTINCT FILMS.ID," +
-                "    FILMS.FILM_NAME," +
-                "    FILMS.DESCRIPTION," +
-                "    FILMS.RELEASE_DATE," +
-                "    FILMS.DURATION," +
-                "    IFNULL(FILMS.MPA_FILM_RATING_ID, 0) AS MPA_FILM_RATING_ID" +
-                " FROM" +
-                "    (" +
-                "        SELECT" +
+        String sql = "DROP TABLE IF EXISTS SIMILAR_USERS_BY_PRIORITY";
+        jdbcTemplate.execute(sql);
+        sql = " CREATE TEMPORARY TABLE IF NOT EXISTS SIMILAR_USERS_BY_PRIORITY (" +
+                "    USER_ID INT NOT NULL," +
+                "    PRIORITY INT" +
+                ")";
+        jdbcTemplate.execute(sql);
+
+        sql = " INSERT INTO SIMILAR_USERS_BY_PRIORITY (" +
+                " SELECT" +
                 "            FILM_LIKES.USER_ID," +
                 "            COUNT(FILM_LIKES.FILM_ID) AS PRIORITY" +
                 "        FROM" +
@@ -468,36 +468,27 @@ public class FilmH2Storage implements FilmStorage {
                 "            )" +
                 "        GROUP BY" +
                 "            USER_ID" +
-                "    ) AS SIMILAR_USERS_BY_PRIORITY" +
+                "    )";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("USER_ID", userId);
+        namedParameterJdbcTemplate.update(sql, params);
+
+        sql = "SELECT" +
+                "    DISTINCT FILMS.ID," +
+                "    FILMS.FILM_NAME," +
+                "    FILMS.DESCRIPTION," +
+                "    FILMS.RELEASE_DATE," +
+                "    FILMS.DURATION," +
+                "    IFNULL(FILMS.MPA_FILM_RATING_ID, 0) AS MPA_FILM_RATING_ID" +
+                " FROM" +
+                "    SIMILAR_USERS_BY_PRIORITY AS SIMILAR_USERS_BY_PRIORITY" +
                 "    INNER JOIN FILM_LIKES ON SIMILAR_USERS_BY_PRIORITY.USER_ID = FILM_LIKES.USER_ID" +
                 "    INNER JOIN FILMS ON FILMS.ID = FILM_LIKES.FILM_ID" +
                 "    INNER JOIN (" +
                 "        SELECT" +
                 "            MAX(PRIORITY) AS PRIORITY" +
                 "        FROM" +
-                "            (" +
-                "                SELECT" +
-                "                    COUNT(FILM_LIKES.FILM_ID) AS PRIORITY" +
-                "                FROM" +
-                "                    FILM_LIKES" +
-                "                WHERE" +
-                "                    USER_ID <> :USER_ID" +
-                "                    AND FILM_ID IN (" +
-                "                        SELECT" +
-                "                            FILM_ID" +
-                "                        FROM" +
-                "                            (" +
-                "                                SELECT" +
-                "                                    FILM_ID" +
-                "                                FROM" +
-                "                                    FILM_LIKES" +
-                "                                WHERE" +
-                "                                    USER_ID = :USER_ID" +
-                "                            ) AS USER_FILMS" +
-                "                    )" +
-                "                GROUP BY" +
-                "                    USER_ID" +
-                "            ) AS SIMILAR_USERS_BY_PRIORITY" +
+                "         SIMILAR_USERS_BY_PRIORITY AS SIMILAR_USERS_BY_PRIORITY" +
                 "    ) AS MAX_PRIORITY ON SIMILAR_USERS_BY_PRIORITY.PRIORITY = MAX_PRIORITY.PRIORITY" +
                 " WHERE" +
                 "    NOT FILM_LIKES.FILM_ID IN (" +
@@ -513,11 +504,11 @@ public class FilmH2Storage implements FilmStorage {
                 "                    USER_ID = :USER_ID" +
                 "            )" +
                 "    )";
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("USER_ID", userId);
+
         List<Film> films = namedParameterJdbcTemplate.query(sql, params, filmRowMapper);
         restoreFilms(films);
-
+        sql = "DROP TABLE IF EXISTS SIMILAR_USERS_BY_PRIORITY";
+        jdbcTemplate.execute(sql);
         return films;
     }
 
