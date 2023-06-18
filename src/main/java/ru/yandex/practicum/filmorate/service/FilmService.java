@@ -114,7 +114,7 @@ public class FilmService {
 
     public List<Film> searchFilms(Optional<String> query, Optional<List<String>> by) {
         HashMap<String, String> params = new HashMap<>();
-        if (!query.isEmpty() || !by.isEmpty()) {
+        if (query.isPresent() || by.isPresent()) {
             for (String filter : by.get()) {
                 params.put(filter, query.get());
             }
