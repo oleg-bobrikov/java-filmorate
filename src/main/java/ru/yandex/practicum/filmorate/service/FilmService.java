@@ -120,7 +120,7 @@ public class FilmService {
         params.put("FILM_SEARCH", "");
 
         if (query.isPresent() || by.isPresent()) {
-            List filter = by.get();
+            List<String> filter = by.get();
             if (filter.contains("director")) {
                 params.put("IS_FILTERED_BY_DIRECTOR_NAME", true);
                 params.put("DIRECTOR_SEARCH", query.get());

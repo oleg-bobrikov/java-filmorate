@@ -418,7 +418,6 @@ class FilmStorageTest {
     @Test
     public void searchFilms_returnSortedFilmList_filtered_byDirector() {
         //arrange
-        HashMap<String, String> params = new HashMap<>();
         filmStorage.addLike(film3, user1);
         filmStorage.addLike(film3, user2);
         filmStorage.addLike(film3, user3);
@@ -448,7 +447,7 @@ class FilmStorageTest {
     @Test
     void searchFilms_returnSortedListFilmsByDirectorAndTitle() {
         //arrange
-        HashMap<String, String> params = new HashMap<>();
+
         filmStorage.addLike(film2, user1);
         filmStorage.addLike(film4, user3);
         filmStorage.addLike(film4, user2);
