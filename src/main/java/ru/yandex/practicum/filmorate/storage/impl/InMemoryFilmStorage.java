@@ -66,12 +66,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         return new ArrayList<>();
     }
 
-
-    @Override
-    public List<Film> findFilmsByDirector(Integer directorId, String sortBy) {
-        return new ArrayList<>();
-    }
-
     @Override
     public List<Film> getTopFilmsFilteredByYear(Integer year, Integer integer) {
         return new ArrayList<>();

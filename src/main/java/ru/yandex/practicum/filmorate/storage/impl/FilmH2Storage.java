@@ -447,40 +447,6 @@ public class FilmH2Storage implements FilmStorage {
 
         return new ArrayList<>(films.values());
     }
-
-    @Override
-    public List<Film> findFilmsByDirector(Integer directorId, String sortBy) {
-        List<Film> films = new ArrayList<>();
-        String sqlQueryByLikes = "SELECT df.film_id, COUNT(fl.user_id) AS p " +
-                "FROM directors_films AS df " +
-                "LEFT OUTER JOIN film_likes AS fl ON df.film_id = fl.film_id " +
-                "WHERE director_id = ? " +
-                "GROUP BY df.film_id " +
-                "ORDER BY  p DESC ";
-
-
-        String sqlQueryByYear = "SELECT df.film_id " +
-                "FROM directors_films AS df " +
-                "LEFT OUTER JOIN films ON df.film_id = films.id " +
-                "WHERE director_id = ? " +
-                "ORDER BY YEAR(films.release_date)";
-
-
-        List<Integer> filmsId;
-        if (sortBy.equals("year")) {
-            filmsId = jdbcTemplate.query(sqlQueryByYear, (rs, rowNum) -> rs.getInt("film_id"), directorId);
-
-            for (Integer id : filmsId) {
-                films.add(findFilmById(id).get());
-            }
-        } else {
-            filmsId = jdbcTemplate.query(sqlQueryByLikes, (rs, rowNum) -> rs.getInt("film_id"), directorId);
-            for (Integer id : filmsId) {
-                films.add(findFilmById(id).get());
-            }
-        }
-        return films;
-    }
   @Override
     public List<Film> searchFilmsByDirectorOrderedByYear(Integer directorId) {
         String sql = "SELECT" +
