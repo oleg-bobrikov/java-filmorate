@@ -109,28 +109,26 @@ public class FilmService {
             throw new NotFoundException("Такого фильма нет.");
         }
         filmStorage.removeFilmById(userId);
+
     }
 
     public List<Film> searchFilms(Optional<String> query, Optional<List<String>> by) {
-
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("IS_FILTERED_BY_DIRECTOR_NAME", false);
-        params.put("DIRECTOR_SEARCH", "");
-        params.put("IS_FILTERED_BY_FILM_NAME", false);
-        params.put("FILM_SEARCH", "");
-
-        if (query.isPresent() || by.isPresent()) {
+        if (query.isPresent() && by.isPresent()) {
             List<String> filter = by.get();
-            if (filter.contains("director")) {
-                params.put("IS_FILTERED_BY_DIRECTOR_NAME", true);
-                params.put("DIRECTOR_SEARCH", query.get());
-            }
-            if (filter.contains("title")) {
-                params.put("IS_FILTERED_BY_FILM_NAME", true);
-                params.put("FILM_SEARCH", query.get());
+            if (filter.contains("director") && filter.contains("title")) {
+                return filmStorage.searchFilmsByTitleAndDirectorName(query.get());
+            } else if (filter.contains("director")) {
+                return filmStorage.searchFilmsByDirectorName(query.get());
+            } else if (filter.contains("title")) {
+                return filmStorage.searchFilmsByTitle(query.get());
             }
         }
-
-        return filmStorage.searchFilms(params);
+        return filmStorage.getAllFilms();
     }
+
+    public List<Film> getRecommendations(Integer userId) {
+        userService.findUserById(userId);
+        return filmStorage.getRecommendations(userId);
+    }
+
 }

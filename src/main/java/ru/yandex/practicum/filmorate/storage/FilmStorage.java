@@ -41,4 +41,11 @@ public interface FilmStorage {
 
     List<Film> searchFilmsByDirectorOrderedByLikes(Integer directorId);
 
-  }
+    List<Film> getAllFilms();
+
+    List<Film> searchFilmsByDirectorName(String s);
+
+    List<Film> searchFilmsByTitle(String s);
+
+    List<Film> searchFilmsByTitleAndDirectorName(String s);
+}

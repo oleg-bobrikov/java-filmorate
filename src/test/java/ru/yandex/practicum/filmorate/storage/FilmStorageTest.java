@@ -401,14 +401,9 @@ class FilmStorageTest {
         filmStorage.addLike(film1, user1);
         filmStorage.addLike(film1, user2);
         filmStorage.addLike(film2, user3);
-        HashMap<String, Object> sqlParams = new HashMap<>();
-        sqlParams.put("IS_FILTERED_BY_DIRECTOR_NAME", false);
-        sqlParams.put("DIRECTOR_SEARCH", "");
-        sqlParams.put("IS_FILTERED_BY_FILM_NAME", true);
-        sqlParams.put("FILM_SEARCH", "ав");
 
         //expected
-        List<Film> exp = filmStorage.searchFilms(sqlParams);
+        List<Film> exp = filmStorage.searchFilmsByTitle("ав");
 
         //assert
         Assertions.assertEquals(film1, exp.get(0));
@@ -430,14 +425,9 @@ class FilmStorageTest {
         film1.setDirectors(new HashSet<>(List.of(director1)));
         directorStorage.updateFilmDirector(film1, new HashSet<>(List.of(director1)));
         directorStorage.updateFilmDirector(film2, new HashSet<>(List.of(director1)));
-        HashMap<String, Object> sqlParams = new HashMap<>();
-        sqlParams.put("IS_FILTERED_BY_DIRECTOR_NAME", true);
-        sqlParams.put("DIRECTOR_SEARCH", "pav");
-        sqlParams.put("IS_FILTERED_BY_FILM_NAME", false);
-        sqlParams.put("FILM_SEARCH", "ав");
 
         //expected
-        List<Film> exp = filmStorage.searchFilms(sqlParams);
+        List<Film> exp = filmStorage.searchFilmsByDirectorName("pav");
 
         //assert
         Assertions.assertEquals(film2, exp.get(0));
@@ -458,14 +448,8 @@ class FilmStorageTest {
         film4.setDirectors(Set.of(director1));
         film2.setDirectors(Set.of(director4));
 
-        HashMap<String, Object> sqlParams = new HashMap<>();
-        sqlParams.put("IS_FILTERED_BY_DIRECTOR_NAME", true);
-        sqlParams.put("DIRECTOR_SEARCH", "ter");
-        sqlParams.put("IS_FILTERED_BY_FILM_NAME", true);
-        sqlParams.put("FILM_SEARCH", "ter");
-
         //expected
-        List<Film> exp = filmStorage.searchFilms(sqlParams);
+        List<Film> exp = filmStorage.searchFilmsByTitleAndDirectorName("ter");
 
         Assertions.assertEquals(film4, exp.get(0));
         Assertions.assertEquals(film2, exp.get(1));

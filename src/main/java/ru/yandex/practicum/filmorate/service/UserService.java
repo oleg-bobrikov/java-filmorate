@@ -105,11 +105,6 @@ public class UserService {
         userStorage.update(user);
     }
 
-    public List<Film> getRecommendations(Integer userId) {
-        findUserById(userId);
-        return filmStorage.getRecommendations(userId);
-    }
-
     public void delete(Integer userId) {
         userStorage.deleteUserById(userId);
     }
