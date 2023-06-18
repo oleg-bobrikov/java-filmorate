@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.slf4j.Logger;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -9,8 +10,10 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.ReviewLike;
 import ru.yandex.practicum.filmorate.mapper.ReviewRowMapper;
+import ru.yandex.practicum.filmorate.service.ReviewService;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.util.*;
 
@@ -21,8 +24,12 @@ public class ReviewH2Storage implements ReviewStorage {
     private final GeneratedKeyHolder generatedKeyHolder;
     private final ReviewRowMapper reviewRowMapper;
 
-    public ReviewH2Storage(JdbcTemplate jdbcTemplate, ReviewRowMapper reviewRowMapper) {
+    private final ReviewService reviewService;
+
+    public ReviewH2Storage(JdbcTemplate jdbcTemplate, ReviewRowMapper reviewRowMapper,
+                           @Lazy ReviewService reviewService) {
         this.reviewRowMapper = reviewRowMapper;
+        this.reviewService = reviewService;
         DataSource dataSource = jdbcTemplate.getDataSource();
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));
         generatedKeyHolder = new GeneratedKeyHolder();
@@ -33,7 +40,7 @@ public class ReviewH2Storage implements ReviewStorage {
         String sql = "insert into REVIEWS (CONTENT, IS_POSITIVE, USER_ID, FILM_ID) " +
                 "VALUES(:CONTENT, :IS_POSITIVE, :USER_ID, :FILM_ID);";
 
-        Map<String, Object> params = review.toMap();
+        Map<String, Object> params = reviewService.reviewToMap(review);
 
         namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params), generatedKeyHolder);
 
@@ -92,7 +99,7 @@ public class ReviewH2Storage implements ReviewStorage {
                 " WHERE" +
                 "    ID =:ID";
 
-        Map<String, Object> params = review.toMap();
+        Map<String, Object> params = reviewService.reviewToMap(review);
         namedParameterJdbcTemplate.update(sql, params);
         log.info("Отзыв с идентификатором {} изменен.", review.getReviewId());
 
@@ -158,7 +165,7 @@ public class ReviewH2Storage implements ReviewStorage {
         String sql = " MERGE INTO REVIEW_LIKES KEY (REVIEW_ID, USER_ID, IS_LIKE) " +
                 " VALUES (:REVIEW_ID, :USER_ID, :IS_LIKE)";
 
-        Map<String, Object> params = reviewLike.toMap();
+        Map<String, Object> params = reviewService.reviewLiketoMap(reviewLike);
 
         namedParameterJdbcTemplate.update(sql, params);
         log.info("Отзыв с идентификатором {} получил {} от пользователя с идентификатором {}",
@@ -172,7 +179,7 @@ public class ReviewH2Storage implements ReviewStorage {
                 " WHERE REVIEW_ID = :REVIEW_ID" +
                 " AND USER_ID = :USER_ID";
 
-        Map<String, Object> params = reviewLike.toMap();
+        Map<String, Object> params = reviewService.reviewLiketoMap(reviewLike);
         int rows = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params));
         if (rows > 0) {
             log.info("Лайк на отзыв с идентификатором {} от пользователя с идентификатором {} удален.",
@@ -188,7 +195,7 @@ public class ReviewH2Storage implements ReviewStorage {
                 " AND USER_ID = :USER_ID" +
                 " AND NOT IS_LIKE";
 
-        Map<String, Object> params = reviewLike.toMap();
+        Map<String, Object> params = reviewService.reviewLiketoMap(reviewLike);
         int rows = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params));
         if (rows > 0) {
             log.info("Дизлайк на отзыв с идентификатором {} от пользователя с идентификатором {} удален.",

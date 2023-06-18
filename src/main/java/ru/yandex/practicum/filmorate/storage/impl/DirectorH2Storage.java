@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -10,6 +11,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.DirectorService;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
 import javax.sql.DataSource;
@@ -24,9 +26,11 @@ public class DirectorH2Storage implements DirectorStorage {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
+    private final DirectorService directorService;
 
-    public DirectorH2Storage(JdbcTemplate jdbcTemplate) {
+    public DirectorH2Storage(JdbcTemplate jdbcTemplate, @Lazy DirectorService directorService) {
         this.jdbcTemplate = jdbcTemplate;
+        this.directorService = directorService;
         DataSource dataSource = jdbcTemplate.getDataSource();
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));
         generatedKeyHolder = new GeneratedKeyHolder();
@@ -55,7 +59,7 @@ public class DirectorH2Storage implements DirectorStorage {
                 .withTableName("DIRECTORS")
                 .usingGeneratedKeyColumns("ID");
 
-        int id = simpleJdbcInsert.executeAndReturnKey(director.toMap()).intValue();
+        int id = simpleJdbcInsert.executeAndReturnKey(directorService.directorToMap(director)).intValue();
 
         director.setId(id);
 

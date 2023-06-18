@@ -8,7 +8,9 @@ import ru.yandex.practicum.filmorate.exception.DirectorAlreadyExistedException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class DirectorService {
@@ -23,7 +25,9 @@ public class DirectorService {
 
     public List<Director> getAll() {
         List<Director> directors = directorStorage.findAll();
-        if (directors.isEmpty()) log.warn("Список режессеров пуст!");
+        if (directors.isEmpty()){
+            log.warn("Список режессеров пуст!");
+        }
         return directors;
     }
 
@@ -46,5 +50,12 @@ public class DirectorService {
         directorStorage.findDirectorById(id).orElseThrow(() ->
                 new NotFoundException("Такого режессера нет."));
         directorStorage.removeDirector(id);
+    }
+
+    public Map<String, Object> directorToMap(Director director) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("ID", director.getId());
+        result.put("DIRECTOR_NAME", director.getName());
+        return result;
     }
 }

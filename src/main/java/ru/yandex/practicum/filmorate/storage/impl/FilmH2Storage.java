@@ -223,10 +223,7 @@ public class FilmH2Storage implements FilmStorage {
 
     @Override
     public void removeFilmById(Integer id) {
-        String sql = "delete from film_genres where film_id = :film_id; " +
-                "delete from film_likes where film_id = :film_id; " +
-                "delete from films where id = :film_id; " +
-                "delete from directors_films where film_id =:film_id";
+        String sql = "delete from films where id = :film_id";
 
         Map<String, Object> params = new HashMap<>();
         params.put("film_id", id);

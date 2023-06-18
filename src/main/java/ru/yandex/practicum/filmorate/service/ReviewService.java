@@ -8,7 +8,9 @@ import ru.yandex.practicum.filmorate.exception.DataBaseException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -107,5 +109,23 @@ public class ReviewService {
 
     public List<Review> getAllReviewsByFilmId(Integer filmId, Integer count) {
         return reviewStorage.getAllReviewsByFilmId(filmId, count);
+    }
+
+    public Map<String, Object> reviewToMap(Review review) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("ID", review.getReviewId());
+        params.put("CONTENT", review.getContent());
+        params.put("IS_POSITIVE", review.getIsPositive());
+        params.put("USER_ID", review.getUserId());
+        params.put("FILM_ID", review.getFilmId());
+        params.put("USEFUL", review.getUseful());
+        return params;
+    }
+    public Map<String, Object> reviewLiketoMap(ReviewLike reviewLike) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("REVIEW_ID", reviewLike.getReviewId());
+        params.put("USER_ID", reviewLike.getUserId());
+        params.put("IS_LIKE", reviewLike.isLike());
+        return params;
     }
 }

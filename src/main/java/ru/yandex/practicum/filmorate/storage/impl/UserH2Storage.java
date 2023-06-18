@@ -200,9 +200,7 @@ public class UserH2Storage implements UserStorage {
 
     @Override
     public void deleteUserById(int id) {
-        String sql = "delete from film_likes where user_id = :user_id; " +
-                "delete from users where id = :user_id; " +
-                "delete from user_friends where user_id =:user_id";
+        String sql = " delete from users where id = :user_id";
 
         Map<String, Object> params = new HashMap<>();
         params.put("user_id", id);
