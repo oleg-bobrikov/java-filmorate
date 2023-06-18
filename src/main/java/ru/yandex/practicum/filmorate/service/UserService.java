@@ -22,7 +22,7 @@ public class UserService {
 
     private final EventStorage eventStorage;
 
-    public UserService(UserStorage userStorage, FilmStorage filmStorage, EventStorage eventStorage) {
+    public UserService(UserStorage userStorage, EventStorage eventStorage) {
         this.userStorage = userStorage;
         this.eventStorage = eventStorage;
     }
