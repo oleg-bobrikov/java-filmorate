@@ -66,7 +66,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         return new ArrayList<>();
     }
 
-
     @Override
     public List<Film> findFilmByDirector(Integer directorId, String sortBy) {
         return new ArrayList<>();
@@ -93,8 +92,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> searchFilms(Map<String, String> params) {
+    public List<Film> searchFilmsByTitle(String query) {
         return new ArrayList<>();
     }
 
+    @Override
+    public List<Film> searchFilmsByDirector(String query) {
+        return new ArrayList<>();
+    }
 }

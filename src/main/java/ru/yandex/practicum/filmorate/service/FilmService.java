@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -103,29 +104,23 @@ public class FilmService {
         filmStorage.removeFilmById(userId);
     }
 
-
     public List<Film> searchFilms(String query, List<String> by) {
-        HashMap<String, String> params = new HashMap<>();
-        for (String filter : by) {
-            params.put(filter, query);
+        Set searchResult = new LinkedHashSet();
+        List<Film> sortedFilms = new LinkedList<>(searchResult);
+        if (query == null && by == null) {
+            searchResult.addAll(getFilms());
+            sortedFilms.addAll(searchResult);
+        } else {
+            if (by.contains("title")) {
+                searchResult.addAll(filmStorage.searchFilmsByTitle(query));
+            }
+            if (by.contains("director")) {
+                searchResult.addAll(filmStorage.searchFilmsByDirector(query));
+            }
+            sortedFilms.addAll(searchResult);
         }
-        return filmStorage.searchFilms(params);
-    }
-
-    public List<Film> searchFilms() {
-        return filmStorage.searchFilms(new HashMap<>());
-    }
-
-
-    public List<Film> searchFilms(String query, List<String> by) {
-        HashMap<String, String> params = new HashMap<>();
-        for (String filter : by) {
-            params.put(filter, query);
-        }
-        return filmStorage.searchFilms(params);
-    }
-
-    public List<Film> searchFilms() {
-        return filmStorage.searchFilms(new HashMap<>());
+        return sortedFilms.stream()
+                .sorted((o1, o2) -> o2.getLikes().size() - o1.getLikes().size())
+                .collect(Collectors.toList());
     }
 }

@@ -401,11 +401,9 @@ class FilmStorageTest {
         filmStorage.addLike(film1, user1);
         filmStorage.addLike(film1, user2);
         filmStorage.addLike(film2, user3);
-        HashMap<String, String> params = new HashMap<>();
-        params.put("title", "ав");
 
         //expected
-        List<Film> exp = filmStorage.searchFilms(params);
+        List<Film> exp = filmStorage.searchFilmsByTitle("ав");
 
         //assert
         Assertions.assertEquals(film1, exp.get(0));
@@ -415,7 +413,6 @@ class FilmStorageTest {
     @Test
     public void searchFilms_returnSortedListFilmsByDirector() {
         //arrange
-        HashMap<String, String> params = new HashMap<>();
         filmStorage.addLike(film3, user1);
         filmStorage.addLike(film3, user2);
         filmStorage.addLike(film3, user3);
@@ -428,67 +425,12 @@ class FilmStorageTest {
         film1.setDirectors(new HashSet<>(List.of(director1)));
         directorStorage.updateFilmDirector(film1, new HashSet<>(List.of(director1)));
         directorStorage.updateFilmDirector(film2, new HashSet<>(List.of(director1)));
-        params.put("director", "pav");
 
         //expected
-        List<Film> exp = filmStorage.searchFilms(params);
+        List<Film> exp = filmStorage.searchFilmsByDirector("pav");
 
         //assert
-        Assertions.assertEquals(film2, exp.get(0));
-        Assertions.assertEquals(film1, exp.get(1));
-    }
-
-    @Test
-    void searchFilms_returnSortedListFilmsByDirectorAndTitle() {
-        //arrange
-        HashMap<String, String> params = new HashMap<>();
-        filmStorage.addLike(film2, user1);
-        filmStorage.addLike(film4, user3);
-        filmStorage.addLike(film4, user2);
-        film2.setDirectors(new HashSet<>(List.of(director1)));
-        film3.setDirectors(new HashSet<>(List.of(director4)));
-        directorStorage.updateFilmDirector(film2, new HashSet<>(List.of(director4)));
-        directorStorage.updateFilmDirector(film4, new HashSet<>(List.of(director1)));
-        film4.setDirectors(Set.of(director1));
-        film2.setDirectors(Set.of(director4));
-
-        params.put("director", "ter");
-        params.put("title", "ter");
-
-        //expected
-        List<Film> exp = filmStorage.searchFilms(params);
-
-        Assertions.assertEquals(film4, exp.get(0));
         Assertions.assertEquals(film2, exp.get(1));
-    }
-
-    @Test
-    void searchFilms_returnSortedListFilmsWithOutParams() {
-        //arrange
-        HashMap<String, String> params = new HashMap<>();
-        filmStorage.addLike(film3, user1);
-        filmStorage.addLike(film3, user2);
-        filmStorage.addLike(film3, user3);
-        filmStorage.addLike(film3, user4);
-        filmStorage.addLike(film3, user5);
-        filmStorage.addLike(film2, user1);
-        filmStorage.addLike(film4, user3);
-        filmStorage.addLike(film4, user2);
-        film2.setDirectors(new HashSet<>(List.of(director1)));
-        film3.setDirectors(new HashSet<>(List.of(director4)));
-        directorStorage.updateFilmDirector(film2, new HashSet<>(List.of(director4)));
-        directorStorage.updateFilmDirector(film4, new HashSet<>(List.of(director1)));
-        directorStorage.updateFilmDirector(film3, new HashSet<>(List.of(director2)));
-
-        film4.setDirectors(Set.of(director1));
-        film2.setDirectors(Set.of(director4));
-        film3.setDirectors(Set.of(director2));
-
-        //expected
-        List<Film> exp = filmStorage.searchFilms(params);
-
-        Assertions.assertEquals(film3, exp.get(0));
-        Assertions.assertEquals(film4, exp.get(1));
-        Assertions.assertEquals(film2, exp.get(2));
+        Assertions.assertEquals(film1, exp.get(0));
     }
 }

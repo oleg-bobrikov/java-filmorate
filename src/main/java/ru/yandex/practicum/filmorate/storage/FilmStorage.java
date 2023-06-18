@@ -4,7 +4,6 @@ import ru.yandex.practicum.filmorate.dto.Film;
 import ru.yandex.practicum.filmorate.dto.User;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public interface FilmStorage {
@@ -37,5 +36,7 @@ public interface FilmStorage {
 
     List<Film> getRecommendations(Integer userId);
 
-    List<Film> searchFilms(Map<String, String> params);
+    List<Film> searchFilmsByTitle(String query);
+
+    List<Film> searchFilmsByDirector(String query);
 }
