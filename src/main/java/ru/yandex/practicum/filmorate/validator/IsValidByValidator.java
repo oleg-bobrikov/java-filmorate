@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.validator;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.util.List;
-import java.util.Optional;
 
 public class IsValidByValidator implements ConstraintValidator<IsValidBy, List<String>> {
     @Override
