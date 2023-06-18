@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,9 +36,10 @@ public interface FilmStorage {
 
     List<Film> getRecommendations(Integer userId);
 
-    List<Film> searchFilms(Map<String, String> params);
+    List<Film> searchFilms(Map<String, Object> params);
 
     List<Film> searchFilmsByDirectorOrderedByYear(Integer directorId);
 
     List<Film> searchFilmsByDirectorOrderedByLikes(Integer directorId);
-}
+
+  }

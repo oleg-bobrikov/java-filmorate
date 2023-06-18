@@ -23,7 +23,7 @@ public class UserH2Storage implements UserStorage {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GeneratedKeyHolder generatedKeyHolder;
 
-    public UserH2Storage(JdbcTemplate jdbcTemplate, EventRowMapper eventRowMapper) {
+    public UserH2Storage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
         DataSource dataSource = jdbcTemplate.getDataSource();
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));

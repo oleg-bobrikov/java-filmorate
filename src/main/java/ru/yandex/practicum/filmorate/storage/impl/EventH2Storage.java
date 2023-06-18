@@ -16,12 +16,10 @@ import java.util.Objects;
 @Component
 @Slf4j
 public class EventH2Storage implements EventStorage {
-    private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final EventRowMapper eventRowMapper;
 
     public EventH2Storage(JdbcTemplate jdbcTemplate, EventRowMapper eventRowMapper) {
-        this.jdbcTemplate = jdbcTemplate;
         this.eventRowMapper = eventRowMapper;
         DataSource dataSource = jdbcTemplate.getDataSource();
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));

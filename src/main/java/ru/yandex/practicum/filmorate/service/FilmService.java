@@ -111,14 +111,26 @@ public class FilmService {
         filmStorage.removeFilmById(userId);
     }
 
-
     public List<Film> searchFilms(Optional<String> query, Optional<List<String>> by) {
-        HashMap<String, String> params = new HashMap<>();
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("IS_FILTERED_BY_DIRECTOR_NAME", false);
+        params.put("DIRECTOR_SEARCH", "");
+        params.put("IS_FILTERED_BY_FILM_NAME", false);
+        params.put("FILM_SEARCH", "");
+
         if (query.isPresent() || by.isPresent()) {
-            for (String filter : by.get()) {
-                params.put(filter, query.get());
+            List filter = by.get();
+            if (filter.contains("director")) {
+                params.put("IS_FILTERED_BY_DIRECTOR_NAME", true);
+                params.put("DIRECTOR_SEARCH", query.get());
+            }
+            if (filter.contains("title")) {
+                params.put("IS_FILTERED_BY_FILM_NAME", true);
+                params.put("FILM_SEARCH", query.get());
             }
         }
+
         return filmStorage.searchFilms(params);
     }
 }

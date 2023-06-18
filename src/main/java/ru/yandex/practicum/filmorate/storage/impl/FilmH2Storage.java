@@ -58,13 +58,7 @@ public class FilmH2Storage implements FilmStorage {
     }
 
     @Override
-    public List<Film> searchFilms(Map<String, String> params) {
-
-        boolean isFilteredByDirector = params.containsKey("director");
-        String directorSearchString = isFilteredByDirector ? params.get("director") : "";
-
-        boolean isFilteredByTitle = params.containsKey("title");
-        String titleSearchString = isFilteredByTitle ? params.get("title") : "";
+    public List<Film> searchFilms(Map<String, Object> params) {
 
         String sql =
                 "SELECT " +
@@ -111,10 +105,10 @@ public class FilmH2Storage implements FilmStorage {
 
 
         HashMap<String, Object> sqlParams = new HashMap<>();
-        sqlParams.put("IS_FILTERED_BY_DIRECTOR_NAME", isFilteredByDirector);
-        sqlParams.put("IS_FILTERED_BY_FILM_NAME", isFilteredByTitle);
-        sqlParams.put("FILM_SEARCH", "%" + titleSearchString + "%");
-        sqlParams.put("DIRECTOR_SEARCH", "%" + directorSearchString + "%");
+        sqlParams.put("IS_FILTERED_BY_DIRECTOR_NAME", params.get("IS_FILTERED_BY_DIRECTOR_NAME"));
+        sqlParams.put("IS_FILTERED_BY_FILM_NAME", params.get("IS_FILTERED_BY_FILM_NAME"));
+        sqlParams.put("FILM_SEARCH", "%" + params.get("FILM_SEARCH") + "%");
+        sqlParams.put("DIRECTOR_SEARCH", "%" + params.get("DIRECTOR_SEARCH") + "%");
 
         List<Film> films = namedParameterJdbcTemplate.query(sql, sqlParams, filmRowMapper);
         restoreFilms(films);

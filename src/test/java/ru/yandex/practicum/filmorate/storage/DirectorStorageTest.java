@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.impl.DirectorH2Storage;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -60,13 +61,12 @@ class DirectorStorageTest {
 
     @Test
     void testGetDirectorById() {
-        Director director = directorStorage.findDirectorById(1).get();
-        assertThat(director)
-                .hasFieldOrPropertyWithValue("id", 1)
-                .hasFieldOrPropertyWithValue("name", "Pavel");
-
-        assertEquals(director1, directorStorage.findDirectorById(1).get());
-        assertNotEquals(director4, directorStorage.findDirectorById(1).get());
+        Optional<Director> directorOptional = directorStorage.findDirectorById(1);
+        assertThat(directorOptional).isPresent()
+                .hasValueSatisfying(director ->
+                        assertThat(director)
+                                .hasFieldOrPropertyWithValue("id", 1)
+                                .hasFieldOrPropertyWithValue("name", "Pavel"));
     }
 
 
