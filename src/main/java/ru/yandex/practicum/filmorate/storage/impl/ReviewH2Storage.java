@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.DataBaseException;
+import ru.yandex.practicum.filmorate.mapper.ReviewLikeRowMapper;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.ReviewLike;
 import ru.yandex.practicum.filmorate.mapper.ReviewRowMapper;
@@ -24,18 +26,20 @@ public class ReviewH2Storage implements ReviewStorage {
     private final ReviewRowMapper reviewRowMapper;
 
     private final ReviewService reviewService;
+    private final ReviewLikeRowMapper reviewLikeRowMapper;
 
     public ReviewH2Storage(JdbcTemplate jdbcTemplate, ReviewRowMapper reviewRowMapper,
-                           @Lazy ReviewService reviewService) {
+                           @Lazy ReviewService reviewService, ReviewLikeRowMapper reviewLikeRowMapper) {
         this.reviewRowMapper = reviewRowMapper;
         this.reviewService = reviewService;
+        this.reviewLikeRowMapper = reviewLikeRowMapper;
         DataSource dataSource = jdbcTemplate.getDataSource();
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(Objects.requireNonNull(dataSource));
         generatedKeyHolder = new GeneratedKeyHolder();
     }
 
     @Override
-    public Optional<Review> add(Review review) {
+    public Review add(Review review) {
         String sql = "insert into REVIEWS (CONTENT, IS_POSITIVE, USER_ID, FILM_ID) " +
                 "VALUES(:CONTENT, :IS_POSITIVE, :USER_ID, :FILM_ID);";
 
@@ -45,8 +49,12 @@ public class ReviewH2Storage implements ReviewStorage {
 
         int id = Objects.requireNonNull(generatedKeyHolder.getKey()).intValue();
         log.info("Создан отзыв с идентификатором: {}", id);
-
-        return findReviewById(id);
+        Optional<Review> createdReview = findReviewById(id);
+        if (createdReview.isPresent()) {
+            return createdReview.get();
+        } else {
+            throw new DataBaseException("Ошибка получения отзыва по идентификатору " + review.getReviewId());
+        }
     }
 
     @Override
@@ -89,7 +97,26 @@ public class ReviewH2Storage implements ReviewStorage {
     }
 
     @Override
-    public Optional<Review> update(Review review) {
+    public Optional<ReviewLike> findReviewLikeOrDislike(Integer reviewId, Integer userId) {
+        String sql = "select REVIEW_ID," +
+                "USER_ID, " +
+                "IS_LIKE " +
+                "FROM REVIEW_LIKES " +
+                "where REVIEW_ID = :REVIEW_ID and USER_ID = :USER_ID";
+        Map<String, Object> params = new HashMap<>();
+        params.put("REVIEW_ID", reviewId);
+        params.put("USER_ID", userId);
+        List<ReviewLike> list = namedParameterJdbcTemplate.query(sql, params, reviewLikeRowMapper);
+        if (list.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(list.get(0));
+        }
+
+    }
+
+    @Override
+    public Review update(Review review) {
         String sql = "UPDATE" +
                 " REVIEWS " +
                 " SET" +
@@ -102,7 +129,12 @@ public class ReviewH2Storage implements ReviewStorage {
         namedParameterJdbcTemplate.update(sql, params);
         log.info("Отзыв с идентификатором {} изменен.", review.getReviewId());
 
-        return findReviewById(review.getReviewId());
+        Optional<Review> createdReview = findReviewById(review.getReviewId());
+        if (createdReview.isPresent()) {
+            return createdReview.get();
+        } else {
+            throw new DataBaseException("Ошибка получения отзыва по идентификатору " + review.getReviewId());
+        }
     }
 
     @Override
@@ -160,7 +192,7 @@ public class ReviewH2Storage implements ReviewStorage {
     }
 
     @Override
-    public void addAnyLike(ReviewLike reviewLike) {
+    public void addReviewLike(ReviewLike reviewLike) {
         String sql = " MERGE INTO REVIEW_LIKES KEY (REVIEW_ID, USER_ID, IS_LIKE) " +
                 " VALUES (:REVIEW_ID, :USER_ID, :IS_LIKE)";
 
@@ -172,7 +204,7 @@ public class ReviewH2Storage implements ReviewStorage {
     }
 
     @Override
-    public void removeAnyLike(ReviewLike reviewLike) {
+    public void removeReviewLikeOrDislike(ReviewLike reviewLike) {
         String sql = "DELETE" +
                 " FROM REVIEW_LIKES" +
                 " WHERE REVIEW_ID = :REVIEW_ID" +
@@ -188,18 +220,7 @@ public class ReviewH2Storage implements ReviewStorage {
 
     @Override
     public void removeDislike(ReviewLike reviewLike) {
-        String sql = "DELETE" +
-                " FROM REVIEW_LIKES" +
-                " WHERE REVIEW_ID = :REVIEW_ID" +
-                " AND USER_ID = :USER_ID" +
-                " AND NOT IS_LIKE";
 
-        Map<String, Object> params = reviewService.reviewLiketoMap(reviewLike);
-        int rows = namedParameterJdbcTemplate.update(sql, new MapSqlParameterSource(params));
-        if (rows > 0) {
-            log.info("Дизлайк на отзыв с идентификатором {} от пользователя с идентификатором {} удален.",
-                    reviewLike.getReviewId(), reviewLike.getUserId());
-        }
     }
 
     @Override

@@ -7,11 +7,12 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReviewStorage {
-    Optional<Review> add(Review review);
+    Review add(Review review);
 
     Optional<Review> findReviewById(Integer id);
 
-    Optional<Review> update(Review review);
+    Optional<ReviewLike> findReviewLikeOrDislike(Integer id, Integer userId);
+    Review update(Review review);
 
     void deleteReview(int id);
 
@@ -19,9 +20,9 @@ public interface ReviewStorage {
 
     List<Review> getAllReviewsByFilmId(Integer filmId, Integer count);
 
-    void addAnyLike(ReviewLike reviewLike);
+    void addReviewLike(ReviewLike reviewLike);
 
-    void removeAnyLike(ReviewLike reviewLike);
+    void removeReviewLikeOrDislike(ReviewLike reviewLike);
 
     void removeDislike(ReviewLike reviewLike);
 

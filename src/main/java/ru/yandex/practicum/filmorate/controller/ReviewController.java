@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.ReviewService;
@@ -44,32 +43,31 @@ public class ReviewController {
 
     @PutMapping("{reviewId}/like/{userId}")
     public void like(@PathVariable Integer reviewId, @PathVariable Integer userId) {
-        reviewService.like(reviewId, userId);
+        reviewService.addReviewLike(reviewId, userId);
     }
 
     @PutMapping("{reviewId}/dislike/{userId}")
     public void dislike(@PathVariable Integer reviewId, @PathVariable Integer userId) {
-        reviewService.dislike(reviewId, userId);
+        reviewService.addReviewDislike(reviewId, userId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("{reviewId}/like/{userId}")
-    public void removeAnyLike(@PathVariable Integer reviewId, @PathVariable Integer userId) {
-        reviewService.removeAnyLike(reviewId, userId);
+    public void removeReviewLikeAndDislike(@PathVariable Integer reviewId, @PathVariable Integer userId) {
+        reviewService.removeReviewLikeOrDislike(reviewId, userId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("{reviewId}/dislike/{userId}")
     public void removeDislike(@PathVariable Integer reviewId, @PathVariable Integer userId) {
-        reviewService.removeDislike(reviewId, userId);
+        reviewService.removeReviewDislike(reviewId, userId);
     }
 
     @GetMapping("")
     public List<Review> getAll(@RequestParam(required = false) Optional<Integer> filmId,
                                @RequestParam(defaultValue = "10", required = false) Integer count) {
         if (filmId.isPresent()) {
-            Film film = filmService.getFilmById(filmId.get());
-            return reviewService.getAllReviewsByFilmId(film.getId(), count);
+            return reviewService.getAllReviewsByFilmId(filmId.get(), count);
         } else {
             return reviewService.getAllReviews(count);
         }

@@ -150,7 +150,7 @@ public class ReviewStorageTest {
                 .userId(user2.getId()).build();
 
         //Act
-        reviewStorage.addAnyLike(reviewLike);
+        reviewStorage.addReviewLike(reviewLike);
         var actual = reviewStorage.findReviewById(review1.getReviewId());
 
         //Assert
@@ -176,7 +176,7 @@ public class ReviewStorageTest {
                 .userId(user2.getId()).build();
 
         //Act
-        reviewStorage.addAnyLike(reviewLike);
+        reviewStorage.addReviewLike(reviewLike);
         var actual = reviewStorage.findReviewById(review1.getReviewId());
 
         //Assert
@@ -202,8 +202,8 @@ public class ReviewStorageTest {
                 .userId(user2.getId()).build();
 
         //Act
-        reviewStorage.addAnyLike(reviewLike);
-        reviewStorage.removeAnyLike(reviewLike);
+        reviewStorage.addReviewLike(reviewLike);
+        reviewStorage.removeReviewLikeOrDislike(reviewLike);
         var actual = reviewStorage.findReviewById(review1.getReviewId());
 
         //Assert
@@ -229,7 +229,7 @@ public class ReviewStorageTest {
                 .userId(user2.getId()).build();
 
         //Act
-        reviewStorage.addAnyLike(reviewLike);
+        reviewStorage.addReviewLike(reviewLike);
         reviewStorage.removeDislike(reviewLike);
         var actual = reviewStorage.findReviewById(review1.getReviewId());
 

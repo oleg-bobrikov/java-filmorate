@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.ReviewLike;
-import ru.yandex.practicum.filmorate.exception.DataBaseException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
@@ -23,32 +22,18 @@ public class ReviewService {
     public Review add(Review review) {
         userService.findUserById(review.getUserId());
         filmService.getFilmById(review.getFilmId());
-        Optional<Review> reviewOpt = reviewStorage.add(review);
-        if (reviewOpt.isPresent()) {
-            return reviewOpt.get();
-        } else {
-            throw new DataBaseException("Ошибка получения отзыва по идентификатору " + review.getReviewId());
-        }
-
+        return reviewStorage.add(review);
     }
 
     public Review update(Review review) {
         findReviewById(review.getReviewId());
-        Optional<Review> reviewOpt = reviewStorage.update(review);
-        if (reviewOpt.isPresent()) {
-            return reviewOpt.get();
-        } else {
-            throw new DataBaseException("Ошибка получения отзыва по идентификатору " + review.getReviewId());
-        }
+        return reviewStorage.update(review);
     }
 
     public Review findReviewById(Integer id) {
-        Optional<Review> reviewOptional = reviewStorage.findReviewById(id);
-        if (reviewOptional.isEmpty()) {
-            throw new NotFoundException("Отзыв с идентификатором " + id + " не найден.");
-        }
 
-        return reviewOptional.get();
+        return reviewStorage.findReviewById(id).orElseThrow(
+                () -> new NotFoundException("Отзыв с идентификатором " + id + " не найден."));
     }
 
     public void removeReview(Integer id) {
@@ -59,7 +44,7 @@ public class ReviewService {
         reviewStorage.deleteReview(id);
     }
 
-    public void like(int reviewId, int userId) {
+    public void addReviewLike(int reviewId, int userId) {
         findReviewById(reviewId);
         userService.findUserById(userId);
         ReviewLike reviewLike = ReviewLike.builder()
@@ -67,10 +52,10 @@ public class ReviewService {
                 .userId(userId)
                 .isLike(true)
                 .build();
-        reviewStorage.addAnyLike(reviewLike);
+        reviewStorage.addReviewLike(reviewLike);
     }
 
-    public void dislike(int reviewId, int userId) {
+    public void addReviewDislike(int reviewId, int userId) {
         findReviewById(reviewId);
         userService.findUserById(userId);
         ReviewLike newLike = ReviewLike.builder()
@@ -78,29 +63,27 @@ public class ReviewService {
                 .userId(userId)
                 .isLike(false)
                 .build();
-        reviewStorage.addAnyLike(newLike);
+        reviewStorage.addReviewLike(newLike);
     }
 
-    public void removeAnyLike(Integer reviewId, Integer userId) {
+    public void removeReviewLikeOrDislike(Integer reviewId, Integer userId) {
         findReviewById(reviewId);
         userService.findUserById(userId);
-        ReviewLike reviewLike = ReviewLike.builder()
-                .reviewId(reviewId)
-                .userId(userId)
-                .isLike(false)
-                .build();
-        reviewStorage.removeAnyLike(reviewLike);
+        ReviewLike reviewLike = reviewStorage.findReviewLikeOrDislike(reviewId, userId).orElseThrow(() ->
+                new NotFoundException(String.format("Лайк на с reviewId = %s и userId=%s не найден", reviewId, userId)));
+
+        reviewStorage.removeReviewLikeOrDislike(reviewLike);
     }
 
-    public void removeDislike(Integer reviewId, Integer userId) {
+    public void removeReviewDislike(Integer reviewId, Integer userId) {
         findReviewById(reviewId);
         userService.findUserById(userId);
-        ReviewLike reviewLike = ReviewLike.builder()
-                .reviewId(reviewId)
-                .userId(userId)
-                .isLike(false)
-                .build();
-        reviewStorage.removeDislike(reviewLike);
+        ReviewLike reviewLike = reviewStorage.findReviewLikeOrDislike(reviewId, userId).orElseThrow(() ->
+                new NotFoundException(String.format("Дизлайк с reviewId = %s и userId=%s не найден", reviewId, userId)));
+        if (reviewLike.isLike()) {
+            throw new NotFoundException(String.format("Дизлайк с reviewId = %s и userId=%s не найден", reviewId, userId));
+        }
+        reviewStorage.removeReviewLikeOrDislike(reviewLike);
     }
 
     public List<Review> getAllReviews(Integer count) {
@@ -108,6 +91,7 @@ public class ReviewService {
     }
 
     public List<Review> getAllReviewsByFilmId(Integer filmId, Integer count) {
+        filmService.getFilmById(filmId);
         return reviewStorage.getAllReviewsByFilmId(filmId, count);
     }
 
