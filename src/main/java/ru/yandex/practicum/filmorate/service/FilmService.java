@@ -75,23 +75,32 @@ public class FilmService {
         filmStorage.add(film);
     }
 
-    public List<Film> findFilmByDirector(Integer directorId, String sortBy) {
-        List<Film> list = filmStorage.findFilmByDirector(directorId, sortBy);
+    public List<Film> searchFilmsByDirector(Integer directorId, String sortBy) {
+        List<Film> list;
+        if(sortBy.equals("year")){
+            list = filmStorage.searchFilmsByDirectorOrderedByYear(directorId);
+        }else if(sortBy.equals("likes")){
+            list = filmStorage.searchFilmsByDirectorOrderedByLikes(directorId);
+        }
+        else {
+            throw new NotFoundException("Список режессеров пуст.");
+        }
+
         if (list.isEmpty()) {
             throw new NotFoundException("Список режессеров пуст.");
         }
         return list;
     }
 
-    public List<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
+    public List<Film> getTopFilmsFilteredByGenreAndYear(Integer count, Integer genreId, Integer year) {
         List<Film> result;
         if (genreId == null && year == null) {
-            result = filmStorage.getPopular(count);
+            result = filmStorage.getTopFilms(count);
         } else if (genreId != null && year != null) {
-            result = filmStorage.getPopularFilms(count, genreId, year);
+            result = filmStorage.getTopFilmsFilteredByGenreAndYear(count, genreId, year);
         } else if (genreId == null) {
-            result = filmStorage.getPopularFilmsSortedByYear(count, year);
-        } else result = filmStorage.getPopularFilmsSortedByGenre(count, genreId);
+            result = filmStorage.getTopFilmsFilteredByYear(count, year);
+        } else result = filmStorage.getTopFilmsFilteredByGenre(count, genreId);
 
         return result;
     }

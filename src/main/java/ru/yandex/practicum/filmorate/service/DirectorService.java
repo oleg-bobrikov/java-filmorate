@@ -25,7 +25,7 @@ public class DirectorService {
 
     public List<Director> getAll() {
         List<Director> directors = directorStorage.findAll();
-        if (directors.isEmpty()){
+        if (directors.isEmpty()) {
             log.warn("Список режессеров пуст!");
         }
         return directors;

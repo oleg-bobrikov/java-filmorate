@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.mapper.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.util.*;
 

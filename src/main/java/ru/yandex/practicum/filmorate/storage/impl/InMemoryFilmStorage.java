@@ -53,7 +53,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopular(int count) {
+    public List<Film> getTopFilms(int count) {
 
         return getFilms().stream()
                 .sorted((o1, o2) -> o2.getLikes().size() - o1.getLikes().size())
@@ -68,22 +68,22 @@ public class InMemoryFilmStorage implements FilmStorage {
 
 
     @Override
-    public List<Film> findFilmByDirector(Integer directorId, String sortBy) {
+    public List<Film> findFilmsByDirector(Integer directorId, String sortBy) {
         return new ArrayList<>();
     }
 
     @Override
-    public List<Film> getPopularFilmsSortedByYear(Integer year, Integer integer) {
+    public List<Film> getTopFilmsFilteredByYear(Integer year, Integer integer) {
         return new ArrayList<>();
     }
 
     @Override
-    public List<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
+    public List<Film> getTopFilmsFilteredByGenreAndYear(Integer count, Integer genreId, Integer year) {
         return new ArrayList<>();
     }
 
     @Override
-    public List<Film> getPopularFilmsSortedByGenre(Integer count, Integer genreId) {
+    public List<Film> getTopFilmsFilteredByGenre(Integer count, Integer genreId) {
         return new ArrayList<>();
     }
 
@@ -94,6 +94,16 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> searchFilms(Map<String, String> params) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Film> searchFilmsByDirectorOrderedByYear(Integer directorId) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Film> searchFilmsByDirectorOrderedByLikes(Integer directorId) {
         return new ArrayList<>();
     }
 

@@ -337,7 +337,7 @@ public class FilmH2Storage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopular(int count) {
+    public List<Film> getTopFilms(int count) {
 
         String sql = "DROP TABLE IF EXISTS popular_films_tmp";
         jdbcTemplate.execute(sql);
@@ -449,7 +449,7 @@ public class FilmH2Storage implements FilmStorage {
     }
 
     @Override
-    public List<Film> findFilmByDirector(Integer directorId, String sortBy) {
+    public List<Film> findFilmsByDirector(Integer directorId, String sortBy) {
         List<Film> films = new ArrayList<>();
         String sqlQueryByLikes = "SELECT df.film_id, COUNT(fl.user_id) AS p " +
                 "FROM directors_films AS df " +
@@ -479,6 +479,54 @@ public class FilmH2Storage implements FilmStorage {
                 films.add(findFilmById(id).get());
             }
         }
+        return films;
+    }
+  @Override
+    public List<Film> searchFilmsByDirectorOrderedByYear(Integer directorId) {
+        String sql = "SELECT" +
+                "    FILMS.ID," +
+                "    FILMS.FILM_NAME," +
+                "    FILMS.DESCRIPTION," +
+                "    FILMS.RELEASE_DATE," +
+                "    FILMS.DURATION," +
+                "    IFNULL(FILMS.MPA_FILM_RATING_ID, 0) AS MPA_FILM_RATING_ID " +
+                "FROM FILMS " +
+                "INNER JOIN directors_films ON directors_films.film_id = FILMS.ID AND directors_films.director_id = :DIRECTOR_ID " +
+                "ORDER BY YEAR(films.release_date)";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("DIRECTOR_ID", directorId);
+
+        List<Film> films = namedParameterJdbcTemplate.query(sql, params, filmRowMapper);
+        restoreFilms(films);
+        return films;
+    }
+
+    public List<Film> searchFilmsByDirectorOrderedByLikes(Integer directorId) {
+        String sql = "SELECT" +
+                "    FILMS.ID," +
+                "    FILMS.FILM_NAME," +
+                "    FILMS.DESCRIPTION," +
+                "    FILMS.RELEASE_DATE," +
+                "    FILMS.DURATION," +
+                "    IFNULL(FILMS.MPA_FILM_RATING_ID, 0) AS MPA_FILM_RATING_ID " +
+                "FROM FILMS " +
+                "INNER JOIN directors_films ON directors_films.film_id = FILMS.ID AND directors_films.director_id = :DIRECTOR_ID " +
+                "LEFT JOIN FILM_LIKES ON FILMS.ID = FILM_LIKES.FILM_ID " +
+                "GROUP BY " +
+                "FILMS.ID, " +
+                "FILMS.FILM_NAME, " +
+                "FILMS.DESCRIPTION, " +
+                "FILMS.RELEASE_DATE," +
+                "FILMS.DURATION, " +
+                "IFNULL(FILMS.MPA_FILM_RATING_ID, 0) " +
+                "ORDER BY COUNT(FILM_LIKES.FILM_ID) DESC ";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("DIRECTOR_ID", directorId);
+
+        List<Film> films = namedParameterJdbcTemplate.query(sql, params, filmRowMapper);
+        restoreFilms(films);
         return films;
     }
 
@@ -571,111 +619,122 @@ public class FilmH2Storage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopularFilmsSortedByYear(Integer count, Integer year) {
-        String sqlQueryPopularFilms = "WITH SORTERED_FILMS AS(" +
-                "SELECT DISTINCT f.ID," +
-                "  f.FILM_NAME," +
-                "   f.DESCRIPTION," +
-                "   f.RELEASE_DATE," +
-                "   f.DURATION,\n" +
-                "   f.MPA_FILM_RATING_ID " +
-                "FROM films AS f " +
-                "WHERE EXTRACT(YEAR FROM f.RELEASE_DATE) = ? " +
-                ")" +
-                "SELECT SF.ID," +
-                "       SF.FILM_NAME, " +
-                "       SF.DESCRIPTION," +
-                "       SF.RELEASE_DATE, " +
-                "       SF.DURATION," +
-                "       SF.MPA_FILM_RATING_ID," +
-                "       FILM_GENRES.FILM_ID " +
-                "FROM SORTERED_FILMS AS SF " +
-                "LEFT OUTER JOIN FILM_LIKES FL ON FL.FILM_ID = SF.ID " +
-                "LEFT OUTER JOIN MPA_FILM_RATINGS R ON R.ID = SF.MPA_FILM_RATING_ID " +
-                "LEFT OUTER JOIN FILM_GENRES ON SF.ID = FILM_GENRES.FILM_ID " +
-                "GROUP BY SF.ID," +
-                "         SF.FILM_NAME," +
-                "         SF.DESCRIPTION," +
-                "         SF.RELEASE_DATE, " +
-                "         SF.DURATION," +
-                "         SF.MPA_FILM_RATING_ID " +
-                "ORDER BY COUNT(FL.USER_ID) DESC " +
-                "LIMIT ? ";
-        List<Film> films = jdbcTemplate.query(sqlQueryPopularFilms, filmRowMapper, year, count);
-        restoreFilms(films);
-        return films;
-    }
-
-    @Override
-    public List<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
-        String sqlQueryGetPopularFilms = "WITH SORTERED_FILMS AS (" +
-                "SELECT DISTINCT f.ID," +
-                "  f.FILM_NAME," +
-                "   f.DESCRIPTION," +
-                "   f.RELEASE_DATE," +
-                "   f.DURATION," +
-                "   f.MPA_FILM_RATING_ID " +
-                "FROM films AS f " +
-                "LEFT OUTER JOIN FILM_GENRES on F.ID = FILM_GENRES.FILM_ID " +
-                "where GENRE_ID = ? " +
-                "       and EXTRACT(YEAR FROM f.RELEASE_DATE) = ? " +
-                ")" +
-                "select SF.ID, " +
-                "       SF.DESCRIPTION, " +
-                "       SF.FILM_NAME, " +
-                "       SF.RELEASE_DATE, " +
-                "       SF.DURATION, " +
-                "       SF.MPA_FILM_RATING_ID " +
-                "from SORTERED_FILMS SF " +
-                "       LEFT OUTER JOIN FILM_LIKES FL on FL.FILM_ID = SF.ID " +
-                "       LEFT OUTER JOIN MPA_FILM_RATINGS R on R.ID = SF.MPA_FILM_RATING_ID " +
-                "GROUP BY SF.ID, " +
-                "       SF.DESCRIPTION, " +
-                "       SF.FILM_NAME, " +
-                "       SF.RELEASE_DATE, " +
-                "       SF.DURATION, " +
-                "       SF.MPA_FILM_RATING_ID " +
-                "ORDER BY count(FL.USER_ID) DESC " +
-                "LIMIT ?";
-
-        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, filmRowMapper, genreId, year, count);
-        restoreFilms(films);
-        return films;
-    }
-
-    @Override
-    public List<Film> getPopularFilmsSortedByGenre(Integer count, Integer genreId) {
-        String sqlQueryGetPopularFilms = "WITH SORTERED_FILMS AS (" +
-                "SELECT DISTINCT f.ID," +
-                "  f.FILM_NAME," +
-                "   f.DESCRIPTION," +
-                "   f.RELEASE_DATE," +
-                "   f.DURATION," +
-                "   f.MPA_FILM_RATING_ID, " +
-                "   FG.GENRE_ID " +
-                "FROM films AS f " +
-                " LEFT OUTER JOIN FILM_GENRES FG ON F.ID = FG.FILM_ID " +
-                " INNER JOIN GENRES ON GENRES.ID = FG.GENRE_ID " +
-                "WHERE FG.GENRE_ID = ? " +
-                ")" +
-                "select SF.ID, " +
+    public List<Film> getTopFilmsFilteredByYear(Integer count, Integer year) {
+        String sql = "WITH FILTERED_FILMS AS (" +
+                "SELECT DISTINCT FILMS.ID," +
+                "  FILMS.FILM_NAME," +
+                "   FILMS.DESCRIPTION," +
+                "   FILMS.RELEASE_DATE," +
+                "   FILMS.DURATION," +
+                "   FILMS.MPA_FILM_RATING_ID, " +
+                "   FILM_GENRES.GENRE_ID " +
+                "FROM FILMS  " +
+                "INNER JOIN FILM_GENRES ON FILMS.ID = FILM_GENRES.FILM_ID " +
+                "WHERE EXTRACT(YEAR FROM FILMS.RELEASE_DATE) = :YEAR) " +
+                "SELECT FILTERED_FILMS.ID, " +
                 "       DESCRIPTION, " +
                 "       FILM_NAME, " +
                 "       RELEASE_DATE, " +
                 "       DURATION, " +
                 "       MPA_FILM_RATING_ID " +
-                "from SORTERED_FILMS SF " +
-                "       left join FILM_LIKES FL on FL.FILM_ID = SF.ID " +
-                "       left join MPA_FILM_RATINGS R on R.ID = SF.MPA_FILM_RATING_ID " +
-                "group by SF.ID, " +
-                "       SF.DESCRIPTION, " +
-                "       SF.FILM_NAME, " +
-                "       SF.RELEASE_DATE, " +
-                "       SF.DURATION, " +
-                "       SF.MPA_FILM_RATING_ID " +
-                "order by count(FL.USER_ID) desc " +
-                "limit ?";
-        List<Film> films = jdbcTemplate.query(sqlQueryGetPopularFilms, filmRowMapper, genreId, count);
+                "FROM FILTERED_FILMS  " +
+                "       left join FILM_LIKES on FILM_LIKES.FILM_ID = FILTERED_FILMS.ID " +
+                "       left join MPA_FILM_RATINGS R on R.ID = FILTERED_FILMS.MPA_FILM_RATING_ID " +
+                "GROUP BY FILTERED_FILMS.ID, " +
+                "       FILTERED_FILMS.DESCRIPTION, " +
+                "       FILTERED_FILMS.FILM_NAME, " +
+                "       FILTERED_FILMS.RELEASE_DATE, " +
+                "       FILTERED_FILMS.DURATION, " +
+                "       FILTERED_FILMS.MPA_FILM_RATING_ID " +
+                "ORDER BY COUNT(FILM_LIKES.USER_ID) desc " +
+                "LIMIT :COUNT";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("YEAR", year);
+        params.put("COUNT", count);
+
+        List<Film> films = namedParameterJdbcTemplate.query(sql, params, filmRowMapper);
+        restoreFilms(films);
+        return films;
+    }
+
+    @Override
+    public List<Film> getTopFilmsFilteredByGenreAndYear(Integer count, Integer genreId, Integer year) {
+        String sql = "WITH FILTERED_FILMS AS (" +
+                "SELECT DISTINCT FILMS.ID," +
+                "  FILMS.FILM_NAME," +
+                "   FILMS.DESCRIPTION," +
+                "   FILMS.RELEASE_DATE," +
+                "   FILMS.DURATION," +
+                "   FILMS.MPA_FILM_RATING_ID, " +
+                "   FILM_GENRES.GENRE_ID " +
+                "FROM FILMS  " +
+                "INNER JOIN FILM_GENRES ON FILMS.ID = FILM_GENRES.FILM_ID " +
+                "WHERE FILM_GENRES.GENRE_ID = :GENRE_ID AND EXTRACT(YEAR FROM FILMS.RELEASE_DATE) = :YEAR) " +
+                "SELECT FILTERED_FILMS.ID, " +
+                "       DESCRIPTION, " +
+                "       FILM_NAME, " +
+                "       RELEASE_DATE, " +
+                "       DURATION, " +
+                "       MPA_FILM_RATING_ID " +
+                "FROM FILTERED_FILMS  " +
+                "       left join FILM_LIKES on FILM_LIKES.FILM_ID = FILTERED_FILMS.ID " +
+                "       left join MPA_FILM_RATINGS R on R.ID = FILTERED_FILMS.MPA_FILM_RATING_ID " +
+                "GROUP BY FILTERED_FILMS.ID, " +
+                "       FILTERED_FILMS.DESCRIPTION, " +
+                "       FILTERED_FILMS.FILM_NAME, " +
+                "       FILTERED_FILMS.RELEASE_DATE, " +
+                "       FILTERED_FILMS.DURATION, " +
+                "       FILTERED_FILMS.MPA_FILM_RATING_ID " +
+                "ORDER BY COUNT(FILM_LIKES.USER_ID) desc " +
+                "LIMIT :COUNT";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("GENRE_ID", genreId);
+        params.put("YEAR", year);
+        params.put("COUNT", count);
+
+        List<Film> films = namedParameterJdbcTemplate.query(sql, params, filmRowMapper);
+        restoreFilms(films);
+        return films;
+    }
+
+    @Override
+    public List<Film> getTopFilmsFilteredByGenre(Integer count, Integer genreId) {
+        String sql = "WITH FILTERED_FILMS AS (" +
+                "SELECT DISTINCT FILMS.ID," +
+                "  FILMS.FILM_NAME," +
+                "   FILMS.DESCRIPTION," +
+                "   FILMS.RELEASE_DATE," +
+                "   FILMS.DURATION," +
+                "   FILMS.MPA_FILM_RATING_ID, " +
+                "   FILM_GENRES.GENRE_ID " +
+                "FROM FILMS  " +
+                "INNER JOIN FILM_GENRES ON FILMS.ID = FILM_GENRES.FILM_ID " +
+                "WHERE FILM_GENRES.GENRE_ID = :GENRE_ID) " +
+                "SELECT FILTERED_FILMS.ID, " +
+                "       DESCRIPTION, " +
+                "       FILM_NAME, " +
+                "       RELEASE_DATE, " +
+                "       DURATION, " +
+                "       MPA_FILM_RATING_ID " +
+                "FROM FILTERED_FILMS  " +
+                "       left join FILM_LIKES on FILM_LIKES.FILM_ID = FILTERED_FILMS.ID " +
+                "       left join MPA_FILM_RATINGS R on R.ID = FILTERED_FILMS.MPA_FILM_RATING_ID " +
+                "GROUP BY FILTERED_FILMS.ID, " +
+                "       FILTERED_FILMS.DESCRIPTION, " +
+                "       FILTERED_FILMS.FILM_NAME, " +
+                "       FILTERED_FILMS.RELEASE_DATE, " +
+                "       FILTERED_FILMS.DURATION, " +
+                "       FILTERED_FILMS.MPA_FILM_RATING_ID " +
+                "ORDER BY COUNT(FILM_LIKES.USER_ID) desc " +
+                "LIMIT :COUNT";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("GENRE_ID", genreId);
+        params.put("COUNT", count);
+
+        List<Film> films = namedParameterJdbcTemplate.query(sql, params, filmRowMapper);
         restoreFilms(films);
         return films;
     }

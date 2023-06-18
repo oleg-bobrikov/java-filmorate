@@ -329,7 +329,7 @@ class FilmStorageTest {
         filmStorage.addLike(film2, user2);
         filmStorage.addLike(film1, user1);
         //act
-        List<Film> actual = filmStorage.getPopular(2);
+        List<Film> actual = filmStorage.getTopFilms(2);
 
         //assert
         assertThat(actual).asList().hasSize(2).contains(film3, film2);
