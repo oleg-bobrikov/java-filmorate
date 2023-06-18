@@ -12,7 +12,8 @@ Filmorate
 - Удаление фильмов и пользователей
 - Вывод самых популярных фильмов по жанру и годам
 
-￼![filmorate.png](..%2F..%2FDesktop%2Ffilmorate.png)
+## ER Diagram (https://dbdiagram.io/d/6428102d5758ac5f1725ebc5)
+![ER Diagramm](filmorate.png)
 
 Для запуска сервиса в IntelliJ IDEA, выполните следующие шаги:
 1. Вначале, для инициализации базы данных, выполните файл schema.sql, 
