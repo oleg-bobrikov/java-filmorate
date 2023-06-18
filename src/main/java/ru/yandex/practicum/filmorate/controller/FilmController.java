@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.validator.IsValidBy;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
