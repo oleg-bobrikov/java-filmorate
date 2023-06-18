@@ -77,12 +77,11 @@ public class FilmService {
 
     public List<Film> searchFilmsByDirector(Integer directorId, String sortBy) {
         List<Film> list;
-        if(sortBy.equals("year")){
+        if (sortBy.equals("year")) {
             list = filmStorage.searchFilmsByDirectorOrderedByYear(directorId);
-        }else if(sortBy.equals("likes")){
+        } else if (sortBy.equals("likes")) {
             list = filmStorage.searchFilmsByDirectorOrderedByLikes(directorId);
-        }
-        else {
+        } else {
             throw new NotFoundException("Список режессеров пуст.");
         }
 
