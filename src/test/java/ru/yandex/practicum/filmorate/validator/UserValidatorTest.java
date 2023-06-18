@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.validator;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.dto.User;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 

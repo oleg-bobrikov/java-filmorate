@@ -4,11 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.dto.Director;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.service.DirectorService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Slf4j
@@ -25,7 +24,7 @@ public class DirectorController {
     }
 
     @GetMapping("/{id}")
-    public Director getDirectorById(@PathVariable @NotNull Integer id) {
+    public Director getDirectorById(@PathVariable Integer id) {
         return directorService.getDirectorById(id);
     }
 
@@ -37,7 +36,7 @@ public class DirectorController {
     }
 
     @PutMapping()
-    public Director updateDirector(@NotNull @Valid @RequestBody Director director) {
+    public Director updateDirector(@Valid @RequestBody Director director) {
         Director updatedDirector = directorService.updateDirector(director);
         log.info("{} has updated", director);
         return updatedDirector;
@@ -45,7 +44,7 @@ public class DirectorController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
-    public void removeDirector(@PathVariable @NotNull Integer id) {
+    public void removeDirector(@PathVariable Integer id) {
         directorService.removeDirector(id);
     }
 }

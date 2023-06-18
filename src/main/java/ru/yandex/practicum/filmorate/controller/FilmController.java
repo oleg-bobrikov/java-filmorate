@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.dto.Film;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.validator.IsValidBy;
 
@@ -29,7 +29,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable @NotNull Integer id) {
+    public Film getFilmById(@PathVariable Integer id) {
         return filmService.getFilmById(id);
     }
 
@@ -57,7 +57,7 @@ public class FilmController {
     }
 
     @PutMapping()
-    public Film update(@NotNull @Valid @RequestBody Film film) {
+    public Film update(@Valid @RequestBody Film film) {
         Film updatedFilm = filmService.update(film);
         log.info(String.format("%s has updated", film));
         return updatedFilm;
@@ -65,13 +65,13 @@ public class FilmController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("{filmId}/like/{userId}")
-    public void like(@PathVariable @NotNull Integer filmId, @PathVariable @NotNull Integer userId) {
+    public void like(@PathVariable Integer filmId, @PathVariable Integer userId) {
         filmService.like(filmId, userId);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("{id}/like/{userId}")
-    public void removeLike(@PathVariable @NotNull Integer id, @PathVariable @NotNull Integer userId) {
+    public void removeLike(@PathVariable Integer id, @PathVariable Integer userId) {
         filmService.removeLike(id, userId);
     }
 

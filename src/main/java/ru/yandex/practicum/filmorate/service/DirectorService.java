@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dto.Director;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.exception.DirectorAlreadyExistedException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
