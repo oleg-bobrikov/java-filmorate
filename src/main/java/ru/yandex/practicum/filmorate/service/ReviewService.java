@@ -121,6 +121,7 @@ public class ReviewService {
         params.put("USEFUL", review.getUseful());
         return params;
     }
+
     public Map<String, Object> reviewLiketoMap(ReviewLike reviewLike) {
         Map<String, Object> params = new HashMap<>();
         params.put("REVIEW_ID", reviewLike.getReviewId());
