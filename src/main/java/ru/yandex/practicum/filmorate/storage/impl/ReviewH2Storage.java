@@ -219,11 +219,6 @@ public class ReviewH2Storage implements ReviewStorage {
     }
 
     @Override
-    public void removeDislike(ReviewLike reviewLike) {
-
-    }
-
-    @Override
     public List<Review> getAllReviews(Integer count) {
         String sql = "SELECT" +
                 "    REVIEWS.ID AS ID," +

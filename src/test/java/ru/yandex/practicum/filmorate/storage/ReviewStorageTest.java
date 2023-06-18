@@ -45,19 +45,16 @@ public class ReviewStorageTest {
                 .userId(user1.getId())
                 .isPositive(true).build();
         //Act
-        Optional<Review> actual = reviewStorage.add(review1);
+        Review actual = reviewStorage.add(review1);
 
         //Assert
         assertThat(actual)
-                .isPresent()
-                .hasValueSatisfying(review ->
-                        assertThat(review)
-                                .hasFieldOrPropertyWithValue("reviewId", 1)
-                                .hasFieldOrPropertyWithValue("content", review1.getContent())
-                                .hasFieldOrPropertyWithValue("userId", review1.getUserId())
-                                .hasFieldOrPropertyWithValue("filmId", review1.getFilmId())
-                                .hasFieldOrPropertyWithValue("isPositive", review1.getIsPositive())
-                                .hasFieldOrPropertyWithValue("useful", 0));
+                .hasFieldOrPropertyWithValue("reviewId", 1)
+                .hasFieldOrPropertyWithValue("content", review1.getContent())
+                .hasFieldOrPropertyWithValue("userId", review1.getUserId())
+                .hasFieldOrPropertyWithValue("filmId", review1.getFilmId())
+                .hasFieldOrPropertyWithValue("isPositive", review1.getIsPositive())
+                .hasFieldOrPropertyWithValue("useful", 0);
     }
 
     @Test
@@ -68,24 +65,22 @@ public class ReviewStorageTest {
                 .filmId(film1.getId())
                 .userId(user1.getId())
                 .isPositive(true).build();
-        Review review1 = reviewStorage.add(newReview).get();
+        Review review1 = reviewStorage.add(newReview);
 
         //Act
         Review updateReview = review1.toBuilder()
                 .isPositive(false)
                 .content("It's not so cool")
                 .build();
-        Optional<Review> actual = reviewStorage.update(updateReview);
+        Review actual = reviewStorage.update(updateReview);
 
         //Assert
+
         assertThat(actual)
-                .isPresent()
-                .hasValueSatisfying(review ->
-                        assertThat(review)
-                                .hasFieldOrPropertyWithValue("reviewId", 1)
-                                .hasFieldOrPropertyWithValue("content", updateReview.getContent())
-                                .hasFieldOrPropertyWithValue("isPositive", updateReview.getIsPositive())
-                                .hasFieldOrPropertyWithValue("useful", 0));
+                .hasFieldOrPropertyWithValue("reviewId", 1)
+                .hasFieldOrPropertyWithValue("content", updateReview.getContent())
+                .hasFieldOrPropertyWithValue("isPositive", updateReview.getIsPositive())
+                .hasFieldOrPropertyWithValue("useful", 0);
     }
 
     @Test
@@ -96,7 +91,7 @@ public class ReviewStorageTest {
                 .filmId(film1.getId())
                 .userId(user1.getId())
                 .isPositive(true).build();
-        Review review = reviewStorage.add(newReview).get();
+        Review review = reviewStorage.add(newReview);
 
         //Act
         reviewStorage.deleteReview(review.getReviewId());
@@ -142,7 +137,7 @@ public class ReviewStorageTest {
                 .filmId(film1.getId())
                 .userId(user1.getId())
                 .isPositive(true).build();
-        Review review1 = reviewStorage.add(newReview).get();
+        Review review1 = reviewStorage.add(newReview);
 
         ReviewLike reviewLike = ReviewLike.builder()
                 .reviewId(review1.getReviewId())
@@ -168,7 +163,7 @@ public class ReviewStorageTest {
                 .filmId(film1.getId())
                 .userId(user1.getId())
                 .isPositive(true).build();
-        Review review1 = reviewStorage.add(newReview).get();
+        Review review1 = reviewStorage.add(newReview);
 
         ReviewLike reviewLike = ReviewLike.builder()
                 .reviewId(review1.getReviewId())
@@ -194,7 +189,7 @@ public class ReviewStorageTest {
                 .filmId(film1.getId())
                 .userId(user1.getId())
                 .isPositive(true).build();
-        Review review1 = reviewStorage.add(newReview).get();
+        Review review1 = reviewStorage.add(newReview);
 
         ReviewLike reviewLike = ReviewLike.builder()
                 .reviewId(review1.getReviewId())
@@ -221,7 +216,7 @@ public class ReviewStorageTest {
                 .filmId(film1.getId())
                 .userId(user1.getId())
                 .isPositive(true).build();
-        Review review1 = reviewStorage.add(newReview).get();
+        Review review1 = reviewStorage.add(newReview);
 
         ReviewLike reviewLike = ReviewLike.builder()
                 .reviewId(review1.getReviewId())
@@ -230,8 +225,8 @@ public class ReviewStorageTest {
 
         //Act
         reviewStorage.addReviewLike(reviewLike);
-        reviewStorage.removeDislike(reviewLike);
-        var actual = reviewStorage.findReviewById(review1.getReviewId());
+        reviewStorage.removeReviewLikeOrDislike(reviewLike);
+        Optional<Review> actual = reviewStorage.findReviewById(review1.getReviewId());
 
         //Assert
         assertThat(actual).isPresent()

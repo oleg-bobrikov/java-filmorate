@@ -18,7 +18,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ReviewController {
     private final ReviewService reviewService;
-    private final FilmService filmService;
 
     @PostMapping()
     public Review add(@Valid @RequestBody Review review) {

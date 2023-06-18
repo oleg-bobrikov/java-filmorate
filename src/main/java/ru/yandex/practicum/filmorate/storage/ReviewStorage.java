@@ -12,6 +12,7 @@ public interface ReviewStorage {
     Optional<Review> findReviewById(Integer id);
 
     Optional<ReviewLike> findReviewLikeOrDislike(Integer id, Integer userId);
+
     Review update(Review review);
 
     void deleteReview(int id);
@@ -23,7 +24,4 @@ public interface ReviewStorage {
     void addReviewLike(ReviewLike reviewLike);
 
     void removeReviewLikeOrDislike(ReviewLike reviewLike);
-
-    void removeDislike(ReviewLike reviewLike);
-
 }
