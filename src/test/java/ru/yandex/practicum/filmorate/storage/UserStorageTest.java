@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -20,9 +20,12 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 class UserStorageTest {
 
     private final UserStorage userStorage;
+    private final EventStorage eventStorage;
 
-    public UserStorageTest(@Qualifier("userH2Storage") UserStorage userStorage) {
+    @Autowired
+    public UserStorageTest(UserStorage userStorage, EventStorage eventStorage) {
         this.userStorage = userStorage;
+        this.eventStorage = eventStorage;
     }
 
     @Test
@@ -251,7 +254,7 @@ class UserStorageTest {
         userStorage.removeFriend(createdUser1, createdFriend2);
 
         // act
-        List<Event> actual = userStorage.getEventsByUserId(createdUser1.getId());
+        List<Event> actual = eventStorage.getEventsByUserId(createdUser1.getId());
 
         // assert
         assertThat(actual).asList()
@@ -267,7 +270,5 @@ class UserStorageTest {
                             .hasFieldOrPropertyWithValue("eventType", "FRIEND")
                             .hasFieldOrPropertyWithValue("operation", "REMOVE");
                 });
-
-
     }
 }

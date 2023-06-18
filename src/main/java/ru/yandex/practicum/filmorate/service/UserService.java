@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -8,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -19,14 +21,15 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class UserService {
+
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final EventStorage eventStorage;
 
-    @Autowired
-    public UserService(@Qualifier("userH2Storage") UserStorage userStorage,
-                       @Qualifier("filmH2Storage") FilmStorage filmStorage) {
+    public UserService(UserStorage userStorage, FilmStorage filmStorage, EventStorage eventStorage) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.eventStorage = eventStorage;
     }
 
     public void addFriend(Integer id, Integer friendId) {
@@ -116,6 +119,6 @@ public class UserService {
 
     public List<Event> getEventsByUserId(Integer userId) {
         findUserById(userId);
-        return userStorage.getEventsByUserId(userId);
+        return eventStorage.getEventsByUserId(userId);
     }
 }

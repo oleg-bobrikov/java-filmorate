@@ -22,7 +22,5 @@ public interface UserStorage {
 
     void removeFriend(User user, User friend);
 
-    List<Event> getEventsByUserId(Integer userId);
-
     void deleteUserById(int id);
 }
