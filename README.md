@@ -1,42 +1,22 @@
-# java-filmorate
+Filmorate
+
+Социальная сеть. Веб-сервис, разработанный на Java 11 с использованием фреймворка Spring Boot, предоставляет REST API. В процессе разработки были применены инструменты Lombok для упрощения кода и библиотека JUnit для написания тестов. Данное серверное приложение предоставляет ряд возможностей:
+- Функциональность «Список названий всех фильмов»
+- Функциональность «Список всех пользователей»
+- Функциональность «Отзывы»
+- Функциональность «Поиск»
+- Функциональность «Общие фильмы»
+- Добавление режиссёров в фильмы
+- Функциональность «Лента событий»
+- Функциональность «Рекомендации»
+- Удаление фильмов и пользователей
+- Вывод самых популярных фильмов по жанру и годам
+
 ## ER Diagram (https://dbdiagram.io/d/6428102d5758ac5f1725ebc5)
 ![ER Diagramm](filmorate.png)
-## SQL Examples
-### 1. Get films
-```
-SELECT *
-FROM films
-```
-### 2. Get film by id
-```
-SELECT *
-FROM films
-WHERE id = :id
-```
-### 3. Add film
-```
-INSERT INTO films (film_name, description, release_date, duration, mpa_film_rating_id)
-VALUES (:film_name, :description, :release_date, :duration, :mpa_film_rating_id)
-```
-### 4. Get users
-```
-SELECT *
-FROM users
-```
-### 5. Get user by id
-```
-SELECT *
-FROM users
-WHERE id = &id
-```
-### 6. Add user
-```
-INSERT INTO users (email, login, user_name, birthday)
-VALUES (:email, :login, :user_name, :birthday)
-```
-### 7. Get user friends
-```
-SELECT friend_id
-FROM user_friends
-WHERE user_id = :user_id
-```
+
+Для запуска сервиса в IntelliJ IDEA, выполните следующие шаги:
+1. Вначале, для инициализации базы данных, выполните файл schema.sql, 
+расположенный по пути java-filmorate/src/main/java/ru/yandex/practicum/filmorate/resources. Вы можете выполнить его, выбрав опцию "run".
+2. Затем запустите приложение FilmorateApplication, 
+находящееся по пути java-filmorate/src/main/java/ru/yandex/practicum/filmorate. Вы можете запустить его, выбрав опцию "run".

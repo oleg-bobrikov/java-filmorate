@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dto.Mpa;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class MpaH2Storage implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public List<Mpa> getAll() {
+    public List<Mpa> findAll() {
         String sql = "select * from MPA_FILM_RATINGS";
         HashMap<Integer, Mpa> results = new HashMap<>();
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
@@ -35,7 +35,7 @@ public class MpaH2Storage implements MpaStorage {
 
 
     @Override
-    public Mpa getMpaById(Integer id) {
+    public Mpa findMpaById(Integer id) {
         String sql = "select * from MPA_FILM_RATINGS where id = ?";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, id);
         if (rs.next()) {

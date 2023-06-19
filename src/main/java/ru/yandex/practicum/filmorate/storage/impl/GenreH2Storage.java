@@ -7,8 +7,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dto.Film;
-import ru.yandex.practicum.filmorate.dto.Genre;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import javax.sql.DataSource;
@@ -29,7 +29,7 @@ public class GenreH2Storage implements GenreStorage {
         generatedKeyHolder = new GeneratedKeyHolder();
     }
 
-    public List<Genre> getAll() {
+    public List<Genre> findAll() {
         String sql = "select * from genres";
         HashMap<Integer, Genre> results = new HashMap<>();
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql);
@@ -44,7 +44,7 @@ public class GenreH2Storage implements GenreStorage {
     }
 
     @Override
-    public Genre getGenreById(Integer id) {
+    public Genre findGenreById(Integer id) {
         String sql = "select * from genres where id = ?";
         SqlRowSet rs = jdbcTemplate.queryForRowSet(sql, id);
         if (rs.next()) {

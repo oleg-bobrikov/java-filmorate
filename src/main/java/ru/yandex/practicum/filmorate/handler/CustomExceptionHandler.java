@@ -7,12 +7,28 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmorate.exception.DataBaseException;
+import ru.yandex.practicum.filmorate.exception.DirectorAlreadyExistedException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ResponseError;
+
+import javax.validation.ConstraintViolationException;
 
 @Slf4j
 @RestControllerAdvice
 public class CustomExceptionHandler {
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseError handle(ConstraintViolationException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseError.builder()
+                .error("BAD REQUEST")
+                .status(400)
+                .exception("org.springframework.web.bind.MethodArgumentNotValidException")
+                .message(exception.getMessage())
+                .build();
+    }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseError handle(NotFoundException exception) {
@@ -52,6 +68,19 @@ public class CustomExceptionHandler {
                 .build();
     }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseError handle(DataBaseException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseError.builder()
+                .error("INTERNAL_SERVER_ERROR")
+                .status(500)
+                .exception("org.springframework.dao.DataAccessException")
+                .message(exception.getMessage())
+                .path(getPath(exception))
+                .build();
+    }
+
     private String getPath(Exception exception) {
         String path = "";
         if (exception.getStackTrace().length > 0) {
@@ -63,6 +92,19 @@ public class CustomExceptionHandler {
             }
         }
         return path;
+    }
+
+    @ExceptionHandler({DirectorAlreadyExistedException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseError handleAlreadyExists(DirectorAlreadyExistedException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseError.builder()
+                .error("CONFLICT")
+                .status(409)
+                .exception("ru.yandex.practicum.filmorate.exception.DirectorAlreadyExistedException")
+                .message(exception.getMessage())
+                .path(getPath(exception))
+                .build();
     }
 }
 

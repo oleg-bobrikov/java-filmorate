@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.validator;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.dto.Film;
+import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
 
@@ -41,7 +41,7 @@ class FilmValidatorTest {
         Assertions.assertTrue(dtoHasErrorMessage(film, "Maximum description length is 200 characters"));
     }
 
-    @Test
+   @Test
     public void film_errorMessage_releaseDate() {
         Film film = Film.builder()
                 .name("Запах женщины")

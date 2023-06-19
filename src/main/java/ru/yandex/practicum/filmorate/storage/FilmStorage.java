@@ -1,9 +1,10 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import ru.yandex.practicum.filmorate.dto.Film;
-import ru.yandex.practicum.filmorate.dto.User;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface FilmStorage {
@@ -12,15 +13,39 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    void deleteFilmById(int id);
+    void removeFilmById(Integer id);
 
     List<Film> getFilms();
 
-    Optional<Film> getFilmById(int id);
+    Optional<Film> findFilmById(int id);
 
     void addLike(Film film, User user);
 
     void removeLike(Film film, User user);
 
-    List<Film> getPopular(int count);
+    List<Film> getTopFilms(int count);
+
+    List<Film> getCommonFilms(Integer userId, Integer friendId);
+
+    List<Film> getTopFilmsFilteredByYear(Integer year, Integer integer);
+
+    List<Film> getTopFilmsFilteredByGenreAndYear(Integer count, Integer genreId, Integer year);
+
+    List<Film> getTopFilmsFilteredByGenre(Integer count, Integer genreId);
+
+    List<Film> getRecommendations(Integer userId);
+
+    List<Film> searchFilms(Map<String, Object> params);
+
+    List<Film> searchFilmsByDirectorOrderedByYear(Integer directorId);
+
+    List<Film> searchFilmsByDirectorOrderedByLikes(Integer directorId);
+
+    List<Film> getAllFilms();
+
+    List<Film> searchFilmsByDirectorName(String s);
+
+    List<Film> searchFilmsByTitle(String s);
+
+    List<Film> searchFilmsByTitleAndDirectorName(String s);
 }

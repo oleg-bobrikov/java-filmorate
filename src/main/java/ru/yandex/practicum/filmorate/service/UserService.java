@@ -1,12 +1,11 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dto.User;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
@@ -16,11 +15,16 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserService {
-    @Autowired
-    @Qualifier("userH2Storage")
-    private UserStorage userStorage;
+
+    private final UserStorage userStorage;
+
+    private final EventStorage eventStorage;
+
+    public UserService(UserStorage userStorage, EventStorage eventStorage) {
+        this.userStorage = userStorage;
+        this.eventStorage = eventStorage;
+    }
 
     public void addFriend(Integer id, Integer friendId) {
         Optional<User> userOpt = userStorage.findUserById(id);
@@ -58,7 +62,11 @@ public class UserService {
     }
 
     public List<User> getUserFriends(Integer id) {
-        return userStorage.getUserFriendsById(id);
+
+        if (userStorage.findUserById(id).isEmpty()) {
+            throw new NotFoundException("user with id=" + id + " not found.");
+        }
+        return userStorage.findUserFriendsById(id);
     }
 
     public void removeFriend(Integer id, Integer friendId) {
@@ -68,7 +76,7 @@ public class UserService {
         }
         Optional<User> friend = userStorage.findUserById(friendId);
         if (friend.isEmpty()) {
-            throw new NotFoundException("user with id=" + friendId + " not found.");
+            throw new NotFoundException("friend with id=" + friendId + " not found.");
         }
         userStorage.removeFriend(user.get(), friend.get());
     }
@@ -92,5 +100,14 @@ public class UserService {
         }
         findUserById(user.getId());
         userStorage.update(user);
+    }
+
+    public void delete(Integer userId) {
+        userStorage.deleteUserById(userId);
+    }
+
+    public List<Event> getEventsByUserId(Integer userId) {
+        findUserById(userId);
+        return eventStorage.getEventsByUserId(userId);
     }
 }
